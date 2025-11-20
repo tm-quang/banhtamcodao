@@ -32,6 +32,36 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# SQL files (database dumps, migrations with sensitive data)
+*.sql
+
+# Batch files (development scripts)
+*.bat
+
+# Sensitive files
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+secrets.json
+secrets.yaml
+secrets.yml
+config.local.*
+credentials.json
+service-account*.json
+*-credentials.json
+
+# Logs with sensitive data
+*.log
+logs/
+*.log.*
 
 # vercel
 .vercel
