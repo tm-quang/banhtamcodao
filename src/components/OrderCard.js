@@ -65,7 +65,7 @@ export default function OrderCard({ order }) {
     const createdAt = format(new Date(order.order_time), 'HH:mm, dd/MM/yyyy', { locale: vi });
 
     return (
-        <div className={`rounded-2xl border bg-white shadow-sm transition hover:shadow-md ${theme.border}`}>
+        <div className={`rounded-2xl border bg-white shadow-md transition hover:shadow-xl ${theme.border}`}>
             <button
                 onClick={() => setIsOpen((prev) => !prev)}
                 className="flex w-full flex-col gap-3 px-4 py-4 text-left sm:flex-row sm:items-center sm:gap-6"
@@ -101,9 +101,8 @@ export default function OrderCard({ order }) {
             <div className="px-4 pb-4">
                 <div className="h-1 rounded-full bg-slate-100">
                     <div
-                        className={`h-full rounded-full bg-slate-900 transition-all duration-500 ${
-                            theme.accent.replace('text', 'bg')
-                        }`}
+                        className={`h-full rounded-full bg-slate-900 transition-all duration-500 ${theme.accent.replace('text', 'bg')
+                            }`}
                         style={{ width: `${theme.progress}%` }}
                     />
                 </div>

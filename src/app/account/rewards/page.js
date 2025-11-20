@@ -6,10 +6,9 @@ import { Diamond, Bell, Gift, TrendingUp, History as HistoryIcon } from 'lucide-
 
 export default function RewardsPage() {
     const { user } = useAuth();
-    if (!user) return null;
 
-    const tier = user.membership_level || 'Thành viên thân thiết';
-    const currentPoints = user.reward_points || 0;
+    const tier = user?.membership_level || 'Thành viên thân thiết';
+    const currentPoints = user?.reward_points || 0;
     const nextTierTarget = 5000;
     const progress = Math.min(100, Math.round((currentPoints / nextTierTarget) * 100));
 
@@ -33,6 +32,8 @@ export default function RewardsPage() {
         ],
         [currentPoints]
     );
+
+    if (!user) return null;
 
     return (
         <div className="space-y-6">
@@ -105,11 +106,10 @@ export default function RewardsPage() {
                     {benefitCards.map((benefit) => (
                         <div
                             key={benefit.title}
-                            className={`rounded-2xl border p-4 text-sm shadow-sm transition ${
-                                benefit.available
+                            className={`rounded-2xl border p-4 text-sm shadow-sm transition ${benefit.available
                                     ? 'border-slate-200 bg-white hover:border-slate-300'
                                     : 'border-dashed border-slate-200 bg-slate-50 text-slate-400'
-                            }`}
+                                }`}
                         >
                             <p className="text-base font-semibold text-slate-900">{benefit.title}</p>
                             <p className="mt-1 text-sm text-slate-500">{benefit.description}</p>

@@ -43,7 +43,7 @@ export default function MenuSlider() {
           bulletActiveClass: 'swiper-pagination-bullet-active bg-primary',
         }}
         loop={true}
-        className="rounded-md overflow-hidden shadow-lg"
+        className="rounded-md overflow-hidden shadow-xl"
       >
         {sliderImages.map((image) => (
           <SwiperSlide key={image.id}>

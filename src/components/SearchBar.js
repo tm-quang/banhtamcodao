@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function SearchBar({ className = '' }) {
@@ -14,27 +15,12 @@ export default function SearchBar({ className = '' }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [showSearchBox, setShowSearchBox] = useState(false);
-  
+
   const searchRef = useRef(null);
   const resultsRef = useRef(null);
   const router = useRouter();
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
-
-  // Debounce search (faster and smoother)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const q = query.trim();
-      if (q.length > 1) {
-        performSearch(q);
-      } else {
-        setResults([]);
-        setIsLoading(false);
-      }
-    }, 250);
-
-    return () => clearTimeout(timeoutId);
-  }, [query]);
 
   const performSearch = useCallback(async (searchQuery) => {
     // Use in-memory cache to avoid refetching while typing
@@ -69,6 +55,21 @@ export default function SearchBar({ className = '' }) {
     }
   }, []);
 
+  // Debounce search (faster and smoother)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const q = query.trim();
+      if (q.length > 1) {
+        performSearch(q);
+      } else {
+        setResults([]);
+        setIsLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, performSearch]);
+
   const handleInputChange = (e) => {
     setQuery(e.target.value);
     setIsOpen(true);
@@ -81,7 +82,7 @@ export default function SearchBar({ className = '' }) {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex(prev =>
           prev < results.length - 1 ? prev + 1 : prev
         );
         break;
@@ -222,7 +223,15 @@ export default function SearchBar({ className = '' }) {
                         className={`block rounded-xl ${index === selectedIndex ? 'bg-gray-100 ring-1 ring-primary/10' : ''}`}
                       >
                         <div className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group hover:bg-gray-100">
-                          <img src={product.image_url || '/placeholder.jpg'} alt={product.name} className="w-12 h-12 object-cover rounded-lg shadow-sm" />
+                          <div className="relative w-12 h-12 flex-shrink-0">
+                            <Image
+                              src={product.image_url || '/placeholder.jpg'}
+                              alt={product.name}
+                              fill
+                              className="object-cover rounded-lg shadow-sm"
+                              sizes="48px"
+                            />
+                          </div>
                           <div className="flex-1">
                             <h4 className="font-semibold text-secondary group-hover:text-primary transition-colors">{product.name}</h4>
                             <p className="text-xs text-gray-500">{product.category_name}</p>
@@ -232,7 +241,7 @@ export default function SearchBar({ className = '' }) {
                       </Link>
                     ))}
                     <div className="border-t border-gray-200 mt-1 pt-2">
-                      <button onClick={handleSearchSubmit} className="w-full text-center py-2 text-sm text-primary font-medium hover:bg-orange-50 rounded-lg transition-colors">Xem tất cả kết quả cho "{query}"</button>
+                      <button onClick={handleSearchSubmit} className="w-full text-center py-2 text-sm text-primary font-medium hover:bg-orange-50 rounded-lg transition-colors">Xem tất cả kết quả cho &quot;{query}&quot;</button>
                     </div>
                   </>
                 ) : (

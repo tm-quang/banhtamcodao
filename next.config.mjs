@@ -14,12 +14,6 @@ const nextConfig = {
   turbopack: {
     root: process.cwd(),
   },
-  // Allow cross-origin requests in development
-  experimental: {
-    allowedDevOrigins: ['192.168.1.200'],
-  },
-  // Configure src directory
-  srcDir: 'src',
 };
 
 export default nextConfig;

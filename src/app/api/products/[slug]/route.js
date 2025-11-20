@@ -1,50 +1,73 @@
 // src/app/api/products/[slug]/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 
 export async function GET(request, { params }) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
   try {
-    const [productRows] = await pool.execute(
-      'SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id WHERE p.slug = ?',
-      [slug]
-    );
+    // Fetch product by slug
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('*, categories(name)')
+      .eq('slug', slug)
+      .maybeSingle();
 
-    if (productRows.length === 0) {
+    if (productError) throw productError;
+
+    if (!product) {
       return NextResponse.json({ success: false, message: 'Sản phẩm không tồn tại.' }, { status: 404 });
     }
-    const product = productRows[0];
+
+    // Flatten category name
+    const productData = {
+      ...product,
+      category_name: product.categories?.name,
+      price: parseFloat(product.price),
+      discount_price: product.discount_price ? parseFloat(product.discount_price) : null,
+    };
+    delete productData.categories;
 
     // Lấy các đánh giá đã được duyệt
-    const [reviews] = await pool.execute(
-        'SELECT * FROM product_reviews WHERE product_id = ? AND status = ? ORDER BY created_at DESC',
-        [product.id, 'approved']
-    );
+    const { data: reviews, error: reviewsError } = await supabase
+      .from('product_reviews')
+      .select('*')
+      .eq('product_id', product.id)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false });
 
-    // --- SỬA LỖI TRUY VẤN TẠI ĐÂY ---
+    if (reviewsError) throw reviewsError;
+
     // Lấy các sản phẩm liên quan (cùng danh mục)
-    const [relatedProducts] = await pool.execute(
-        `SELECT 
-            p.id, p.name, p.slug, p.price, p.discount_price, p.image_url, 
-            c.name as category_name 
-         FROM products p
-         LEFT JOIN categories c ON p.category_id = c.id
-         WHERE p.category_id = ? AND p.id != ? AND p.status = ? 
-         LIMIT 8`,
-        [product.category_id, product.id, 'active']
-    );
+    const { data: relatedProductsRaw, error: relatedError } = await supabase
+      .from('products')
+      .select(`
+        id, name, slug, price, discount_price, image_url, 
+        categories(name)
+      `)
+      .eq('category_id', product.category_id)
+      .neq('id', product.id)
+      .eq('status', 'active')
+      .limit(8);
+
+    if (relatedError) throw relatedError;
+
+    const relatedProducts = relatedProductsRaw.map(p => ({
+      ...p,
+      category_name: p.categories?.name,
+      price: parseFloat(p.price),
+      discount_price: p.discount_price ? parseFloat(p.discount_price) : null,
+    })).map(p => {
+      delete p.categories;
+      return p;
+    });
 
     return NextResponse.json({
       success: true,
-      product: {
-        ...product,
-        price: parseFloat(product.price),
-        discount_price: product.discount_price ? parseFloat(product.discount_price) : null,
-      },
-      reviews,
-      relatedProducts
+      product: productData,
+      reviews: reviews || [],
+      relatedProducts: relatedProducts || []
     });
 
   } catch (error) {

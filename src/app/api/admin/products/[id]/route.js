@@ -1,6 +1,6 @@
 // src/app/api/admin/products/[id]/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 import { slugify } from '@/lib/slugify'; // <-- 1. Import hàm slugify
 
 export async function PUT(request, { params }) {
@@ -15,34 +15,28 @@ export async function PUT(request, { params }) {
 
         // --- 2. TỰ ĐỘNG TẠO SLUG NẾU BỊ TRỐNG ---
         const finalSlug = slug ? slugify(slug) : slugify(name);
-        
+
         const finalDescription = description || null;
         const finalImageUrl = image_url || null;
         const finalDiscountPrice = discount_price ? parseFloat(discount_price) : null;
-        const finalIsSpecial = is_special ? 1 : 0;
-        
-        const [result] = await pool.execute(
-            `UPDATE products SET 
-                name = ?, slug = ?, description = ?, image_url = ?, price = ?, 
-                discount_price = ?, category_id = ?, status = ?, is_special = ?
-             WHERE id = ?`,
-            [
-                name, 
-                finalSlug, // <-- Sử dụng finalSlug
-                finalDescription, 
-                finalImageUrl, 
-                parseFloat(price), 
-                finalDiscountPrice, 
-                parseInt(category_id, 10), 
-                status, 
-                finalIsSpecial, 
-                id
-            ]
-        );
+        const finalIsSpecial = is_special ? true : false;
 
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy sản phẩm để cập nhật.' }, { status: 404 });
-        }
+        const { error } = await supabase
+            .from('products')
+            .update({
+                name,
+                slug: finalSlug,
+                description: finalDescription,
+                image_url: finalImageUrl,
+                price: parseFloat(price),
+                discount_price: finalDiscountPrice,
+                category_id: parseInt(category_id, 10),
+                status,
+                is_special: finalIsSpecial
+            })
+            .eq('id', id);
+
+        if (error) throw error;
 
         return NextResponse.json({ success: true, message: 'Cập nhật sản phẩm thành công!' });
 
@@ -56,11 +50,9 @@ export async function DELETE(request, { params }) {
     try {
         const { id } = params;
 
-        const [result] = await pool.execute('DELETE FROM products WHERE id = ?', [id]);
+        const { error } = await supabase.from('products').delete().eq('id', id);
 
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy sản phẩm để xóa.' }, { status: 404 });
-        }
+        if (error) throw error;
 
         return NextResponse.json({ success: true, message: 'Xóa sản phẩm thành công!' });
 

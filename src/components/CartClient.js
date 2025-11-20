@@ -72,8 +72,8 @@ export default function CartClient() {
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Giỏ hàng của bạn đang trống</h2>
                 <p className="text-gray-600 mb-8">Hãy thêm một số món ngon vào giỏ hàng để bắt đầu!</p>
-                <Link 
-                    href="/menu" 
+                <Link
+                    href="/menu"
                     className="inline-flex items-center gap-2 bg-primary text-white hover:bg-white hover:text-primary hover:border-primary hover:border-2 font-semibold py-3 px-8 rounded-xl text-lg"
                 >
                     Khám phá thực đơn
@@ -111,14 +111,14 @@ export default function CartClient() {
                             </p>
                             {/* Thanh tiến độ */}
                             <div className="relative w-full h-2 bg-gray-200 rounded-md overflow-visible">
-                                <div 
+                                <div
                                     className="absolute top-0 left-0 h-full bg-green-600 rounded-md transition-all duration-500 ease-out"
                                     style={{ width: `${progressPercentage}%` }}
                                 >
                                 </div>
                                 {/* Icon xe tải trên thanh tiến độ - màu đỏ trong vòng tròn vàng */}
                                 {progressPercentage > 5 && (
-                                    <div 
+                                    <div
                                         className="absolute top-1/2 -translate-y-1/2 z-10"
                                         style={{ left: `calc(${Math.min(progressPercentage, 95)}% - 12px)` }}
                                     >
@@ -162,12 +162,12 @@ export default function CartClient() {
                             <div className="hidden lg:grid grid-cols-12 gap-4 items-center">
                                 <div className="col-span-5 flex items-center gap-4">
                                     <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
-                                        <Image 
-                                            src={item.image_url} 
-                                            alt={item.name} 
+                                        <Image
+                                            src={item.image_url}
+                                            alt={item.name}
                                             fill
                                             sizes="80px"
-                                            className="object-cover" 
+                                            className="object-cover"
                                         />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -185,16 +185,16 @@ export default function CartClient() {
                                 </div>
                                 <div className="col-span-2 flex justify-center">
                                     <div className="flex items-center border border-gray-200 rounded bg-white">
-                                        <button 
-                                            onClick={() => handleDecreaseQuantity(item.id, item.quantity)} 
+                                        <button
+                                            onClick={() => handleDecreaseQuantity(item.id, item.quantity)}
                                             className="px-2 py-2 border-r border-gray-200 hover:bg-gray-50 transition-colors text-gray-900"
                                             aria-label="Giảm số lượng"
                                         >
                                             <Minus size={14} />
                                         </button>
-                                        <input 
-                                            type="number" 
-                                            value={item.quantity} 
+                                        <input
+                                            type="number"
+                                            value={item.quantity}
                                             onChange={(e) => {
                                                 const val = parseInt(e.target.value, 10);
                                                 if (isNaN(val) || val < 1) {
@@ -209,12 +209,12 @@ export default function CartClient() {
                                                     return;
                                                 }
                                                 updateQuantity(item.id, val);
-                                            }} 
-                                            className="w-10 text-center border-x border-gray-200 focus:outline-none text-sm font-semibold text-gray-900 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                            }}
+                                            className="w-10 text-center border-x border-gray-200 focus:outline-none text-sm font-semibold text-gray-900 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             min="1"
                                         />
-                                        <button 
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                                        <button
+                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                             className="px-2 py-2 border-l border-gray-200 hover:bg-gray-50 transition-colors text-gray-900"
                                             aria-label="Tăng số lượng"
                                         >
@@ -224,8 +224,8 @@ export default function CartClient() {
                                 </div>
                                 <div className="col-span-3 flex items-center justify-end gap-3">
                                     <div className="font-bold text-lg text-red-500">{formatCurrency((item.discount_price ?? item.price) * item.quantity)}</div>
-                                    <button 
-                                        onClick={() => handleDeleteClick(item.id)} 
+                                    <button
+                                        onClick={() => handleDeleteClick(item.id)}
                                         className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-200"
                                         aria-label="Xóa sản phẩm"
                                     >
@@ -238,12 +238,12 @@ export default function CartClient() {
                             <div className="lg:hidden">
                                 <div className="flex items-start gap-4">
                                     <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
-                                        <Image 
-                                            src={item.image_url} 
-                                            alt={item.name} 
+                                        <Image
+                                            src={item.image_url}
+                                            alt={item.name}
                                             fill
                                             sizes="80px"
-                                            className="object-cover" 
+                                            className="object-cover"
                                         />
                                     </div>
                                     <div className="flex-grow min-w-0">
@@ -253,16 +253,16 @@ export default function CartClient() {
                                         )}
                                         <div className="flex items-center justify-between gap-2 mt-3">
                                             <div className="flex items-center border border-gray-200 rounded bg-white">
-                                                <button 
-                                                    onClick={() => handleDecreaseQuantity(item.id, item.quantity)} 
+                                                <button
+                                                    onClick={() => handleDecreaseQuantity(item.id, item.quantity)}
                                                     className="px-2 py-1 border-r border-gray-200 hover:bg-gray-50 transition-colors text-gray-900"
                                                     aria-label="Giảm số lượng"
                                                 >
                                                     <Minus size={12} />
                                                 </button>
-                                                <input 
-                                                    type="number" 
-                                                    value={item.quantity} 
+                                                <input
+                                                    type="number"
+                                                    value={item.quantity}
                                                     onChange={(e) => {
                                                         const val = parseInt(e.target.value, 10);
                                                         if (isNaN(val) || val < 1) {
@@ -277,12 +277,12 @@ export default function CartClient() {
                                                             return;
                                                         }
                                                         updateQuantity(item.id, val);
-                                                    }} 
-                                                    className="w-8 text-center border-x border-gray-200 focus:outline-none text-sm font-semibold text-gray-900 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
+                                                    }}
+                                                    className="w-8 text-center border-x border-gray-200 focus:outline-none text-sm font-semibold text-gray-900 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                     min="1"
                                                 />
-                                                <button 
-                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                                                <button
+                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                     className="px-2 py-2 border-l border-gray-200 hover:bg-gray-50 transition-colors text-gray-900"
                                                     aria-label="Tăng số lượng"
                                                 >
@@ -296,8 +296,8 @@ export default function CartClient() {
                                                     )}
                                                     <p className="font-bold text-red-500 text-base">{formatCurrency((item.discount_price ?? item.price) * item.quantity)}</p>
                                                 </div>
-                                                <button 
-                                                    onClick={() => handleDeleteClick(item.id)} 
+                                                <button
+                                                    onClick={() => handleDeleteClick(item.id)}
                                                     className="p-2 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
                                                     aria-label="Xóa sản phẩm"
                                                 >
@@ -314,8 +314,8 @@ export default function CartClient() {
 
                 {/* Footer với nút tiếp tục mua sắm */}
                 <div className="px-4 md:px-6 py-4 border-t border-gray-200 bg-gray-50">
-                    <Link 
-                        href="/menu" 
+                    <Link
+                        href="/menu"
                         className="inline-flex items-center gap-2 text-primary font-semibold hover:text-orange-600 transition-colors"
                     >
                         <ArrowRight className="w-4 h-4 rotate-180" />
@@ -355,8 +355,8 @@ export default function CartClient() {
                         </div>
 
                         {/* Button Checkout */}
-                        <Link 
-                            href="/checkout" 
+                        <Link
+                            href="/checkout"
                             className="block w-full mt-6 bg-primary border-2 border-primary text-white font-bold py-3 rounded-xl text-lg hover:bg-white hover:text-primary hover:border-primary hover:border-2"
                         >
                             <span className="flex items-center justify-center gap-2">
@@ -382,7 +382,7 @@ export default function CartClient() {
                             <div className="flex-1">
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận xóa sản phẩm</h3>
                                 <p className="text-gray-700 mb-4">
-                                    Bạn có chắc chắn muốn xóa <span className="font-semibold text-gray-900">"{itemToDelete.name}"</span> khỏi giỏ hàng?
+                                    Bạn có chắc chắn muốn xóa <span className="font-semibold text-gray-900">&quot;{itemToDelete.name}&quot;</span> khỏi giỏ hàng?
                                 </p>
                                 <div className="flex gap-3">
                                     <button

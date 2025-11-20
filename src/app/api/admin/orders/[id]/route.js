@@ -1,18 +1,24 @@
 // src/app/api/admin/orders/[id]/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 
 export async function GET(request, { params }) {
     try {
         const { id } = params;
 
-        const [rows] = await pool.execute('SELECT * FROM orders WHERE id = ?', [id]);
+        const { data: order, error } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', id)
+            .maybeSingle();
 
-        if (rows.length === 0) {
+        if (error) throw error;
+
+        if (!order) {
             return NextResponse.json({ success: false, message: 'Không tìm thấy đơn hàng.' }, { status: 404 });
         }
 
-        return NextResponse.json({ success: true, order: rows[0] });
+        return NextResponse.json({ success: true, order });
 
     } catch (error) {
         console.error('API Error - GET /api/admin/orders/[id]:', error);
@@ -28,48 +34,29 @@ export async function PUT(request, { params }) {
         // Lấy các trường có thể cập nhật từ body
         const { status, payment_status, recipient_name, phone_number, delivery_address, note } = body;
 
-        // Xây dựng câu lệnh UPDATE động
-        const fieldsToUpdate = [];
-        const values = [];
+        // Xây dựng object update
+        const updates = {};
+        if (status) updates.status = status;
+        if (payment_status) updates.payment_status = payment_status;
+        if (recipient_name) updates.recipient_name = recipient_name;
+        if (phone_number) updates.phone_number = phone_number;
+        if (delivery_address) updates.delivery_address = delivery_address;
+        if (note) updates.note = note;
 
-        if (status) {
-            fieldsToUpdate.push('status = ?');
-            values.push(status);
-        }
-        if (payment_status) {
-            fieldsToUpdate.push('payment_status = ?');
-            values.push(payment_status);
-        }
-        // Thêm các trường khác nếu cần
-        if (recipient_name) {
-            fieldsToUpdate.push('recipient_name = ?');
-            values.push(recipient_name);
-        }
-        if (phone_number) {
-            fieldsToUpdate.push('phone_number = ?');
-            values.push(phone_number);
-        }
-        if (delivery_address) {
-            fieldsToUpdate.push('delivery_address = ?');
-            values.push(delivery_address);
-        }
-         if (note) {
-            fieldsToUpdate.push('note = ?');
-            values.push(note);
-        }
-
-        if (fieldsToUpdate.length === 0) {
+        if (Object.keys(updates).length === 0) {
             return NextResponse.json({ success: false, message: 'Không có thông tin nào để cập nhật.' }, { status: 400 });
         }
 
-        const query = `UPDATE orders SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
-        values.push(id);
+        const { error } = await supabase
+            .from('orders')
+            .update(updates)
+            .eq('id', id);
 
-        await pool.execute(query, values);
+        if (error) throw error;
 
         return NextResponse.json({ success: true, message: 'Cập nhật đơn hàng thành công!' });
     } catch (error) {
-         console.error('API Error - PUT /api/admin/orders/[id]:', error);
+        console.error('API Error - PUT /api/admin/orders/[id]:', error);
         return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
     }
 }
@@ -78,10 +65,10 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
     try {
         const { id } = params;
-        const [result] = await pool.execute('DELETE FROM orders WHERE id = ?', [id]);
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy đơn hàng.' }, { status: 404 });
-        }
+        const { error } = await supabase.from('orders').delete().eq('id', id);
+
+        if (error) throw error;
+
         return NextResponse.json({ success: true, message: 'Xóa đơn hàng thành công!' });
     } catch (error) {
         return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });

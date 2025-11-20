@@ -18,8 +18,8 @@ const OrderStatusModal = ({ open, onClose, onSave, order }) => {
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
             <DialogTitle>Cập nhật trạng thái đơn hàng</DialogTitle>
             <DialogContent>
-                <Typography sx={{mt: 2}}>Đơn hàng: <strong>{order?.order_code}</strong></Typography>
-                <FormControl fullWidth sx={{mt: 2}}>
+                <Typography sx={{ mt: 2 }}>Đơn hàng: <strong>{order?.order_code}</strong></Typography>
+                <FormControl fullWidth sx={{ mt: 2 }}>
                     <InputLabel>Trạng thái</InputLabel>
                     <Select value={status} label="Trạng thái" onChange={(e) => setStatus(e.target.value)}>
                         <MenuItem value="Chờ xác nhận">Chờ xác nhận</MenuItem>
@@ -43,11 +43,11 @@ export default function CustomerDetailsClient({ customer, initialOrders }) {
     const [orders, setOrders] = useState(initialOrders);
     const [deletingOrder, setDeletingOrder] = useState(null);
     const [editingOrder, setEditingOrder] = useState(null);
-    
+
     const handleDeleteOrder = async () => {
         if (!deletingOrder) return;
         const res = await fetch(`/api/admin/orders/${deletingOrder.id}`, { method: 'DELETE' });
-        if(res.ok) {
+        if (res.ok) {
             alert('Xóa đơn hàng thành công!');
             setOrders(prev => prev.filter(o => o.id !== deletingOrder.id));
         } else {
@@ -62,15 +62,15 @@ export default function CustomerDetailsClient({ customer, initialOrders }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status }),
         });
-        if(res.ok) {
+        if (res.ok) {
             alert('Cập nhật thành công!');
-            setOrders(prev => prev.map(o => o.id === orderId ? {...o, status} : o));
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
         } else {
             alert('Cập nhật thất bại!');
         }
         setEditingOrder(null);
     }
-    
+
     const columns = [
         { field: 'order_code', headerName: 'Mã ĐH', width: 150 },
         { field: 'order_time', headerName: 'Ngày đặt', width: 150, valueFormatter: (value) => format(new Date(value), 'dd/MM/yyyy HH:mm') },
@@ -89,7 +89,7 @@ export default function CustomerDetailsClient({ customer, initialOrders }) {
 
     return (
         <Box>
-             {/* 3. THÊM NÚT QUAY LẠI TẠI ĐÂY */}
+            {/* 3. THÊM NÚT QUAY LẠI TẠI ĐÂY */}
             <Button
                 component={Link}
                 href="/admin/customers"
@@ -98,7 +98,7 @@ export default function CustomerDetailsClient({ customer, initialOrders }) {
             >
                 Quay lại danh sách
             </Button>
-            
+
             <Grid container spacing={3}>
                 <Grid item xs={12}>
                     <Typography variant="h4" gutterBottom>Chi tiết Khách hàng</Typography>
@@ -110,19 +110,19 @@ export default function CustomerDetailsClient({ customer, initialOrders }) {
                     </Paper>
                 </Grid>
                 <Grid item xs={12}>
-                     <Typography variant="h5" gutterBottom>Lịch sử Đơn hàng</Typography>
-                     <Paper sx={{ height: '60vh', width: '100%' }}>
-                         <DataGrid rows={orders} columns={columns} />
-                     </Paper>
+                    <Typography variant="h5" gutterBottom>Lịch sử Đơn hàng</Typography>
+                    <Paper sx={{ height: '60vh', width: '100%' }}>
+                        <DataGrid rows={orders} columns={columns} />
+                    </Paper>
                 </Grid>
-                
+
                 <Dialog open={Boolean(deletingOrder)} onClose={() => setDeletingOrder(null)}>
-                     <DialogTitle>Xác nhận xóa</DialogTitle>
-                     <DialogContent><DialogContentText>Bạn có chắc muốn xóa đơn hàng "{deletingOrder?.order_code}" không?</DialogContentText></DialogContent>
-                     <DialogActions>
-                         <Button onClick={() => setDeletingOrder(null)}>Hủy</Button>
-                         <Button onClick={handleDeleteOrder} color="error">Xóa</Button>
-                     </DialogActions>
+                    <DialogTitle>Xác nhận xóa</DialogTitle>
+                    <DialogContent><DialogContentText>Bạn có chắc muốn xóa đơn hàng &quot;{deletingOrder?.order_code}&quot; không?</DialogContentText></DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeletingOrder(null)}>Hủy</Button>
+                        <Button onClick={handleDeleteOrder} color="error">Xóa</Button>
+                    </DialogActions>
                 </Dialog>
 
                 <OrderStatusModal open={Boolean(editingOrder)} onClose={() => setEditingOrder(null)} onSave={handleUpdateStatus} order={editingOrder} />

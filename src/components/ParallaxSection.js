@@ -25,9 +25,9 @@ const ParallaxSection = ({ children, speed = 0.5, className = "" }) => {
 };
 
 // Enhanced AnimateOnScroll with more effects
-export const EnhancedAnimateOnScroll = ({ 
-  children, 
-  delay = 0, 
+export const EnhancedAnimateOnScroll = ({
+  children,
+  delay = 0,
   direction = "up",
   distance = 50,
   duration = 0.6,
@@ -46,13 +46,14 @@ export const EnhancedAnimateOnScroll = ({
       { threshold: 0.1, rootMargin: "0px 0px -50px 0px" }
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);
@@ -70,14 +71,14 @@ export const EnhancedAnimateOnScroll = ({
 
   const getFinalPosition = () => {
     switch (direction) {
-      case "up": 
-      case "down": 
-      case "left": 
-      case "right": 
+      case "up":
+      case "down":
+      case "left":
+      case "right":
         return { x: 0, y: 0, opacity: 1 };
-      case "scale": 
+      case "scale":
         return { scale: 1, opacity: 1 };
-      default: 
+      default:
         return { y: 0, opacity: 1 };
     }
   };
@@ -181,13 +182,14 @@ export const RevealText = ({ children, className = "" }) => {
       { threshold: 0.1 }
     );
 
-    if (ref.current) {
-      observer.observe(ref.current);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, []);

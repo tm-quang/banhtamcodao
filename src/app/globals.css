@@ -4,7 +4,8 @@
 
 /* Font mặc định cho toàn bộ dự án là Roboto */
 body {
-  @apply font-roboto bg-gray-50 text-secondary;
+  @apply font-roboto text-secondary;
+  background-color: #F0F2F5;
 }
 
 /* Đảm bảo tất cả elements mặc định dùng Roboto */

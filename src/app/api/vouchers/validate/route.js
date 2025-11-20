@@ -1,6 +1,6 @@
 // src/app/api/vouchers/validate/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 
 export async function POST(request) {
     try {
@@ -16,13 +16,17 @@ export async function POST(request) {
         const voucherCode = code.trim().toUpperCase();
 
         // Kiểm tra voucher trong database
-        const [vouchers] = await pool.execute(
-            `SELECT * FROM promotions 
-             WHERE promo_code = ? AND status = 'active'`,
-            [voucherCode]
-        );
+        const { data: vouchers, error } = await supabase
+            .from('promotions')
+            .select('*')
+            .eq('promo_code', voucherCode)
+            .eq('status', 'active');
 
-        if (vouchers.length === 0) {
+        if (error) {
+            throw error;
+        }
+
+        if (!vouchers || vouchers.length === 0) {
             return NextResponse.json(
                 { success: false, message: 'Mã giảm giá không hợp lệ hoặc đã hết hạn' },
                 { status: 404 }
@@ -53,9 +57,9 @@ export async function POST(request) {
         const minOrderValue = voucher.min_order_value || 0;
         if (subtotal < minOrderValue) {
             return NextResponse.json(
-                { 
-                    success: false, 
-                    message: `Đơn hàng tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(minOrderValue)} để sử dụng mã này` 
+                {
+                    success: false,
+                    message: `Đơn hàng tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(minOrderValue)} để sử dụng mã này`
                 },
                 { status: 400 }
             );

@@ -37,11 +37,11 @@ export default function CustomerTable({ customers }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
     const [deletingCustomer, setDeletingCustomer] = useState(null);
-    
+
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
-    
+
     const filteredCustomers = useMemo(() => {
         return customers.filter(customer => {
             const search = filters.search.toLowerCase();
@@ -49,7 +49,7 @@ export default function CustomerTable({ customers }) {
                 customer.full_name.toLowerCase().includes(search) ||
                 (customer.email && customer.email.toLowerCase().includes(search)) ||
                 (customer.phone_number && customer.phone_number.includes(search));
-            
+
             const roleMatch = !filters.role || customer.role === filters.role;
             const statusMatch = !filters.status || customer.status === filters.status;
 
@@ -155,7 +155,7 @@ export default function CustomerTable({ customers }) {
             </Box>
 
             <FilterBar onFilterChange={handleFilterChange} />
-            
+
             <Paper sx={{ height: '70vh', width: '100%' }}>
                 <DataGrid
                     rows={filteredCustomers}
@@ -172,12 +172,12 @@ export default function CustomerTable({ customers }) {
             </Paper>
             <CustomerModal open={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} customerToEdit={editingCustomer} />
             <Dialog open={Boolean(deletingCustomer)} onClose={() => setDeletingCustomer(null)}>
-                 <DialogTitle>Xác nhận xóa</DialogTitle>
-                 <DialogContent><DialogContentText>Bạn có chắc muốn xóa khách hàng "{deletingCustomer?.full_name}" không?</DialogContentText></DialogContent>
-                 <DialogActions>
-                     <Button onClick={() => setDeletingCustomer(null)}>Hủy</Button>
-                     <Button onClick={handleDelete} color="error">Xóa</Button>
-                 </DialogActions>
+                <DialogTitle>Xác nhận xóa</DialogTitle>
+                <DialogContent><DialogContentText>Bạn có chắc muốn xóa khách hàng &quot;{deletingCustomer?.full_name}&quot; không?</DialogContentText></DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeletingCustomer(null)}>Hủy</Button>
+                    <Button onClick={handleDelete} color="error">Xóa</Button>
+                </DialogActions>
             </Dialog>
         </Box>
     );

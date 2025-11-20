@@ -48,7 +48,7 @@ export default function MiniCart({ isOpen, onClose }) {
         if (isOpen) {
             // Kiểm tra nếu là mobile (dưới md breakpoint = 768px)
             const isMobile = window.innerWidth < 768;
-            
+
             if (isMobile) {
                 // Lưu scroll position hiện tại
                 const scrollY = window.scrollY;
@@ -89,8 +89,8 @@ export default function MiniCart({ isOpen, onClose }) {
                     <h2 className="text-xl font-bold text-gray-900">
                         Giỏ hàng của bạn
                     </h2>
-                    <button 
-                        onClick={onClose} 
+                    <button
+                        onClick={onClose}
                         className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
                         aria-label="Đóng giỏ hàng"
                     >
@@ -105,9 +105,9 @@ export default function MiniCart({ isOpen, onClose }) {
                             {cartItems.map(item => (
                                 <div key={item.id} className="flex gap-2 items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
                                     <div className="relative w-12 h-12 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
-                                        <Image 
-                                            src={item.image_url} 
-                                            alt={item.name} 
+                                        <Image
+                                            src={item.image_url}
+                                            alt={item.name}
                                             fill
                                             sizes="48px"
                                             className="object-cover"
@@ -119,8 +119,8 @@ export default function MiniCart({ isOpen, onClose }) {
                                             {item.quantity} x {formatCurrency(item.discount_price ?? item.price)}
                                         </p>
                                     </div>
-                                    <button 
-                                        onClick={() => handleDeleteClick(item.id)} 
+                                    <button
+                                        onClick={() => handleDeleteClick(item.id)}
                                         className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
                                         aria-label="Xóa sản phẩm"
                                     >
@@ -137,16 +137,16 @@ export default function MiniCart({ isOpen, onClose }) {
                                 <span className="text-xl font-bold text-red-500">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex gap-2">
-                                <Link 
-                                    href="/cart" 
-                                    onClick={onClose} 
+                                <Link
+                                    href="/cart"
+                                    onClick={onClose}
                                     className="flex-1 text-center bg-white border border-primary text-primary text-base font-semibold py-3 px-4 rounded-md hover:bg-primary hover:text-white transition-colors"
                                 >
                                     Xem giỏ hàng
                                 </Link>
-                                <Link 
-                                    href="/checkout" 
-                                    onClick={onClose} 
+                                <Link
+                                    href="/checkout"
+                                    onClick={onClose}
                                     className="flex-1 text-center bg-primary border border-primary text-white text-base font-semibold py-3 px-4 rounded-md hover:bg-white hover:text-primary transition-colors"
                                 >
                                     Thanh toán
@@ -191,7 +191,7 @@ export default function MiniCart({ isOpen, onClose }) {
                             <div className="flex-1">
                                 <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận xóa món</h3>
                                 <p className="text-gray-700 mb-4">
-                                    Bạn có chắc chắn muốn xóa <span className="font-semibold text-gray-900">"{itemToDelete.name}"</span> khỏi giỏ hàng?
+                                    Bạn có chắc chắn muốn xóa <span className="font-semibold text-gray-900">&quot;{itemToDelete.name}&quot;</span> khỏi giỏ hàng?
                                 </p>
                                 <div className="flex gap-3">
                                     <button

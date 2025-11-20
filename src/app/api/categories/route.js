@@ -1,13 +1,19 @@
 // src/app/api/categories/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 
 // Lấy tất cả danh mục cho frontend
 export async function GET() {
     try {
-        // Thử kết nối database, nếu lỗi thì trả về dữ liệu mẫu
-        const [rows] = await pool.execute('SELECT * FROM categories ORDER BY name ASC');
-        
+        const { data: rows, error } = await supabase
+            .from('categories')
+            .select('*')
+            .order('name', { ascending: true });
+
+        if (error) {
+            throw error;
+        }
+
         // Xử lý encoding và format dữ liệu
         const categories = rows.map(row => ({
             id: row.id,
@@ -15,7 +21,7 @@ export async function GET() {
             slug: row.slug || 'danh-muc',
             status: row.status || 'active'
         }));
-        
+
         return NextResponse.json({ success: true, categories }, {
             headers: {
                 'Content-Type': 'application/json; charset=utf-8'
@@ -23,17 +29,6 @@ export async function GET() {
         });
     } catch (error) {
         console.error('API Error - /api/categories:', error);
-        // Trả về dữ liệu mẫu nếu database lỗi
-        const mockCategories = [
-            { id: 1, name: 'Bánh Tằm', slug: 'banh-tam', status: 'active' },
-            { id: 2, name: 'Thức Uống', slug: 'thuc-uong', status: 'active' },
-            { id: 3, name: 'Tráng Miệng', slug: 'trang-mieng', status: 'active' },
-            { id: 4, name: 'Món Khác', slug: 'mon-khac', status: 'active' }
-        ];
-        return NextResponse.json({ success: true, categories: mockCategories }, {
-            headers: {
-                'Content-Type': 'application/json; charset=utf-8'
-            }
-        });
+        return NextResponse.json({ success: false, message: error.message, categories: [] }, { status: 500 });
     }
 }

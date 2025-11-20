@@ -1,54 +1,67 @@
 // src/app/api/admin/dashboard/data/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 
 export async function GET(request) {
     try {
         // Lấy đơn hàng mới nhất (10 đơn)
-        const [recentOrdersRows] = await pool.execute(
-            `SELECT 
-                order_code as id,
-                recipient_name as customer,
-                total_amount,
-                status,
-                order_time
-            FROM orders
-            ORDER BY order_time DESC
-            LIMIT 10`
-        );
+        const { data: recentOrdersRows, error: recentError } = await supabase
+            .from('orders')
+            .select('order_code, recipient_name, total_amount, status, order_time')
+            .order('order_time', { ascending: false })
+            .limit(10);
+
+        if (recentError) throw recentError;
 
         // Format đơn hàng
         const recentOrders = recentOrdersRows.map(order => ({
-            id: order.id,
-            customer: order.customer || 'N/A',
+            id: order.order_code,
+            customer: order.recipient_name || 'N/A',
             total: `${parseInt(order.total_amount).toLocaleString('vi-VN')} ₫`,
             status: order.status || 'Chờ xác nhận'
         }));
 
         // Lấy khách hàng mới nhất (10 khách hàng)
         // Lấy từ bảng orders, group by phone_number để lấy khách hàng duy nhất
-        const [newCustomersRows] = await pool.execute(
-            `SELECT DISTINCT
-                recipient_name as name,
-                phone_number as phone,
-                MAX(order_time) as latest_order_time
-            FROM orders
-            WHERE recipient_name IS NOT NULL AND phone_number IS NOT NULL
-            GROUP BY phone_number, recipient_name
-            ORDER BY latest_order_time DESC
-            LIMIT 10`
-        );
+        // Supabase doesn't support DISTINCT ON directly in select without RPC easily for this case
+        // So we fetch more orders and filter in JS, or use a separate query if we had a good way.
+        // Fetching last 50 orders to extract unique customers
+        const { data: customerOrders, error: customerError } = await supabase
+            .from('orders')
+            .select('recipient_name, phone_number, order_time')
+            .not('recipient_name', 'is', null)
+            .not('phone_number', 'is', null)
+            .order('order_time', { ascending: false })
+            .limit(50);
 
-        const newCustomers = newCustomersRows.map(customer => ({
-            name: customer.name || 'N/A',
-            phone: customer.phone || 'N/A'
-        }));
+        if (customerError) throw customerError;
+
+        const uniqueCustomers = [];
+        const seenPhones = new Set();
+
+        for (const order of customerOrders) {
+            if (!seenPhones.has(order.phone_number)) {
+                seenPhones.add(order.phone_number);
+                uniqueCustomers.push({
+                    name: order.recipient_name || 'N/A',
+                    phone: order.phone_number || 'N/A'
+                });
+            }
+            if (uniqueCustomers.length >= 10) break;
+        }
+
+        const newCustomers = uniqueCustomers;
 
         // Lấy top 5 món bán chạy
         // Parse items_list từ orders để tính số lượng bán
-        const [allOrders] = await pool.execute(
-            `SELECT items_list FROM orders WHERE status IN ('Hoàn thành', 'Đã giao') AND items_list IS NOT NULL AND items_list != ''`
-        );
+        const { data: allOrders, error: allOrdersError } = await supabase
+            .from('orders')
+            .select('items_list')
+            .in('status', ['Hoàn thành', 'Đã giao'])
+            .not('items_list', 'is', null)
+            .neq('items_list', '');
+
+        if (allOrdersError) throw allOrdersError;
 
         // Parse items_list và tính tổng số lượng bán
         const productSales = {};
@@ -56,11 +69,11 @@ export async function GET(request) {
             if (order.items_list) {
                 try {
                     let items = [];
-                    
+
                     // Thử parse như array JSON trước
                     if (order.items_list.trim().startsWith('[')) {
                         items = JSON.parse(order.items_list);
-                    } 
+                    }
                     // Nếu có "|||" thì split và parse từng item
                     else if (order.items_list.includes('|||')) {
                         items = order.items_list.split('|||')
@@ -83,7 +96,7 @@ export async function GET(request) {
                             return;
                         }
                     }
-                    
+
                     // Tính tổng số lượng bán cho mỗi sản phẩm
                     items.forEach(item => {
                         if (item && item.name) {

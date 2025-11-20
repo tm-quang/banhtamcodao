@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext'; // Import useCart
 import WishlistButton from './WishlistButton';
 
 const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 };
 
 export default function ProductCard({ product }) {
@@ -23,7 +23,7 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-md p-3 md:p-4 group transition-transform duration-300 hover:-translate-y-2 flex flex-col relative h-full">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-3 md:p-4 group transition-transform duration-300 hover:-translate-y-2 flex flex-col relative h-full">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative w-full aspect-square rounded-xl overflow-hidden mb-3 md:mb-4">
           <Image
@@ -39,7 +39,7 @@ export default function ProductCard({ product }) {
           </div>
         </div>
       </Link>
-      
+
       <div className="flex-grow">
         <h3 className="text-base md:text-xl font-bold text-secondary line-clamp-2 min-h-[44px]">
           <Link href={`/product/${product.slug}`} className="hover:text-primary transition-colors">
@@ -51,7 +51,7 @@ export default function ProductCard({ product }) {
 
       <div className="mt-3 md:mt-6 min-h-[48px]">
         <div className="flex flex-col">
-          <span className={`${hasDiscount ? 'text-sm md:text-sm text-gray-400 line-through' : 'text-xs md:text-sm opacity-0 select-none'}`}> 
+          <span className={`${hasDiscount ? 'text-sm md:text-sm text-gray-400 line-through' : 'text-xs md:text-sm opacity-0 select-none'}`}>
             {formatCurrency(product.price)}
           </span>
           <p className={`text-xl md:text-xl font-bold ${hasDiscount ? 'text-primary' : 'text-secondary'}`}>
@@ -61,7 +61,7 @@ export default function ProductCard({ product }) {
       </div>
 
       {/* Cập nhật nút bấm */}
-      <button 
+      <button
         onClick={handleAddToCart}
         className="absolute bottom-3 right-3 md:bottom-4 md:right-4 bg-primary text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-orange-600 transition-all duration-300 transform group-hover:scale-110 shadow-lg"
         aria-label={`Thêm ${product.name} vào giỏ hàng`}

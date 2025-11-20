@@ -65,6 +65,7 @@ export default function BannersPage() {
                             {banners.map((b) => (
                                 <Grid item xs={12} key={b.id}>
                                     <Paper variant="outlined" sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img src={b.image_url} alt={b.title || ''} width={120} height={60} style={{ objectFit: 'cover', borderRadius: 6 }} />
                                         <Box sx={{ flex: 1 }}>
                                             <TextField size="small" label="Tiêu đề" value={b.title || ''} onChange={(e) => updateBanner(b.id, { title: e.target.value })} sx={{ mr: 1 }} />

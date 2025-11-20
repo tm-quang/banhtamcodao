@@ -1,17 +1,17 @@
 // src/app/api/admin/dashboard/stats/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const monthParam = searchParams.get('month');
         const yearParam = searchParams.get('year');
-        
+
         // Parse và validate tham số
         const month = monthParam ? parseInt(monthParam) : new Date().getMonth() + 1;
         const year = yearParam ? parseInt(yearParam) : new Date().getFullYear();
-        
+
         // Validate tháng và năm
         if (isNaN(month) || month < 1 || month > 12) {
             return NextResponse.json(
@@ -19,7 +19,7 @@ export async function GET(request) {
                 { status: 400 }
             );
         }
-        
+
         if (isNaN(year) || year < 2000 || year > 2100) {
             return NextResponse.json(
                 { success: false, message: 'Năm không hợp lệ' },
@@ -29,10 +29,10 @@ export async function GET(request) {
 
         // Tính số ngày trong tháng
         const daysInMonth = new Date(year, month, 0).getDate();
-        
+
         // Tạo mảng các ngày trong tháng
         const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-        
+
         // Khởi tạo mảng kết quả với giá trị 0 cho mỗi ngày
         const dailyStats = days.map(day => ({
             day,
@@ -42,34 +42,35 @@ export async function GET(request) {
 
         // Query để lấy doanh thu và số đơn theo ngày trong tháng
         // Chỉ tính các đơn hàng có status là 'Hoàn thành' hoặc 'Đã giao'
-        const [rows] = await pool.execute(
-            `SELECT 
-                DAY(order_time) as day,
-                COALESCE(SUM(total_amount), 0) as revenue,
-                COUNT(*) as orders
-            FROM orders
-            WHERE YEAR(order_time) = ? 
-                AND MONTH(order_time) = ?
-                AND status IN ('Hoàn thành', 'Đã giao')
-            GROUP BY DAY(order_time)
-            ORDER BY day ASC`,
-            [parseInt(year), parseInt(month)]
-        );
+        const startDate = new Date(year, month - 1, 1).toISOString();
+        const endDate = new Date(year, month, 0, 23, 59, 59).toISOString();
+
+        const { data: orders, error } = await supabase
+            .from('orders')
+            .select('order_time, total_amount, status')
+            .gte('order_time', startDate)
+            .lte('order_time', endDate)
+            .in('status', ['Hoàn thành', 'Đã giao']);
+
+        if (error) throw error;
 
         // Cập nhật dữ liệu thực tế vào mảng
-        rows.forEach(row => {
-            const dayIndex = row.day - 1;
+        orders.forEach(order => {
+            const date = new Date(order.order_time);
+            const day = date.getDate();
+            const dayIndex = day - 1;
+
             if (dayIndex >= 0 && dayIndex < dailyStats.length) {
-                dailyStats[dayIndex].revenue = parseFloat(row.revenue) || 0;
-                dailyStats[dayIndex].orders = parseInt(row.orders) || 0;
+                dailyStats[dayIndex].revenue += parseFloat(order.total_amount) || 0;
+                dailyStats[dayIndex].orders += 1;
             }
         });
 
         // Chuyển đổi doanh thu từ VNĐ sang ngàn VNĐ (k)
-        const dailyRevenueK = dailyStats.map(stat => 
+        const dailyRevenueK = dailyStats.map(stat =>
             Math.round((stat.revenue / 1000) * 10) / 10 // Làm tròn 1 chữ số thập phân
         );
-        
+
         const dailyOrders = dailyStats.map(stat => stat.orders);
 
         return NextResponse.json({

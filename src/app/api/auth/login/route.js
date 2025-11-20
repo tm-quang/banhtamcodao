@@ -1,6 +1,6 @@
 // src/app/api/auth/login/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
@@ -9,7 +9,6 @@ const MAX_AGE = 60 * 60 * 24 * 30; // 30 ngày
 
 export async function POST(request) {
     const body = await request.json();
-    // 1. Đổi tên biến để rõ nghĩa hơn
     const { identifier, password } = body;
 
     if (!identifier || !password) {
@@ -17,14 +16,33 @@ export async function POST(request) {
     }
 
     try {
-        // 2. Cập nhật câu truy vấn để tìm bằng username hoặc phone_number
-        const [rows] = await pool.execute(
-            `SELECT a.* FROM accounts a 
-             LEFT JOIN customers c ON a.id = c.account_id
-             WHERE a.username = ? OR c.phone_number = ?`,
-            [identifier, identifier]
-        );
-        const user = rows[0];
+        // Tìm user trong bảng accounts bằng username
+        let { data: accounts, error } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('username', identifier);
+
+        let user = accounts && accounts.length > 0 ? accounts[0] : null;
+
+        // Nếu không tìm thấy bằng username, tìm trong bảng customers bằng phone_number
+        if (!user) {
+            const { data: customers } = await supabase
+                .from('customers')
+                .select('account_id')
+                .eq('phone_number', identifier);
+
+            if (customers && customers.length > 0) {
+                const accountId = customers[0].account_id;
+                const { data: accountsByPhone } = await supabase
+                    .from('accounts')
+                    .select('*')
+                    .eq('id', accountId);
+
+                if (accountsByPhone && accountsByPhone.length > 0) {
+                    user = accountsByPhone[0];
+                }
+            }
+        }
 
         if (!user) {
             return NextResponse.json({ success: false, message: 'Thông tin đăng nhập không chính xác.' }, { status: 401 });

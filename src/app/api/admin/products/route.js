@@ -1,30 +1,32 @@
 // src/app/api/admin/products/route.js
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import supabase from '@/lib/supabase';
 import { slugify } from '@/lib/slugify';
 
 export async function GET(request) {
     try {
-        // --- SỬA LỖI TẠI ĐÂY: Thêm các trường slug, description, category_id vào câu truy vấn ---
-        const [rows] = await pool.execute(`
-            SELECT 
-                p.id, 
-                p.name, 
-                p.slug,                 -- Thêm slug
-                p.description,          -- Thêm description
-                p.price, 
-                p.discount_price,
-                p.status, 
-                p.image_url, 
-                p.is_special,
-                p.category_id,          -- Thêm category_id
-                c.name as category_name
-            FROM products p
-            LEFT JOIN categories c ON p.category_id = c.id
-            ORDER BY p.id DESC
-        `);
+        const { data: rows, error } = await supabase
+            .from('products')
+            .select(`
+id, name, slug, description, price, discount_price,
+    status, image_url, is_special, category_id,
+    categories(name)
+        `)
+            .order('id', { ascending: false });
 
-        return NextResponse.json({ success: true, products: rows });
+        if (error) throw error;
+
+        const products = rows.map(p => ({
+            ...p,
+            category_name: p.categories?.name,
+            price: parseFloat(p.price),
+            discount_price: p.discount_price ? parseFloat(p.discount_price) : null,
+        })).map(p => {
+            delete p.categories;
+            return p;
+        });
+
+        return NextResponse.json({ success: true, products });
 
     } catch (error) {
         console.error('API Error - /api/admin/products:', error);
@@ -40,22 +42,33 @@ export async function POST(request) {
         if (!name || !price || !category_id) {
             return NextResponse.json({ success: false, message: 'Tên, giá và danh mục là bắt buộc.' }, { status: 400 });
         }
-        
+
         const finalSlug = slug ? slugify(slug) : slugify(name);
 
         price = parseFloat(price);
         discount_price = discount_price ? parseFloat(discount_price) : null;
         category_id = parseInt(category_id, 10);
-        is_special = is_special ? 1 : 0;
+        is_special = is_special ? true : false;
         status = status || 'active';
 
-        const [result] = await pool.execute(
-            `INSERT INTO products (name, slug, description, image_url, price, discount_price, category_id, status, is_special) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [name, finalSlug, description, image_url, price, discount_price, category_id, status, is_special]
-        );
+        const { data: result, error } = await supabase
+            .from('products')
+            .insert([{
+                name,
+                slug: finalSlug,
+                description,
+                image_url,
+                price,
+                discount_price,
+                category_id,
+                status,
+                is_special
+            }])
+            .select();
 
-        return NextResponse.json({ success: true, message: 'Thêm sản phẩm thành công!', productId: result.insertId });
+        if (error) throw error;
+
+        return NextResponse.json({ success: true, message: 'Thêm sản phẩm thành công!', productId: result[0].id });
 
     } catch (error) {
         console.error('API Error - POST /api/admin/products:', error);
