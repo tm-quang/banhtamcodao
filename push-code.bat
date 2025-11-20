@@ -11,14 +11,9 @@ REM 2. Check if remote 'origin' exists
 git remote get-url origin >nul 2>&1
 if %errorlevel% neq 0 (
     echo.
-    echo No remote repository linked.
-    set /p "RepoURL=Enter GitHub Repository URL: "
-    if "!RepoURL!"=="" (
-        echo URL cannot be empty.
-        goto :End
-    )
-    git remote add origin !RepoURL!
-    echo Linked to !RepoURL!
+    echo Linking to default remote repository...
+    git remote add origin https://github.com/tm-quang/banhtamcodao.git
+    echo Linked to https://github.com/tm-quang/banhtamcodao.git
 )
 
 REM Check if a commit message was passed as an argument
