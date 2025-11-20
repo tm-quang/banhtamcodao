@@ -1,0 +1,40 @@
+{
+  "name": "banhtamcodao.new",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack -p 3300",
+    "build": "next build --turbopack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.3.3",
+    "@mui/x-charts": "^8.13.1",
+    "@mui/x-data-grid": "^8.13.1",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.7.0",
+    "cookie": "^1.0.2",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.22",
+    "jsonwebtoken": "^9.0.2",
+    "lucide-react": "^0.544.0",
+    "mysql2": "^3.15.1",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-icons": "^5.5.0",
+    "swiper": "^12.0.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.14"
+  }
+}

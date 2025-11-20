@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Font mặc định cho toàn bộ dự án là Roboto */
+body {
+  @apply font-roboto bg-gray-50 text-secondary;
+}
+
+/* Đảm bảo tất cả elements mặc định dùng Roboto */
+* {
+  font-family: var(--font-roboto), 'Roboto', sans-serif;
+}
+
+/* Chỉ những element có class font-lobster mới dùng Lobster */
+.font-lobster {
+  font-family: var(--font-lobster), 'Lobster', cursive;
+}
+
+@layer utilities {
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  .animate-slideInRight {
+    animation: slideInRight 0.5s ease-out forwards;
+  }
+ /* Thêm animation mới cho nút Help */
+  @keyframes pulse-slow {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(255, 111, 48, 0.4);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px rgba(255, 111, 48, 0);
+    }
+  }
+  .animate-pulse-slow {
+    animation: pulse-slow 2s infinite;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fadeInUp {
+    animation: fadeInUp 0.9s ease-out forwards;
+  }
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  @keyframes zoom-in-effect {
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.2);
+    }
+  }
+    @keyframes cart-bounce {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.4);
+    }
+  }
+  .animate-cart-bounce {
+    animation: cart-bounce 0.5s ease-in-out;
+  }
+
+  /* Flash effect for cart count when items are added */
+  @keyframes cart-count-flash {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); background-color: #ef4444; }
+    50% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); background-color: #ef4444; }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); background-color: #ef4444; }
+  }
+  .animate-cart-count-flash {
+    animation: cart-count-flash 0.6s ease-out;
+  }
+}
+
+.hero-slider {
+  /* Để đổi màu, thay đổi mã màu ở đây */
+  --swiper-navigation-color: #c2c2c2; /* Màu cam primary của bạn */
+
+  /* Để thay đổi kích thước, thay đổi giá trị ở đây */
+  --swiper-navigation-size: 20px;
+}
+
+.hero-slider .swiper-slide-active .hero-slide-bg {
+  animation: none !important;
+}
+
+/* Dấu ngoặc nhọn bị thừa đã được xóa khỏi đây */
+
+/* MUI Skeleton với gradient shimmer effect */
+.MuiSkeleton-root {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 2s infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
