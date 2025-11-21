@@ -95,7 +95,13 @@ export default function HeroSection() {
               <div className="flex -space-x-2 md:-space-x-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden relative">
-                    <Image src={`/images/avatar-${i}.jpg`} alt="User" fill className="object-cover" onError={(e) => e.target.src = `https://i.pravatar.cc/100?img=${i + 10}`} />
+                    <Image 
+                      src={`https://i.pravatar.cc/100?img=${i + 10}`} 
+                      alt="User" 
+                      fill 
+                      className="object-cover"
+                      unoptimized
+                    />
                   </div>
                 ))}
                 <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] md:text-xs font-bold text-gray-600">

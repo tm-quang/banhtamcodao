@@ -54,7 +54,9 @@ export default async function sitemap() {
 
     return [...staticPages, ...productPages];
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    // Nếu database không có hoặc lỗi, chỉ trả về static pages
+    console.error('Error generating sitemap:', error.message);
+    // Trong production, có thể log vào monitoring service
     return staticPages;
   }
 }

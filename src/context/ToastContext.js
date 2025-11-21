@@ -1,7 +1,7 @@
 // src/context/ToastContext.js
 'use client';
 
-import { createContext, useState, useCallback, useContext, useEffect } from 'react';
+import { createContext, useState, useCallback, useContext, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckCircle, XCircle, Info, X } from 'lucide-react';
 import Image from 'next/image';
@@ -14,13 +14,20 @@ const Toast = ({ toast, onRemove }) => {
     const { id, message, type, data } = toast;
     const [isVisible, setIsVisible] = useState(false);
 
+    // Hàm xử lý khi đóng (để có animation trượt ra)
+    const handleRemove = useCallback(() => {
+        setIsVisible(false);
+        // Đợi animation trượt ra hoàn tất rồi mới gỡ khỏi DOM
+        setTimeout(() => onRemove(id), 300);
+    }, [id, onRemove]);
+
     // Effect để tự động đóng sau 5 giây
     useEffect(() => {
         const removeTimer = setTimeout(() => {
             handleRemove();
         }, 2500);
         return () => clearTimeout(removeTimer);
-    }, [id, onRemove]);
+    }, [id, handleRemove]);
 
     // Effect để kích hoạt animation trượt vào
     useEffect(() => {
@@ -28,13 +35,6 @@ const Toast = ({ toast, onRemove }) => {
         const showTimer = setTimeout(() => setIsVisible(true), 50);
         return () => clearTimeout(showTimer);
     }, []);
-
-    // Hàm xử lý khi đóng (để có animation trượt ra)
-    const handleRemove = () => {
-        setIsVisible(false);
-        // Đợi animation trượt ra hoàn tất rồi mới gỡ khỏi DOM
-        setTimeout(() => onRemove(id), 300);
-    };
 
     const product = data?.product;
     const icons = {

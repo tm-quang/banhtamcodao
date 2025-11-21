@@ -19,6 +19,7 @@ const lobster = Lobster({
 });
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3300'),
   title: 'Bánh Tằm Cô Đào - Vị Ngon Miền Tây',
   description: 'Website đặt món Bánh Tằm Cô Đào phiên bản mới',
 };
