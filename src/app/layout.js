@@ -26,7 +26,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
-      <body className={`${roboto.variable} ${lobster.variable} font-roboto bg-gray-50 text-gray-800`}>
+      <body className={`${roboto.variable} ${lobster.variable} font-roboto text-gray-800`} style={{ backgroundColor: '#F0F2F5' }}>
         {/* Cấu trúc đúng: AuthProvider bao bọc tất cả */}
         <AuthProvider>
           <ToastProvider>

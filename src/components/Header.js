@@ -101,20 +101,20 @@ const Header = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-5">
-            <nav className="flex items-center gap-7 font-medium text-2xl font-lobster">
-              <Link href="/" className="relative group transition-colors py-2 hover:text-primary">
+            <nav className="flex items-center gap-7 text-2xl">
+              <Link href="/" className="relative group transition-colors py-2 hover:text-primary font-lobster">
                 <span className="relative z-10">Trang chủ</span>
                 <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="/menu" className="relative group transition-colors py-2 hover:text-primary">
+              <Link href="/menu" className="relative group transition-colors py-2 hover:text-primary font-lobster">
                 <span className="relative z-10">Thực đơn</span>
                 <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="/contact" className="relative group transition-colors py-2 hover:text-primary">
+              <Link href="/contact" className="relative group transition-colors py-2 hover:text-primary font-lobster">
                 <span className="relative z-10">Liên hệ</span>
                 <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
-              <Link href="/order-tracking" className="relative group transition-colors py-2 hover:text-primary">
+              <Link href="/order-tracking" className="relative group transition-colors py-2 hover:text-primary font-lobster">
                 <span className="relative z-10">Đơn hàng</span>
                 <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
               </Link>
@@ -166,15 +166,15 @@ const Header = () => {
               {user && isUserMenuOpen && (
                 <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50 text-secondary" onClick={() => setIsUserMenuOpen(false)}>
                   <div className="p-4 border-b">
-                    <p className="font-bold">{user.full_name}</p>
-                    <p className="text-sm text-gray-500">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
+                    <p className="font-lobster font-bold">{user.full_name}</p>
+                    <p className="text-sm text-gray-500 font-lobster">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
                   </div>
                   <nav className="p-2">
-                    <Link href="/account" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100"><Settings size={16} /> Thông tin tài khoản</Link>
+                    <Link href="/account" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 font-lobster"><Settings size={16} /> Thông tin tài khoản</Link>
                     {user.role === 'admin' && (
-                      <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100"><Shield size={16} /> Quản trị Website</Link>
+                      <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 font-lobster"><Shield size={16} /> Quản trị Website</Link>
                     )}
-                    <button onClick={logout} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-red-600"><LogOut size={16} /> Đăng xuất</button>
+                    <button onClick={logout} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-red-600 font-lobster"><LogOut size={16} /> Đăng xuất</button>
                   </nav>
                 </div>
               )}
@@ -200,10 +200,10 @@ const Header = () => {
         <nav className="flex-grow p-4 overflow-y-auto">
           <ul className="flex flex-col gap-2">
             {navLinks.map(link => (
-              <li key={link.href}><Link href={link.href} onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-bold hover:text-primary py-3 px-2 rounded-md transition-colors">{link.label}</Link></li>
+              <li key={link.href}><Link href={link.href} onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">{link.label}</Link></li>
             ))}
             {user?.role === 'admin' && (
-              <li><Link href="/admin" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-bold hover:text-primary py-3 px-2 rounded-md transition-colors">Admin</Link></li>
+              <li><Link href="/admin" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">Admin</Link></li>
             )}
           </ul>
         </nav>
@@ -214,10 +214,10 @@ const Header = () => {
             // Giao diện khi đã đăng nhập
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors">
                   <UserIcon size={20} /> Tài khoản
                 </Link>
-                <button onClick={logout} className="flex items-center justify-center gap-2 w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors">
+                <button onClick={logout} className="flex items-center justify-center gap-2 w-full bg-red-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-red-700 transition-colors">
                   <LogOut size={20} /> Đăng xuất
                 </button>
               </div>
@@ -228,7 +228,7 @@ const Header = () => {
             </div>
           ) : (
             // Giao diện khi chưa đăng nhập
-            <Link href="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center w-full bg-primary text-light font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors">
+            <Link href="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center w-full bg-primary text-light font-lobster font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors">
               <LogIn size={20} className="mr-2" /> Đăng nhập | Đăng ký
             </Link>
           )}

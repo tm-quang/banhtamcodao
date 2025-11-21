@@ -3,7 +3,7 @@ import { Skeleton } from '@mui/material';
 
 export default function ProductCardSkeleton() {
     return (
-        <div className="bg-white rounded-2xl shadow-md p-4 flex flex-col h-full">
+        <div className="bg-white rounded-3xl shadow-md p-4 flex flex-col h-full">
             {/* Skeleton for Image */}
             <Skeleton variant="rectangular" width="100%" sx={{ aspectRatio: '4/3', borderRadius: '12px', mb: 2 }} />
             

@@ -21,7 +21,7 @@ export default function ProductCardHorizontal({ product }) {
   };
 
   return (
-    <div className="bg-light rounded-2xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex items-center p-3 gap-4">
+    <div className="bg-light rounded-3xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 flex items-center p-3 gap-4">
       <Link href={`/product/${product.slug}`} className="block flex-shrink-0">
         <div className="relative w-24 h-24 rounded-lg overflow-hidden">
           <Image

@@ -137,7 +137,7 @@ export default async function HomePage() {
       <AboutSection />
 
       {/* Section Món Nổi Bật (Slider) */}
-      <section className="py-10 md:py-16 bg-light" aria-label="Món nổi bật">
+      <section className="py-10 md:py-16" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
             <span className="text-primary font-bold tracking-wider uppercase text-xs md:text-sm">Được yêu thích nhất</span>
@@ -152,7 +152,7 @@ export default async function HomePage() {
       </section>
 
       {/* Section Thực Đơn Mới */}
-      <section className="py-10 md:py-16 bg-white" aria-label="Thực đơn">
+      <section className="py-10 md:py-16" aria-label="Thực đơn" style={{ backgroundColor: '#F0F2F5' }}>
         <div className="container mx-auto px-4">
           <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
             {allProducts.length > 0 ? (

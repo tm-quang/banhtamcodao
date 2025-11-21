@@ -44,7 +44,7 @@ export default async function ProductDetailPage({ params }) {
 
   return (
     // --- Tối ưu padding cho mobile ---
-    <div className="bg-gray-50 pt-24 md:pt-24 pb-16">
+    <div className="pt-24 md:pt-24 pb-16" style={{ backgroundColor: '#F0F2F5' }}>
       <div className="container mx-auto px-4">
         <nav className="mb-6">
           <ol className="flex text-gray-500 text-sm items-center flex-wrap">
