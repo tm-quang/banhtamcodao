@@ -286,3 +286,4 @@ export async function GET(request) {
         return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error.message)}`, request.url));
     }
 }
+
