@@ -1,4 +1,7 @@
-// src/app/api/vouchers/validate/route.js
+/**
+ * Voucher validation API route handler
+ * @file src/app/api/vouchers/validate/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 

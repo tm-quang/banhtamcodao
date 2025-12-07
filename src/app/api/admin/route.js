@@ -1,20 +1,28 @@
-// src/app/api/admin/route.js
+/**
+ * Admin API route handler
+ * @file src/app/api/admin/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 
-// GET /api/admin => trả về thống kê tổng hợp cho dashboard
+/**
+ * GET /api/admin => trả về thống kê tổng hợp cho dashboard
+ * @param {Request} request - Request object
+ * @returns {Promise<NextResponse>} Response with admin stats
+ */
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
-        const month = parseInt(searchParams.get('month') || '0', 10); // 1-12, 0 = all
+        /** 1-12, 0 = all */
+        const month = parseInt(searchParams.get('month') || '0', 10);
         const year = parseInt(searchParams.get('year') || '0', 10);
 
-        // Tổng quan
+        /** Tổng quan */
         const { count: total_orders } = await supabase.from('orders').select('*', { count: 'exact', head: true });
         const { count: total_products } = await supabase.from('products').select('*', { count: 'exact', head: true });
         const { count: total_categories } = await supabase.from('categories').select('*', { count: 'exact', head: true });
 
-        // Fetch orders for the specific month/year or all if not specified
+        /** Fetch orders for the specific month/year or all if not specified */
         let query = supabase.from('orders').select('order_time, status, total_amount');
 
         if (month > 0 && year > 0) {

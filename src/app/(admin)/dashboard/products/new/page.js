@@ -1,7 +1,10 @@
-// src/app/(admin)/dashboard/products/new/page.js
+/**
+ * Admin new product page
+ * @file src/app/(admin)/dashboard/products/new/page.js
+ */
 import ProductForm from '@/components/admin/ProductModal';
 
-// Lấy danh sách danh mục để truyền vào form
+/** Lấy danh sách danh mục để truyền vào form */
 async function getCategories() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3300';
     try {

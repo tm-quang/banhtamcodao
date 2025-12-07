@@ -1,4 +1,7 @@
-// src/app/(admin)/dashboard/reviews/page.js
+/**
+ * Admin reviews management page
+ * @file src/app/(admin)/dashboard/reviews/page.js
+ */
 import ReviewTable from '@/components/admin/ReviewTable';
 
 async function getReviews() {

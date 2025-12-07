@@ -1,4 +1,7 @@
-// src/app/api/admin/upload-signature/route.js
+/**
+ * Admin upload signature API route handler
+ * @file src/app/api/admin/upload-signature/route.js
+ */
 import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 

@@ -1,10 +1,17 @@
-// src/app/product/[slug]/page.js
+/**
+ * Product detail page component
+ * @file src/app/product/[slug]/page.js
+ */
 import Image from 'next/image';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import ProductDetailClient from '@/components/ProductDetailClient';
 import ReviewSection from '@/components/ReviewSection';
 import RelatedProducts from '@/components/RelatedProducts';
+import ProductGallery from '@/components/ProductGallery';
+import ProductBadges from '@/components/ProductBadges';
+import NutritionalInfo from '@/components/NutritionalInfo';
+import ProductTabs from '@/components/ProductTabs';
 import { StaticStarRating } from '@/components/StarRating';
 
 async function getProductDetail(slug) {
@@ -17,7 +24,10 @@ export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const data = await getProductDetail(resolvedParams.slug);
   const productName = data?.product?.name || "Sản phẩm";
-  return { title: `${productName} - Bánh Tằm Cô Đào` };
+  return {
+    title: `${productName} - Bánh Tằm Cô Đào`,
+    description: data?.product?.description || `Xem chi tiết ${productName} tại Bánh Tằm Cô Đào`,
+  };
 }
 
 const formatCurrency = (amount) => {
@@ -30,7 +40,7 @@ export default async function ProductDetailPage({ params }) {
 
   if (!data || !data.success) {
     return (
-      <div className="container mx-auto text-center py-20">
+      <div className="max-w-[1200px] mx-auto text-center py-20">
         <h1 className="text-2xl">Không tìm thấy sản phẩm</h1>
         <Link href="/menu" className="text-primary hover:underline mt-4 inline-block">Quay lại thực đơn</Link>
       </div>
@@ -40,12 +50,54 @@ export default async function ProductDetailPage({ params }) {
   const { product, reviews, relatedProducts, images } = data;
   const totalReviews = reviews?.length || 0;
   const averageRating = totalReviews > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews : 0;
-  const galleryImages = [{ id: 'main', image_url: product.image_url }, ...(images || [])];
+
+  // Prepare gallery images
+  const galleryImages = images && images.length > 0
+    ? images
+    : [{ id: 'main', image_url: product.image_url }];
+
+  // Mock product options (replace with real data from API when available)
+  const productOptions = [
+    // Example size options
+    // { id: 1, type: 'size', name: 'Nhỏ', price_adjustment: 0 },
+    // { id: 2, type: 'size', name: 'Vừa', price_adjustment: 5000 },
+    // { id: 3, type: 'size', name: 'Lớn', price_adjustment: 10000 },
+    // Example topping options
+    // { id: 4, type: 'topping', name: 'Thêm trứng', price_adjustment: 5000 },
+    // { id: 5, type: 'topping', name: 'Thêm thịt', price_adjustment: 10000 },
+  ];
+
+  // Mock nutritional info (replace with real data from product.nutritional_info when available)
+  const nutritionalInfo = product.nutritional_info || null;
+  // Example:
+  // {
+  //   serving_size: '100g',
+  //   calories: 250,
+  //   protein: 8,
+  //   carbs: 35,
+  //   fat: 10,
+  //   fiber: 3,
+  //   sugar: 5,
+  //   sodium: 400,
+  //   allergens: ['Gluten', 'Trứng']
+  // }
+
+  // Determine badges
+  const badges = product.badges || [];
+  // Auto-add sale badge if there's a discount
+  if (product.discount_price && !badges.includes('sale') && !badges.includes('giảm giá')) {
+    badges.push('sale');
+  }
+
+  // Calculate discount percentage
+  const discountPercent = product.discount_price
+    ? Math.round(((product.price - product.discount_price) / product.price) * 100)
+    : null;
 
   return (
-    // --- Tối ưu padding cho mobile ---
-    <div className="pt-24 md:pt-24 pb-16" style={{ backgroundColor: '#F0F2F5' }}>
-      <div className="container mx-auto px-4">
+    <div className="pt-24 md:pt-24 pb-16">
+      <div className="max-w-[1200px] mx-auto px-4">
+        {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex text-gray-500 text-sm items-center flex-wrap">
             <li><Link href="/" className="hover:text-primary">Trang chủ</Link></li>
@@ -56,40 +108,61 @@ export default async function ProductDetailPage({ params }) {
           </ol>
         </nav>
 
+        {/* Product Main Section */}
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12">
-            <div>
-              <div className="aspect-square relative rounded-lg overflow-hidden border">
-                <Image src={galleryImages[0].image_url || '/placeholder.jpg'} alt={product.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" priority />
-              </div>
+            {/* Product Gallery */}
+            <div className="relative">
+              <ProductBadges badges={badges} discountPercent={discountPercent} />
+              <ProductGallery images={galleryImages} productName={product.name} />
             </div>
+
+            {/* Product Info */}
             <div className="flex flex-col">
-              {/* --- Tối ưu kích thước font chữ --- */}
-              <h1 className="text-4xl md:text-4xl font-medium text-secondary mb-4">{product.name}</h1>
+              <h1 className="text-3xl md:text-4xl font-medium text-secondary mb-4">{product.name}</h1>
+
+              {/* Rating */}
               <div className="flex items-center gap-2 mb-4">
                 <StaticStarRating rating={averageRating} size={20} />
                 <a href="#reviews" className="text-sm text-gray-500 hover:underline">({totalReviews} đánh giá)</a>
               </div>
-              <p className="text-3xl md:text-4xl font-medium text-primary mb-4">
-                {formatCurrency(product.discount_price ?? product.price)}
-                {product.discount_price && (
-                  <span className="text-xl md:text-xl text-gray-700 line-through ml-6">
-                    {formatCurrency(product.price)}
-                  </span>
-                )}
-              </p>
-              <ProductDetailClient product={product} />
+
+              {/* Price */}
+              <div className="mb-6">
+                <p className="text-3xl md:text-4xl font-medium text-primary">
+                  {formatCurrency(product.discount_price ?? product.price)}
+                  {product.discount_price && (
+                    <span className="text-xl md:text-xl text-gray-500 line-through ml-4">
+                      {formatCurrency(product.price)}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* Short Description */}
+              {product.description && (
+                <div className="mb-6 pb-6 border-b">
+                  <p className="text-gray-600 leading-relaxed line-clamp-3">
+                    {product.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Product Detail Client (with options and add to cart) */}
+              <ProductDetailClient product={product} options={productOptions} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
+        {/* Product Tabs */}
+        <ProductTabs />
+
+        {/* Product Description Section */}
+        <div id="product-description" className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
           <div className="border-b pb-4 mb-4">
-            {/* TIÊU ĐỀ */}
             <h2 className="text-xl md:text-2xl font-medium text-secondary">
               Thông tin chi tiết
             </h2>
-            {/* GẠCH CHÂN MÀU ĐỎ */}
             <div className="w-24 h-0.5 bg-primary mt-2"></div>
           </div>
           <p className="text-gray-600 leading-relaxed">
@@ -97,14 +170,49 @@ export default async function ProductDetailPage({ params }) {
           </p>
         </div>
 
-        <div id="reviews" className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+        {/* Nutritional Info Section */}
+        {nutritionalInfo && (
+          <div id="product-nutrition" className="mb-8">
+            <NutritionalInfo nutritionalInfo={nutritionalInfo} />
+          </div>
+        )}
+
+        {/* Reviews Section */}
+        <div id="reviews" className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
           <ReviewSection productId={product.id} reviews={reviews} />
         </div>
 
+        {/* Related Products */}
         <div className="mt-12">
           <RelatedProducts products={relatedProducts} />
         </div>
       </div>
+
+      {/* JSON-LD Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            "name": product.name,
+            "image": product.image_url,
+            "description": product.description,
+            "offers": {
+              "@type": "Offer",
+              "url": `https://banhtamcodao.com/product/${product.slug}`,
+              "priceCurrency": "VND",
+              "price": product.discount_price ?? product.price,
+              "availability": "https://schema.org/InStock"
+            },
+            "aggregateRating": totalReviews > 0 ? {
+              "@type": "AggregateRating",
+              "ratingValue": averageRating.toFixed(1),
+              "reviewCount": totalReviews
+            } : undefined
+          })
+        }}
+      />
     </div>
   );
 }

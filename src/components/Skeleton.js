@@ -35,11 +35,11 @@ const SkeletonBase = ({ className = "", children, variant = "rectangular" }) => 
  * @param {string} height - Chiều cao (Tailwind classes hoặc custom)
  * @param {string} className - Classes bổ sung
  */
-export const Skeleton = ({ 
-  variant = "rectangular", 
-  width = "w-full", 
-  height = "h-4", 
-  className = "" 
+export const Skeleton = ({
+  variant = "rectangular",
+  width = "w-full",
+  height = "h-4",
+  className = ""
 }) => {
   return (
     <SkeletonBase variant={variant} className={`${width} ${height} ${className}`} />
@@ -49,9 +49,9 @@ export const Skeleton = ({
 /**
  * Skeleton cho text
  */
-export const SkeletonText = ({ 
-  lines = 1, 
-  width = "w-full", 
+export const SkeletonText = ({
+  lines = 1,
+  width = "w-full",
   height = "h-4",
   className = "",
   spacing = "space-y-2"
@@ -63,11 +63,11 @@ export const SkeletonText = ({
   return (
     <div className={spacing}>
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton 
-          key={i} 
-          variant="text" 
-          width={i === lines - 1 ? "w-3/4" : width} 
-          height={height} 
+        <Skeleton
+          key={i}
+          variant="text"
+          width={i === lines - 1 ? "w-3/4" : width}
+          height={height}
           className={className}
         />
       ))}
@@ -78,16 +78,16 @@ export const SkeletonText = ({
 /**
  * Skeleton cho button
  */
-export const SkeletonButton = ({ 
-  width = "w-24", 
+export const SkeletonButton = ({
+  width = "w-24",
   height = "h-10",
   rounded = "rounded-lg",
   className = ""
 }) => {
   return (
-    <SkeletonBase 
-      variant={rounded === "rounded-full" ? "circular" : "rounded"} 
-      className={`${width} ${height} ${className}`} 
+    <SkeletonBase
+      variant={rounded === "rounded-full" ? "circular" : "rounded"}
+      className={`${width} ${height} ${className}`}
     />
   );
 };
@@ -95,8 +95,8 @@ export const SkeletonButton = ({
 /**
  * Skeleton cho image/avatar
  */
-export const SkeletonImage = ({ 
-  width = "w-full", 
+export const SkeletonImage = ({
+  width = "w-full",
   height = "h-48",
   aspectRatio = null,
   rounded = "rounded-lg",
@@ -104,9 +104,9 @@ export const SkeletonImage = ({
 }) => {
   const aspectClass = aspectRatio ? `aspect-${aspectRatio}` : "";
   return (
-    <SkeletonBase 
-      variant={rounded === "rounded-full" ? "circular" : rounded === "rounded-xl" ? "roundedXL" : "rounded"} 
-      className={`${width} ${height} ${aspectClass} ${className}`} 
+    <SkeletonBase
+      variant={rounded === "rounded-full" ? "circular" : rounded === "rounded-xl" ? "roundedXL" : "rounded"}
+      className={`${width} ${height} ${aspectClass} ${className}`}
     />
   );
 };
@@ -114,10 +114,10 @@ export const SkeletonImage = ({
 /**
  * Skeleton cho card
  */
-export const SkeletonCard = ({ 
+export const SkeletonCard = ({
   padding = "p-4",
   className = "",
-  children 
+  children
 }) => {
   return (
     <div className={`bg-white rounded-xl shadow-md ${padding} ${className}`}>
@@ -144,7 +144,7 @@ export const SkeletonTableRow = ({ cols = 4, className = "" }) => {
 /**
  * Skeleton cho input field
  */
-export const SkeletonInput = ({ 
+export const SkeletonInput = ({
   label = true,
   className = ""
 }) => {
@@ -155,6 +155,33 @@ export const SkeletonInput = ({
       )}
       <Skeleton variant="rounded" width="w-full" height="h-12" />
     </div>
+  );
+};
+
+/**
+ * Ring Spinner - Vòng tròn loading xoay
+ * @param {string} size - Kích thước: 'sm', 'md', 'lg', 'xl'
+ * @param {string} color - Màu: 'primary', 'white', 'gray'
+ */
+export const RingSpinner = ({ size = 'md', color = 'primary', className = '' }) => {
+  const sizeClasses = {
+    sm: 'w-5 h-5 border-2',
+    md: 'w-8 h-8 border-[3px]',
+    lg: 'w-12 h-12 border-4',
+    xl: 'w-16 h-16 border-4'
+  };
+  const colorClasses = {
+    primary: 'border-primary border-t-transparent',
+    white: 'border-white border-t-transparent',
+    gray: 'border-gray-400 border-t-transparent'
+  };
+
+  return (
+    <div
+      className={`${sizeClasses[size]} ${colorClasses[color]} rounded-full animate-spin ${className}`}
+      role="status"
+      aria-label="Loading"
+    />
   );
 };
 
@@ -181,7 +208,7 @@ export const SkeletonProductCard = ({ className = "" }) => {
 /**
  * Skeleton cho form section
  */
-export const SkeletonFormSection = ({ 
+export const SkeletonFormSection = ({
   title = true,
   icon = true,
   inputs = 2,
@@ -209,14 +236,14 @@ export const SkeletonFormSection = ({
 /**
  * Skeleton cho order summary
  */
-export const SkeletonOrderSummary = ({ 
+export const SkeletonOrderSummary = ({
   items = 3,
   className = ""
 }) => {
   return (
     <SkeletonCard padding="p-6" className={`sticky top-6 ${className}`}>
       <Skeleton variant="text" width="w-32" height="h-8" className="mb-6" />
-      
+
       {/* Items */}
       <div className="space-y-4 mb-6">
         {Array.from({ length: items }).map((_, i) => (
@@ -229,7 +256,7 @@ export const SkeletonOrderSummary = ({
           </div>
         ))}
       </div>
-      
+
       {/* Totals */}
       <div className="space-y-3 pt-6 border-t border-gray-200">
         {[1, 2, 3].map((i) => (
@@ -239,7 +266,7 @@ export const SkeletonOrderSummary = ({
           </div>
         ))}
       </div>
-      
+
       {/* Button */}
       <SkeletonButton width="w-full" height="h-14" rounded="rounded-xl" className="mt-6" />
     </SkeletonCard>
@@ -267,7 +294,7 @@ export const SkeletonCheckout = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Summary bên phải */}
       <div className="lg:col-span-2">
         <SkeletonOrderSummary items={3} />
@@ -276,26 +303,126 @@ export const SkeletonCheckout = () => {
   );
 };
 
-/**
- * Skeleton cho loading overlay
- */
-export const SkeletonLoadingOverlay = ({ 
-  message = "Đang tải...",
+export const SkeletonLoadingOverlay = ({
   size = "md"
 }) => {
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-12 h-12",
-    lg: "w-16 h-16",
-    xl: "w-20 h-20"
-  };
-
   return (
-    <div className="flex flex-col items-center justify-center py-12 space-y-4">
-      <Skeleton variant="circular" width={sizeClasses[size]} height={sizeClasses[size]} />
-      {message && (
-        <SkeletonText lines={1} width="w-32" height="h-4" />
-      )}
+    <div className="flex flex-col items-center justify-center py-12">
+      <RingSpinner size={size} />
+    </div>
+  );
+};
+
+/**
+ * Skeleton cho trang xác nhận đơn hàng - khớp layout 2 cột
+ */
+export const SkeletonOrderConfirmation = () => {
+  return (
+    <div className="min-h-screen pt-24 pb-8 px-4" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
+      <div className="max-w-5xl mx-auto">
+        {/* Success Header */}
+        <div className="text-center mb-8">
+          <Skeleton variant="circular" width="w-20" height="h-20" className="mx-auto mb-4" />
+          <Skeleton variant="text" width="w-64" height="h-8" className="mx-auto mb-2" />
+          <Skeleton variant="text" width="w-48" height="h-4" className="mx-auto" />
+        </div>
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* LEFT COLUMN */}
+          <div className="space-y-4">
+            {/* Order Code Card */}
+            <SkeletonCard padding="p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <Skeleton variant="text" width="w-20" height="h-4" />
+                  <Skeleton variant="text" width="w-32" height="h-8" />
+                </div>
+                <Skeleton variant="rounded" width="w-12" height="h-12" />
+              </div>
+            </SkeletonCard>
+
+            {/* Order Items */}
+            <SkeletonCard padding="p-0">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <Skeleton variant="text" width="w-40" height="h-6" />
+              </div>
+              <div className="p-4 space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                    <Skeleton variant="text" width="w-3/4" height="h-5" />
+                    <Skeleton variant="text" width="w-20" height="h-5" />
+                  </div>
+                ))}
+              </div>
+            </SkeletonCard>
+
+            {/* Delivery Info */}
+            <SkeletonCard padding="p-0">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <Skeleton variant="text" width="w-48" height="h-6" />
+              </div>
+              <div className="p-5 space-y-4">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Skeleton variant="circular" width="w-5" height="h-5" />
+                    <div className="space-y-1 flex-1">
+                      <Skeleton variant="text" width="w-24" height="h-3" />
+                      <Skeleton variant="text" width="w-full" height="h-5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SkeletonCard>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="space-y-4">
+            {/* Payment Summary */}
+            <SkeletonCard padding="p-0">
+              <div className="px-6 py-4 border-b border-gray-100">
+                <Skeleton variant="text" width="w-40" height="h-6" />
+              </div>
+              <div className="p-6 space-y-3">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="flex justify-between">
+                    <Skeleton variant="text" width="w-24" height="h-4" />
+                    <Skeleton variant="text" width="w-28" height="h-4" />
+                  </div>
+                ))}
+                <div className="flex justify-between pt-4 border-t border-gray-200">
+                  <Skeleton variant="text" width="w-28" height="h-6" />
+                  <Skeleton variant="text" width="w-32" height="h-6" />
+                </div>
+              </div>
+            </SkeletonCard>
+
+            {/* QR Payment Area */}
+            <SkeletonCard padding="p-0">
+              <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <Skeleton variant="text" width="w-48" height="h-6" />
+              </div>
+              <div className="p-6 text-center">
+                <Skeleton variant="rounded" width="w-56" height="h-56" className="mx-auto mb-4" />
+                <div className="space-y-2">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="flex justify-between px-4">
+                      <Skeleton variant="text" width="w-24" height="h-4" />
+                      <Skeleton variant="text" width="w-32" height="h-4" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </SkeletonCard>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4">
+              <SkeletonButton width="flex-1" height="h-14" rounded="rounded-2xl" />
+              <SkeletonButton width="flex-1" height="h-14" rounded="rounded-2xl" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

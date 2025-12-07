@@ -1,4 +1,7 @@
-// src/app/api/reviews/route.js
+/**
+ * Reviews API route handler
+ * @file src/app/api/reviews/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 

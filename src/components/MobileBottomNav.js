@@ -1,72 +1,105 @@
 // src/components/MobileBottomNav.js
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Menu, ShoppingCart, FileText, User } from 'lucide-react';
+import { Home, UtensilsCrossed, ShoppingCart, FileText, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { motion } from 'framer-motion';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const { cartItems } = useCart();
+  const { cartItems, openMiniCart } = useCart();
+  const [animatingTab, setAnimatingTab] = useState(null);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const navItems = [
-    { name: 'Trang chủ', href: '/', icon: Home },
-    { name: 'Menu', href: '/menu', icon: Menu },
-    { name: 'Giỏ hàng', href: '/cart', icon: ShoppingCart, isCenter: true },
-    { name: 'Đơn hàng', href: '/orders', icon: FileText },
-    { name: 'Tài khoản', href: '/account', icon: User },
+    { id: 'home', name: 'Trang chủ', href: '/', icon: Home },
+    { id: 'menu', name: 'Menu', href: '/menu', icon: UtensilsCrossed },
+    { id: 'cart', name: 'Giỏ hàng', href: '/cart', icon: ShoppingCart, isCart: true },
+    { id: 'orders', name: 'Đơn hàng', href: '/order-tracking', icon: FileText },
+    { id: 'account', name: 'Tài khoản', href: '/account', icon: User },
   ];
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 pb-safe z-50 lg:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-      <div className="flex justify-around items-center h-16 px-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+  const isActive = (href) => {
+    if (href === '/') return pathname === '/';
+    // Tài khoản active cho cả /account và /login
+    if (href === '/account') {
+      return pathname.startsWith('/account') || pathname.startsWith('/login');
+    }
+    return pathname.startsWith(href);
+  };
 
-          if (item.isCenter) {
+  const triggerAnimation = (tabId) => {
+    setAnimatingTab(null);
+    requestAnimationFrame(() => {
+      setAnimatingTab(tabId);
+      setTimeout(() => setAnimatingTab(null), 600);
+    });
+  };
+
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    triggerAnimation('cart');
+    openMiniCart();
+  };
+
+  return (
+    <nav className="fixed bottom-0 inset-x-0 z-[9999] lg:hidden bg-white border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+      <div className="flex items-center justify-around h-16">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.href);
+          const shouldAnimate = animatingTab === item.id;
+
+          // Cart button - special styling
+          if (item.isCart) {
             return (
-              <div key={item.name} className="relative -top-5">
-                <Link href={item.href} className="flex flex-col items-center justify-center">
-                  <motion.div
-                    whileTap={{ scale: 0.9 }}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg border-4 border-white ${isActive ? 'bg-primary text-white' : 'bg-white text-primary border-primary'
-                      }`}
-                  >
-                    <Icon size={24} strokeWidth={2.5} />
-                    {totalItems > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
-                        {totalItems > 99 ? '99+' : totalItems}
-                      </span>
-                    )}
-                  </motion.div>
-                </Link>
-              </div>
+              <button
+                key={item.id}
+                type="button"
+                onClick={handleCartClick}
+                className="relative flex flex-col items-center justify-center flex-1 h-full"
+              >
+                <div
+                  className={`border border-gray-500 relative flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white shadow-md transition-transform duration-300 ${shouldAnimate ? 'animate-zoom-once' : ''
+                    }`}
+                >
+                  <Icon size={22} strokeWidth={2.5} />
+                  {totalItems > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 border-2 border-white">
+                      {totalItems > 99 ? '99+' : totalItems}
+                    </span>
+                  )}
+                </div>
+              </button>
             );
           }
 
+          // Regular nav items
           return (
             <Link
-              key={item.name}
+              key={item.id}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive ? 'text-primary' : 'text-gray-400 hover:text-gray-600'
-                }`}
+              onClick={() => triggerAnimation(item.id)}
+              className={`relative flex flex-col items-center justify-center flex-1 h-full ${active ? 'text-primary' : 'text-gray-500'
+                } transition-colors duration-200`}
             >
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-              <span className="text-[10px] font-medium">{item.name}</span>
-              {isActive && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute bottom-1 w-1 h-1 bg-primary rounded-full"
-                />
-              )}
+              <span
+                className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${active ? 'bg-primary/10' : ''
+                  } ${shouldAnimate ? 'animate-zoom-once' : ''}`}
+              >
+                <Icon size={25} strokeWidth={active ? 2.5 : 2} />
+              </span>
+              <span className={`text-[12px] font-semibold transition-transform duration-300 ${shouldAnimate ? 'animate-zoom-text-once' : ''}`}>
+                {item.name}
+              </span>
             </Link>
           );
         })}
       </div>
-    </div>
+      {/* Safe area spacer for notched devices */}
+      <div className="h-[env(safe-area-inset-bottom)]" />
+    </nav>
   );
 }

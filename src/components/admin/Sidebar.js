@@ -5,101 +5,127 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import {
-    Home, Package, ShoppingCart, Users, Star, Ticket,
-    PictureInPicture, Settings, ChevronDown, List, LayoutGrid, Tags, Palette, Ruler
+    LayoutGrid, Package, FolderTree, Users, ShoppingCart,
+    User, BarChart3, FileText, Ticket, PictureInPicture,
+    FileEdit, Settings, HelpCircle, ChevronDown, ExternalLink, Star, Zap
 } from 'lucide-react';
 
-const navItems = [
-    { label: "QUẢN LÝ NỘI DUNG", isTitle: true },
-    { href: '/admin', icon: <Home size={20} />, label: 'Tổng quan' },
+// Menu structure với 2 section chính
+const menuSections = [
     {
-        icon: <Package size={20} />, label: 'Quản lý sản phẩm',
-        subItems: [
-            { href: '/admin/products', icon: <List size={18} />, label: 'Danh sách sản phẩm' },
-            { href: '/admin/categories', icon: <LayoutGrid size={18} />, label: 'Danh mục' },
+        title: 'TỔNG QUAN',
+        items: [
+            { href: '/admin', icon: LayoutGrid, label: 'Dashboard' },
+            { href: '/admin/products', icon: Package, label: 'Quản lý món' },
+            { href: '/admin/categories', icon: FolderTree, label: 'Danh mục' },
+            { href: '/admin/customers', icon: Users, label: 'Khách hàng' },
+            { href: '/admin/orders', icon: ShoppingCart, label: 'Đơn hàng' },
+            { href: '/admin/reviews', icon: Star, label: 'Đánh giá' },
+            { href: '/admin/statistics', icon: BarChart3, label: 'Thống kê' },
+            { href: '/admin/reports', icon: FileText, label: 'Báo cáo' },
+            { href: '/admin/promotions', icon: Ticket, label: 'Khuyến mãi' },
+            { href: '/admin/flash-sales', icon: Zap, label: 'Flash Sale' },
         ]
     },
-    { href: '/admin/orders', icon: <ShoppingCart size={20} />, label: 'Quản lý đơn hàng' },
     {
-        icon: <Users size={20} />, label: 'Quản lý khách hàng',
-        // --- SỬA LỖI TẠI ĐÂY ---
-        subItems: [
-            { href: '/admin/customers', icon: <List size={18} />, label: 'Danh sách khách hàng' },
-            { href: '#', icon: <Users size={18} />, label: 'Nhóm khách hàng' },
+        title: 'CÀI ĐẶT',
+        items: [
+            { href: '/admin/content', icon: FileEdit, label: 'Nội dung' },
+            { href: '/admin/banners', icon: PictureInPicture, label: 'Banner' },
+            { href: '/admin/settings', icon: Settings, label: 'Cài đặt' },
+            { href: '/admin/help', icon: HelpCircle, label: 'Trợ giúp' },
         ]
-    },
-    { href: '/admin/reviews', icon: <Star size={20} />, label: 'Quản lý đánh giá' },
-    { label: "CÀI ĐẶT WEBSITE", isTitle: true },
-    { href: '/admin/promotions', icon: <Ticket size={20} />, label: 'Quản lý khuyến mãi' },
-    { href: '/admin/banners', icon: <PictureInPicture size={20} />, label: 'Cài đặt Banner' },
-    { href: '/admin/settings', icon: <Settings size={20} />, label: 'Cài đặt chung' },
+    }
 ];
 
-const NavItem = ({ item }) => {
-    const pathname = usePathname();
-    // Logic kiểm tra active cho cả mục cha và mục con
-    const isActive = item.href === pathname || item.subItems?.some(sub => pathname.startsWith(sub.href));
-    const [isOpen, setIsOpen] = useState(isActive);
-
-    const hasSubItems = item.subItems && item.subItems.length > 0;
-
-    if (item.isTitle) {
-        return <h3 className="px-4 pt-4 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">{item.label}</h3>;
-    }
-
-    const effectiveHref = hasSubItems ? '#' : item.href;
-    const LinkComponent = hasSubItems ? 'div' : Link;
+// NavItem component
+const NavItem = ({ item, isActive }) => {
+    const Icon = item.icon;
 
     return (
         <li>
-            <LinkComponent
-                href={effectiveHref}
-                onClick={(e) => {
-                    if (hasSubItems) {
-                        e.preventDefault();
-                        setIsOpen(!isOpen);
+            <Link
+                href={item.href}
+                className={`
+                    flex items-center gap-3 px-4 py-2.5 mx-3 rounded-xl cursor-pointer 
+                    transition-all duration-200 group
+                    ${isActive
+                        ? 'bg-green-50 text-green-600 font-semibold'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }
-                }}
-                className={`flex items-center justify-between p-3 mx-2 rounded-md cursor-pointer transition-colors ${isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'}`}
+                `}
             >
-                <div className="flex items-center gap-3">
-                    {item.icon}
-                    <span className="font-medium">{item.label}</span>
-                </div>
-                {hasSubItems && <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />}
-            </LinkComponent>
-            {hasSubItems && isOpen && (
-                <ul className="pl-8 py-1 space-y-1">
-                    {item.subItems.map(subItem => (
-                        <li key={subItem.href}>
-                            <Link href={subItem.href} className={`flex items-center gap-3 text-sm p-2 rounded-md ${pathname === subItem.href ? 'text-white font-semibold' : 'text-gray-400 hover:text-white'}`}>
-                                {subItem.icon}
-                                <span>{subItem.label}</span>
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
-            )}
+                <Icon
+                    size={20}
+                    className={`transition-colors ${isActive ? 'text-green-600' : 'text-gray-400 group-hover:text-gray-600'}`}
+                />
+                <span className="text-sm">{item.label}</span>
+            </Link>
         </li>
     );
 };
 
+// Section Title
+const SectionTitle = ({ title }) => (
+    <h3 className="px-6 pt-5 pb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+        {title}
+    </h3>
+);
 
 export default function Sidebar() {
+    const pathname = usePathname();
+
+    // Check if item is active
+    const isItemActive = (href) => {
+        if (href === '/admin') {
+            return pathname === '/admin' || pathname === '/dashboard';
+        }
+        return pathname.startsWith(href);
+    };
+
     return (
-        <aside className="w-64 bg-gray-800 text-light flex-col hidden md:flex flex-shrink-0">
-            <div className="h-16 flex items-center justify-center border-b border-gray-700">
-                <h1 className="text-2xl font-bold tracking-widest text-white">ADMIN</h1>
+        <aside className="w-72 h-screen bg-white border-r border-gray-100 flex flex-col hidden md:flex flex-shrink-0 shadow-sm">
+            {/* Logo Header */}
+            <div className="h-16 flex items-center px-6 border-b border-gray-100">
+                <Link href="/admin" className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/30">
+                        <span className="text-white font-bold text-lg">B</span>
+                    </div>
+                    <div>
+                        <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-tight">BÁNH TẦM</h1>
+                        <p className="text-xs text-gray-400 -mt-0.5">CÔ ĐÀO</p>
+                    </div>
+                </Link>
             </div>
-            <nav className="flex-grow pt-2 overflow-y-auto">
-                <ul className="space-y-1">
-                    {navItems.map((item, index) => (
-                        <NavItem key={index} item={item} />
-                    ))}
-                </ul>
+
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto py-2">
+                {menuSections.map((section, sectionIndex) => (
+                    <div key={sectionIndex}>
+                        <SectionTitle title={section.title} />
+                        <ul className="space-y-0.5">
+                            {section.items.map((item) => (
+                                <NavItem
+                                    key={item.href}
+                                    item={item}
+                                    isActive={isItemActive(item.href)}
+                                />
+                            ))}
+                        </ul>
+                    </div>
+                ))}
             </nav>
-            <div className="p-4 text-xs text-center text-gray-500 border-t border-gray-700">
-                Phiên bản V01.25
+
+            {/* Footer - Visit Website */}
+            <div className="p-4 border-t border-gray-100">
+                <Link
+                    href="/"
+                    target="_blank"
+                    className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-all text-sm font-medium"
+                >
+                    <ExternalLink size={16} />
+                    <span>Xem trang chủ</span>
+                </Link>
             </div>
         </aside>
     );

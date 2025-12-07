@@ -1,10 +1,23 @@
-// src/app/sitemap.js
+/**
+ * Sitemap generator
+ * @file src/app/sitemap.js
+ */
 import pool from '@/lib/db';
 
-export default async function sitemap() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3300';
+export const dynamic = 'force-dynamic';
+/** Revalidate every hour */
+export const revalidate = 3600;
 
-  // Static pages
+/**
+ * Generate sitemap
+ * @returns {Promise<Array>} Sitemap entries
+ */
+export default async function sitemap() {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : 'http://localhost:3300';
+
+  /** Static pages */
   const staticPages = [
     {
       url: baseUrl,

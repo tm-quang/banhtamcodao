@@ -1,24 +1,38 @@
-// src/app/api/admin/reviews/[id]/route.js
+/**
+ * src/app/api/admin/reviews/[id]/route.js
+ * API routes cho cập nhật và xóa đánh giá theo ID
+ */
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
 
-// Cập nhật trạng thái (Duyệt/Từ chối)
+/**
+ * Cập nhật trạng thái đánh giá (Duyệt/Từ chối)
+ */
 export async function PUT(request, { params }) {
     try {
         const { id } = params;
         const { status } = await request.json();
 
         if (!['approved', 'rejected', 'pending'].includes(status)) {
-            return NextResponse.json({ success: false, message: 'Trạng thái không hợp lệ.' }, { status: 400 });
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Trạng thái không hợp lệ.' 
+            }, { status: 400 });
         }
 
-        const [result] = await pool.execute(
-            'UPDATE product_reviews SET status = ? WHERE id = ?',
-            [status, id]
-        );
+        const { data, error } = await supabaseAdmin
+            .from('product_reviews')
+            .update({ status })
+            .eq('id', id)
+            .select();
 
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy đánh giá.' }, { status: 404 });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Không tìm thấy đánh giá.' 
+            }, { status: 404 });
         }
 
         return NextResponse.json({ success: true, message: 'Cập nhật trạng thái thành công!' });
@@ -28,14 +42,26 @@ export async function PUT(request, { params }) {
     }
 }
 
-// Xóa một đánh giá
+/**
+ * Xóa một đánh giá
+ */
 export async function DELETE(request, { params }) {
     try {
         const { id } = params;
-        const [result] = await pool.execute('DELETE FROM product_reviews WHERE id = ?', [id]);
+        
+        const { data, error } = await supabaseAdmin
+            .from('product_reviews')
+            .delete()
+            .eq('id', id)
+            .select();
 
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy đánh giá.' }, { status: 404 });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Không tìm thấy đánh giá.' 
+            }, { status: 404 });
         }
 
         return NextResponse.json({ success: true, message: 'Xóa đánh giá thành công!' });

@@ -1,4 +1,7 @@
-// src/app/api/customers/route.js
+/**
+ * Customers API route handler
+ * @file src/app/api/customers/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 

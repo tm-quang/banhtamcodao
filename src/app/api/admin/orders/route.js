@@ -1,11 +1,14 @@
-// src/app/api/admin/orders/route.js
+/**
+ * src/app/api/admin/orders/route.js
+ * API routes cho quản lý đơn hàng
+ */
 import { NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request) {
     try {
         // Lấy thêm các cột mới
-        const { data: rows, error } = await supabase
+        const { data: rows, error } = await supabaseAdmin
             .from('orders')
             .select(`
                 id, 

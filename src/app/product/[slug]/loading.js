@@ -1,4 +1,7 @@
-// src/app/product/[slug]/loading.js
+/**
+ * Product detail loading component
+ * @file src/app/product/[slug]/loading.js
+ */
 import { Skeleton } from '@mui/material';
 import { ChevronRight } from 'lucide-react';
 

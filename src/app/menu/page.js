@@ -1,15 +1,19 @@
-// src/app/menu/page.js
+/**
+ * Menu page component
+ * @file src/app/menu/page.js
+ */
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
-import CategoryTabs from '@/components/CategoryTabs';
+import CategorySlider from '@/components/CategorySlider';
 import HeroSection from '@/components/HeroSection';
 import MenuFilters from '@/components/MenuFilters';
 import { useSearchParams } from 'next/navigation';
+import { Star } from 'lucide-react';
 
-// Lazy load ProductCard để tối ưu hiệu suất
+/** Lazy load ProductCard để tối ưu hiệu suất */
 const ProductCard = dynamic(() => import('@/components/ProductCard'), {
   loading: () => <ProductCardSkeleton />,
   ssr: true
@@ -36,7 +40,7 @@ async function getProducts(filters = {}) {
 }
 
 
-// Loading component
+/** Loading component */
 function MenuLoading() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -51,7 +55,7 @@ export default function MenuPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Tất cả');
   const [filters, setFilters] = useState({});
   const searchParams = useSearchParams();
 
@@ -82,14 +86,35 @@ export default function MenuPage() {
     loadCategories();
   }, []);
 
-  // Load products with category filter and other filters
+  /**
+   * Map category names to category IDs for API calls
+   */
+  const categoryNameToIdMap = useMemo(() => {
+    const map = { 'Tất cả': '' };
+    categories.forEach(cat => {
+      map[cat.name] = cat.id.toString();
+    });
+    return map;
+  }, [categories]);
+
+  /**
+   * Get category names for CategorySlider
+   */
+  const categoryNames = useMemo(() => {
+    return ['Tất cả', ...categories.map(cat => cat.name)];
+  }, [categories]);
+
+  /**
+   * Load products with category filter and other filters
+   */
   useEffect(() => {
     const loadProducts = async () => {
       setLoading(true);
       try {
         const search = searchParams.get('search');
+        const categoryId = categoryNameToIdMap[activeCategory] || '';
         const allFilters = { 
-          category: activeCategory,
+          category: categoryId,
           ...filters 
         };
         if (search) allFilters.search = search;
@@ -105,10 +130,10 @@ export default function MenuPage() {
     };
 
     loadProducts();
-  }, [activeCategory, filters, searchParams]);
+  }, [activeCategory, filters, searchParams, categoryNameToIdMap]);
 
-  const handleCategoryChange = (categoryId) => {
-    setActiveCategory(categoryId || '');
+  const handleCategoryChange = (categoryName) => {
+    setActiveCategory(categoryName || 'Tất cả');
   };
 
   const handleFiltersChange = (newFilters) => {
@@ -153,25 +178,26 @@ export default function MenuPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 mt-6">
-        <div className="text-center mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1 text-xs font-semibold tracking-[0.2em] uppercase text-primary bg-primary/10 rounded-full">
-            Gợi ý hôm nay
+      <div className="max-w-[1200px] mx-auto px-4 mt-6">
+        <div className="text-center mb-8 md:mb-12">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold tracking-widest uppercase text-[#FF6F30] bg-[#FF6F30]/10 rounded-full">
+            <Star className="w-3 h-3 fill-current" />
+            GỢI Ý HÔM NAY
+            <Star className="w-3 h-3 fill-current" />
           </span>
-          <h1 className="mt-3 text-4xl sm:text-5xl font-lobster text-secondary drop-shadow-sm">
+          <h1 className="mt-2 text-4xl md:text-5xl font-lobster text-[#222629]">
             Thực đơn của chúng tôi
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-500 max-w-2xl mx-auto">
-            Khám phá thực đơn đa dạng với nguyên liệu tươi mới và món ngon chuẩn vị miền Tây.
-          </p>
         </div>
 
-        {/* Category Tabs */}
-        <CategoryTabs 
-          categories={categories}
-          activeCategory={activeCategory}
-          onCategoryChange={handleCategoryChange}
-        />
+        {/* Category Slider */}
+        <div className="-mx-4 md:mx-0">
+          <CategorySlider 
+            categories={categoryNames}
+            activeCategory={activeCategory}
+            onSelectCategory={handleCategoryChange}
+          />
+        </div>
 
         {/* Filters */}
         <div className="flex justify-end mb-6">

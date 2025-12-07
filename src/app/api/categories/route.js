@@ -1,8 +1,14 @@
-// src/app/api/categories/route.js
+/**
+ * Categories API route handler
+ * @file src/app/api/categories/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 
-// Lấy tất cả danh mục cho frontend
+/**
+ * Lấy tất cả danh mục cho frontend
+ * @returns {Promise<NextResponse>} Response with categories
+ */
 export async function GET() {
     try {
         const { data: rows, error } = await supabase
@@ -14,7 +20,7 @@ export async function GET() {
             throw error;
         }
 
-        // Xử lý encoding và format dữ liệu
+        /** Xử lý encoding và format dữ liệu */
         const categories = rows.map(row => ({
             id: row.id,
             name: row.name || 'Danh mục',

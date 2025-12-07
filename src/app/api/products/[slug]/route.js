@@ -1,13 +1,22 @@
-// src/app/api/products/[slug]/route.js
+/**
+ * Product by slug API route handler
+ * @file src/app/api/products/[slug]/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 
+/**
+ * GET product by slug
+ * @param {Request} request - Request object
+ * @param {Object} params - Route parameters
+ * @returns {Promise<NextResponse>} Response with product data
+ */
 export async function GET(request, { params }) {
   const resolvedParams = await params;
   const { slug } = resolvedParams;
 
   try {
-    // Fetch product by slug
+    /** Fetch product by slug */
     const { data: product, error: productError } = await supabase
       .from('products')
       .select('*, categories(name)')

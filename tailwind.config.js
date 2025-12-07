@@ -27,6 +27,9 @@ module.exports = {
           xl: '1200px',
         },
       },
+      spacing: {
+        'safe': 'env(safe-area-inset-bottom, 0px)',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.5s ease-out',
@@ -34,6 +37,7 @@ module.exports = {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'wishlist-bounce': 'wishlistBounce 0.6s ease-out',
         'shimmer': 'shimmer 2s infinite',
+        'spin-slow': 'spin 20s linear infinite',
       },
       keyframes: {
         fadeIn: {

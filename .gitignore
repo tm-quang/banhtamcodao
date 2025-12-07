@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# ===========================================
+# DEPENDENCIES
+# ===========================================
 /node_modules
 /.pnp
 .pnp.*
@@ -10,46 +12,54 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# ===========================================
+# TESTING & COVERAGE
+# ===========================================
 /coverage
+.nyc_output
 
-# next.js
+# ===========================================
+# NEXT.JS & VERCEL
+# ===========================================
 /.next/
 /out/
-
-# production
 /build
+.vercel
 
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
+# ===========================================
+# ENVIRONMENT FILES (SENSITIVE!)
+# ===========================================
+# All env files (contains API keys, secrets)
+.env
+.env.*
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 
-# SQL files (database dumps, migrations with sensitive data)
-*.sql
+# Vercel-specific environment files
+.env.vercel
 
-# Batch files (development scripts)
-*.bat
+# Allow template files for developers
+!.env.example
+!.env.template
+!env.example
 
-# Sensitive files
+# ===========================================
+# SENSITIVE FILES & SECRETS
+# ===========================================
+# SSL/TLS Certificates
 *.key
 *.pem
 *.p12
 *.pfx
 *.crt
 *.cer
+
+# API Keys & Credentials
 secrets.json
 secrets.yaml
 secrets.yml
@@ -57,17 +67,49 @@ config.local.*
 credentials.json
 service-account*.json
 *-credentials.json
+google-*.json
+firebase-*.json
 
-# Logs with sensitive data
+# ===========================================
+# DATABASE & MIGRATIONS
+# ===========================================
+# SQL files (may contain sensitive data)
+*.sql
+migration_results.json
+
+# ===========================================
+# LOGS
+# ===========================================
 *.log
 logs/
 *.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# vercel
-.vercel
+# ===========================================
+# IDE & EDITOR
+# ===========================================
+.idea/
+.vscode/settings.json
+*.sublime-workspace
 
-# typescript
+# ===========================================
+# OS-SPECIFIC
+# ===========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===========================================
+# DEVELOPMENT SCRIPTS (may contain paths)
+# ===========================================
+*.bat
+Tool/
+
+# ===========================================
+# TYPESCRIPT
+# ===========================================
 *.tsbuildinfo
 next-env.d.ts
-
-.vercel

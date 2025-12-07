@@ -1,4 +1,7 @@
-// src/app/account/rewards/page.js
+/**
+ * Account rewards page component
+ * @file src/app/account/rewards/page.js
+ */
 'use client';
 import { useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';

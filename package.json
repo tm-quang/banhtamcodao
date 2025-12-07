@@ -8,7 +8,8 @@
     "build:turbo": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "build:github": "next build"
+    "build:github": "next build",
+    "check-env": "node check-env.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -25,7 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
     "mysql2": "^3.15.1",
-    "next": "15.5.4",
+    "next": "16.0.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-icons": "^5.5.0",
@@ -36,7 +37,7 @@
     "@tailwindcss/postcss": "^4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9",
-    "eslint-config-next": "15.5.4",
+    "eslint-config-next": "16.0.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.14"
   }

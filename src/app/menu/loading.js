@@ -1,4 +1,7 @@
-// src/app/menu/loading.js
+/**
+ * Menu page loading component
+ * @file src/app/menu/loading.js
+ */
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 
 export default function MenuLoading() {

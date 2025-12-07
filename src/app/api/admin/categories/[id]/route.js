@@ -1,21 +1,33 @@
-// src/app/api/admin/categories/[id]/route.js
+/**
+ * src/app/api/admin/categories/[id]/route.js
+ * API routes cho cập nhật và xóa danh mục theo ID
+ */
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
 
-// HÀM PUT - Cập nhật danh mục
+/**
+ * Cập nhật danh mục
+ */
 export async function PUT(request, { params }) {
     try {
         const { id } = params;
-        const { name, slug, parent_id } = await request.json();
+        const { name, slug, parent_id, status } = await request.json();
 
         if (!name) {
             return NextResponse.json({ success: false, message: 'Tên danh mục là bắt buộc.' }, { status: 400 });
         }
 
-        await pool.execute(
-            'UPDATE categories SET name = ?, slug = ?, parent_id = ? WHERE id = ?',
-            [name, slug || null, parent_id || null, id]
-        );
+        const { error } = await supabaseAdmin
+            .from('categories')
+            .update({
+                name,
+                slug: slug || null,
+                parent_id: parent_id || null,
+                status: status || 'active'
+            })
+            .eq('id', id);
+
+        if (error) throw error;
 
         return NextResponse.json({ success: true, message: 'Cập nhật danh mục thành công!' });
 
@@ -25,11 +37,20 @@ export async function PUT(request, { params }) {
     }
 }
 
-// HÀM DELETE - Xóa danh mục
+/**
+ * Xóa danh mục
+ */
 export async function DELETE(request, { params }) {
     try {
         const { id } = params;
-        await pool.execute('DELETE FROM categories WHERE id = ?', [id]);
+        
+        const { error } = await supabaseAdmin
+            .from('categories')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
         return NextResponse.json({ success: true, message: 'Xóa danh mục thành công!' });
     } catch (error) {
         console.error('API Error - DELETE /api/admin/categories/[id]:', error);

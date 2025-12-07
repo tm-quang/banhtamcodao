@@ -1,12 +1,33 @@
+/**
+ * src/app/api/admin/health/route.js
+ * API route để kiểm tra kết nối database
+ */
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
 
+/**
+ * Kiểm tra kết nối Supabase
+ */
 export async function GET() {
     try {
-        const [rows] = await pool.query('SELECT 1 AS ok');
-        return NextResponse.json({ success: true, db: rows[0]?.ok === 1 });
+        /**
+         * Thực hiện query đơn giản để kiểm tra kết nối
+         */
+        const { error } = await supabaseAdmin
+            .from('categories')
+            .select('id')
+            .limit(1);
+
+        if (error) throw error;
+
+        return NextResponse.json({ success: true, db: true });
     } catch (error) {
-        return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+        console.error('Health check error:', error);
+        return NextResponse.json({ 
+            success: false, 
+            message: error.message,
+            db: false 
+        }, { status: 500 });
     }
 }
 

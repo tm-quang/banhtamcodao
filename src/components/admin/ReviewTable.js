@@ -1,47 +1,77 @@
 // src/components/admin/ReviewTable.js
 'use client';
 import React, { useState, useMemo } from 'react';
-import { Box, Paper, Typography, Chip, IconButton, TextField, MenuItem, Rating, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
+import {
+    Box, Paper, Typography, Chip, IconButton, TextField, MenuItem, Rating,
+    Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button,
+    alpha, InputAdornment, Tooltip, Stack
+} from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, Search, Star, X, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/context/ToastContext';
 
-// --- COMPONENT MỚI: DIALOG XÁC NHẬN ---
+// Stats Badge Component
+const StatBadge = ({ label, value, color }) => (
+    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${color}`}>
+        <span className="text-sm font-bold">{value}</span>
+        <span className="text-xs opacity-80">{label}</span>
+    </div>
+);
+
+// Confirmation Dialog
 const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => (
-    <Dialog open={open} onClose={onClose} maxWidth="xs">
-        <DialogTitle>{title}</DialogTitle>
+    <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+    >
+        <DialogTitle sx={{ fontWeight: 600 }}>{title}</DialogTitle>
         <DialogContent><DialogContentText>{message}</DialogContentText></DialogContent>
-        <DialogActions>
-            <Button onClick={onClose}>Hủy</Button>
-            <Button onClick={onConfirm} color="primary" variant="contained">Xác nhận</Button>
+        <DialogActions sx={{ p: 2.5, pt: 0 }}>
+            <Button onClick={onClose} variant="outlined" sx={{ borderRadius: 2 }}>Hủy</Button>
+            <Button onClick={onConfirm} variant="contained" sx={{ borderRadius: 2 }}>Xác nhận</Button>
         </DialogActions>
     </Dialog>
 );
 
 const getStatusChip = (status) => {
     const statusMap = {
-        pending: { label: 'Chờ duyệt', color: 'warning' },
-        approved: { label: 'Đã duyệt', color: 'success' },
-        rejected: { label: 'Đã từ chối', color: 'error' },
+        pending: { label: 'Chờ duyệt', color: '#f59e0b', bg: alpha('#f59e0b', 0.1) },
+        approved: { label: 'Đã duyệt', color: '#10b981', bg: alpha('#10b981', 0.1) },
+        rejected: { label: 'Từ chối', color: '#ef4444', bg: alpha('#ef4444', 0.1) },
     };
-    const { label, color } = statusMap[status] || { label: status, color: 'default' };
-    return <Chip label={label} color={color} size="small" />;
+    const { label, color, bg } = statusMap[status] || { label: status, color: '#6b7280', bg: alpha('#6b7280', 0.1) };
+    return (
+        <Chip
+            label={label}
+            size="small"
+            sx={{
+                bgcolor: bg,
+                color: color,
+                fontWeight: 600,
+                fontSize: '0.7rem',
+            }}
+        />
+    );
 };
 
 export default function ReviewTable({ initialReviews }) {
     const [reviews, setReviews] = useState(initialReviews);
-    const [filters, setFilters] = useState({ searchTerm: '', status: '' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const { showToast } = useToast();
-    // State mới để quản lý dialog
-    const [confirm, setConfirm] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+    const [confirm, setConfirm] = useState({ isOpen: false, title: '', message: '', onConfirm: () => { } });
 
-    const handleFilterChange = (key, value) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
-    };
+    // Stats
+    const stats = useMemo(() => ({
+        total: reviews.length,
+        pending: reviews.filter(r => r.status === 'pending').length,
+        approved: reviews.filter(r => r.status === 'approved').length,
+    }), [reviews]);
 
     const handleUpdateStatus = (id, status) => {
-        // Mở dialog thay vì gọi confirm()
         setConfirm({
             isOpen: true,
             title: 'Xác nhận hành động',
@@ -58,13 +88,12 @@ export default function ReviewTable({ initialReviews }) {
                 } else {
                     showToast('Cập nhật thất bại!', 'error');
                 }
-                setConfirm({ isOpen: false }); // Đóng dialog sau khi thực hiện
+                setConfirm({ isOpen: false });
             }
         });
     };
 
     const handleDelete = (id) => {
-        // Mở dialog thay vì gọi confirm()
         setConfirm({
             isOpen: true,
             title: 'Xác nhận xóa',
@@ -77,82 +106,279 @@ export default function ReviewTable({ initialReviews }) {
                 } else {
                     showToast('Xóa thất bại!', 'error');
                 }
-                setConfirm({ isOpen: false }); // Đóng dialog
+                setConfirm({ isOpen: false });
             }
         });
     };
 
     const filteredReviews = useMemo(() => {
+        const search = searchTerm.toLowerCase();
         return reviews.filter(review => {
-            const searchTerm = filters.searchTerm.toLowerCase();
-            const searchMatch = !searchTerm ||
-                (review.product_name && review.product_name.toLowerCase().includes(searchTerm)) ||
-                (review.customer_name && review.customer_name.toLowerCase().includes(searchTerm)) ||
-                (review.comment && review.comment.toLowerCase().includes(searchTerm));
-            const statusMatch = !filters.status || review.status === filters.status;
+            const searchMatch = !search ||
+                (review.product_name && review.product_name.toLowerCase().includes(search)) ||
+                (review.customer_name && review.customer_name.toLowerCase().includes(search)) ||
+                (review.comment && review.comment.toLowerCase().includes(search));
+            const statusMatch = !statusFilter || review.status === statusFilter;
             return searchMatch && statusMatch;
         });
-    }, [reviews, filters]);
+    }, [reviews, searchTerm, statusFilter]);
 
     const columns = [
-        { field: 'id', headerName: 'ID', width: 70 },
-        { field: 'product_name', headerName: 'Sản phẩm', flex: 1, minWidth: 200 },
-        { field: 'customer_name', headerName: 'Khách hàng', width: 150 },
-        { field: 'rating', headerName: 'Đánh giá', width: 150, renderCell: (params) => <Rating value={params.value} readOnly /> },
-        { field: 'comment', headerName: 'Nội dung', flex: 2, minWidth: 250 },
-        { field: 'status', headerName: 'Trạng thái', width: 150, renderCell: (params) => getStatusChip(params.value) },
-        { field: 'created_at', headerName: 'Ngày gửi', width: 150, valueFormatter: (value) => value ? format(new Date(value), 'dd/MM/yyyy HH:mm') : '' },
         {
-            field: 'actions', headerName: 'Hành động', width: 150, align: 'center', sortable: false,
+            field: 'product_name',
+            headerName: 'Sản phẩm',
+            flex: 1,
+            minWidth: 180,
             renderCell: (params) => (
-                <Box>
+                <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                    {params.value}
+                </Typography>
+            )
+        },
+        {
+            field: 'customer_name',
+            headerName: 'Khách hàng',
+            width: 140,
+            renderCell: (params) => (
+                <span className="text-sm text-gray-700">{params.value}</span>
+            )
+        },
+        {
+            field: 'rating',
+            headerName: 'Đánh giá',
+            width: 130,
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Rating value={params.value} readOnly size="small" />
+                    <span className="text-xs text-gray-500">({params.value})</span>
+                </Box>
+            )
+        },
+        {
+            field: 'comment',
+            headerName: 'Nội dung',
+            flex: 2,
+            minWidth: 200,
+            renderCell: (params) => (
+                <Typography
+                    sx={{
+                        fontSize: '0.8rem',
+                        color: 'text.secondary',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    {params.value}
+                </Typography>
+            )
+        },
+        {
+            field: 'status',
+            headerName: 'Trạng thái',
+            width: 110,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => getStatusChip(params.value)
+        },
+        {
+            field: 'created_at',
+            headerName: 'Ngày gửi',
+            width: 100,
+            renderCell: (params) => (
+                <span className="text-xs text-gray-500">
+                    {params.value ? format(new Date(params.value), 'dd/MM/yy') : ''}
+                </span>
+            )
+        },
+        {
+            field: 'actions',
+            headerName: '',
+            width: 110,
+            align: 'center',
+            sortable: false,
+            renderCell: (params) => (
+                <Stack direction="row" spacing={0.5}>
                     {params.row.status !== 'approved' && (
-                        <IconButton size="small" color="success" onClick={() => handleUpdateStatus(params.row.id, 'approved')} title="Duyệt">
-                            <CheckCircle size={18} />
-                        </IconButton>
+                        <Tooltip title="Duyệt" arrow>
+                            <IconButton
+                                size="small"
+                                onClick={() => handleUpdateStatus(params.row.id, 'approved')}
+                                sx={{ color: '#10b981', '&:hover': { bgcolor: alpha('#10b981', 0.1) } }}
+                            >
+                                <CheckCircle size={16} />
+                            </IconButton>
+                        </Tooltip>
                     )}
                     {params.row.status !== 'rejected' && (
-                         <IconButton size="small" color="warning" onClick={() => handleUpdateStatus(params.row.id, 'rejected')} title="Từ chối">
-                            <XCircle size={18} />
-                        </IconButton>
+                        <Tooltip title="Từ chối" arrow>
+                            <IconButton
+                                size="small"
+                                onClick={() => handleUpdateStatus(params.row.id, 'rejected')}
+                                sx={{ color: '#f59e0b', '&:hover': { bgcolor: alpha('#f59e0b', 0.1) } }}
+                            >
+                                <XCircle size={16} />
+                            </IconButton>
+                        </Tooltip>
                     )}
-                    <IconButton size="small" color="error" onClick={() => handleDelete(params.row.id)} title="Xóa">
-                        <Trash2 size={18} />
-                    </IconButton>
-                </Box>
+                    <Tooltip title="Xóa" arrow>
+                        <IconButton
+                            size="small"
+                            onClick={() => handleDelete(params.row.id)}
+                            sx={{ color: '#ef4444', '&:hover': { bgcolor: alpha('#ef4444', 0.1) } }}
+                        >
+                            <Trash2 size={16} />
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
             )
         },
     ];
 
+    const hasFilters = searchTerm || statusFilter;
+
     return (
-        <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
-                    Quản lý Đánh giá
-                </Typography>
-            </Box>
-            <Paper sx={{ p: 2, mb: 2, display: 'flex', flexWrap: 'wrap', gap: 2, bgcolor: 'background.default' }}>
-                <TextField variant="outlined" size="small" placeholder="Tìm theo sản phẩm, khách hàng, nội dung..." onChange={(e) => handleFilterChange('searchTerm', e.target.value)} sx={{ flexGrow: 1, minWidth: 250, bgcolor: 'white' }} />
-                <TextField select variant="outlined" size="small" value={filters.status} onChange={(e) => handleFilterChange('status', e.target.value)} SelectProps={{ displayEmpty: true }} sx={{ minWidth: 180, bgcolor: 'white' }}>
-                    <MenuItem value=""><em>Tất cả trạng thái</em></MenuItem>
-                    <MenuItem value="pending">Chờ duyệt</MenuItem>
-                    <MenuItem value="approved">Đã duyệt</MenuItem>
-                    <MenuItem value="rejected">Đã từ chối</MenuItem>
-                </TextField>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Compact Header */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-xl font-bold text-gray-900">Đánh giá</h1>
+                    <span className="text-sm text-gray-500">({stats.total} đánh giá)</span>
+                </div>
+            </div>
+
+            {/* Filter & Stats Row */}
+            <Paper
+                elevation={0}
+                sx={{
+                    p: 2,
+                    mb: 2,
+                    borderRadius: 2,
+                    bgcolor: '#f8fafc',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                }}
+            >
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Stats */}
+                    <div className="flex items-center gap-2 mr-2">
+                        <StatBadge label="Chờ duyệt" value={stats.pending} color="bg-amber-100 text-amber-700" />
+                        <StatBadge label="Đã duyệt" value={stats.approved} color="bg-green-100 text-green-700" />
+                    </div>
+
+                    <div className="h-6 w-px bg-gray-300 hidden md:block" />
+
+                    {/* Search */}
+                    <TextField
+                        variant="outlined"
+                        size="small"
+                        placeholder="Tìm kiếm..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <Search size={16} className="text-gray-400" />
+                                </InputAdornment>
+                            ),
+                        }}
+                        sx={{
+                            width: 180,
+                            '& .MuiOutlinedInput-root': {
+                                bgcolor: 'white',
+                                borderRadius: 1.5,
+                                fontSize: '0.875rem',
+                            }
+                        }}
+                    />
+
+                    {/* Status Filter */}
+                    <TextField
+                        select
+                        variant="outlined"
+                        size="small"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        sx={{
+                            width: 130,
+                            '& .MuiOutlinedInput-root': {
+                                bgcolor: 'white',
+                                borderRadius: 1.5,
+                                fontSize: '0.8rem',
+                            }
+                        }}
+                    >
+                        <MenuItem value="">Tất cả</MenuItem>
+                        <MenuItem value="pending">Chờ duyệt</MenuItem>
+                        <MenuItem value="approved">Đã duyệt</MenuItem>
+                        <MenuItem value="rejected">Từ chối</MenuItem>
+                    </TextField>
+
+                    {hasFilters && (
+                        <Button
+                            size="small"
+                            startIcon={<X size={14} />}
+                            onClick={() => { setSearchTerm(''); setStatusFilter(''); }}
+                            sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.8rem' }}
+                        >
+                            Xóa lọc
+                        </Button>
+                    )}
+                </div>
             </Paper>
-            <Paper sx={{ height: '75vh', width: '100%' }}>
+
+            {/* Data Table */}
+            <Paper
+                elevation={0}
+                sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    overflow: 'hidden',
+                    '& .MuiDataGrid-root': { border: 'none' },
+                    '& .MuiDataGrid-columnHeaders': {
+                        bgcolor: '#f8fafc',
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                    },
+                    '& .MuiDataGrid-columnHeader': {
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        color: 'text.secondary',
+                    },
+                    '& .MuiDataGrid-row': {
+                        '&:hover': { bgcolor: alpha('#f59e0b', 0.04) }
+                    },
+                    '& .MuiDataGrid-cell': {
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderBottom: '1px solid',
+                        borderColor: alpha('#000', 0.05),
+                    },
+                }}
+            >
                 <DataGrid
                     rows={filteredReviews}
                     columns={columns}
-                    checkboxSelection
+                    rowHeight={60}
                     disableRowSelectionOnClick
-                    sx={{
-                        border: 0,
-                        '& .MuiDataGrid-columnHeaders': { backgroundColor: '#f8fafc' },
+                    pageSizeOptions={[10, 25, 50]}
+                    initialState={{
+                        pagination: { paginationModel: { pageSize: 25 } },
+                        sorting: { sortModel: [{ field: 'created_at', sort: 'desc' }] },
+                    }}
+                    localeText={{
+                        noRowsLabel: 'Không có đánh giá nào',
+                        MuiTablePagination: {
+                            labelRowsPerPage: 'Hiển thị:',
+                            labelDisplayedRows: ({ from, to, count }) => `${from}-${to} / ${count}`,
+                        }
                     }}
                 />
             </Paper>
-            {/* Thêm Dialog vào cuối */}
+
             <ConfirmationDialog
                 open={confirm.isOpen}
                 onClose={() => setConfirm({ isOpen: false })}

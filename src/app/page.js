@@ -1,14 +1,19 @@
-// src/app/page.js
+/**
+ * Home page component
+ * @file src/app/page.js
+ */
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import HeroSection from '@/components/HeroSection';
 import Features from '@/components/Features';
 import CallToAction from '@/components/CallToAction';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
-import AboutSection from '@/components/AboutSection'; // New component
-import Testimonials from '@/components/Testimonials'; // New component
+import AboutSection from '@/components/AboutSection';
+import Testimonials from '@/components/Testimonials';
+import PromotionSection from '@/components/PromotionSection';
+import CategoryHighlights from '@/components/CategoryHighlights';
 
-// Lazy load các component nặng
+/** Lazy load các component nặng */
 const FeaturedSlider = dynamic(() => import('@/components/FeaturedSlider'), {
   loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />,
   ssr: true
@@ -19,8 +24,23 @@ const MenuSection = dynamic(() => import('@/components/MenuSection'), {
   ssr: true
 });
 
+/**
+ * Helper function để lấy base URL
+ * @returns {string} Base URL của API
+ */
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3300';
+}
+
 async function getFeaturedProducts() {
-  const res = await fetch('http://localhost:3300/api/products/featured', {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/products/featured`, {
     cache: 'no-store',
     next: { revalidate: 300 } // Revalidate every 5 minutes
   });
@@ -29,9 +49,13 @@ async function getFeaturedProducts() {
   return data.products || [];
 }
 
-// Hàm mới để lấy tất cả sản phẩm
+/**
+ * Hàm mới để lấy tất cả sản phẩm
+ * @returns {Promise<Array>} Danh sách tất cả sản phẩm
+ */
 async function getAllProducts() {
-  const res = await fetch('http://localhost:3300/api/products', {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/products`, {
     cache: 'no-store',
     next: { revalidate: 300 } // Revalidate every 5 minutes
   });
@@ -41,7 +65,8 @@ async function getAllProducts() {
 }
 
 async function getCategories() {
-  const res = await fetch('http://localhost:3300/api/categories', {
+  const baseUrl = getBaseUrl();
+  const res = await fetch(`${baseUrl}/api/categories`, {
     cache: 'no-store',
     next: { revalidate: 300 }
   });
@@ -71,14 +96,14 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  // Lấy đồng thời 2 loại dữ liệu
+  /** Lấy đồng thời 2 loại dữ liệu */
   const [featuredProducts, allProducts, categories] = await Promise.all([
     getFeaturedProducts(),
     getAllProducts(),
     getCategories()
   ]);
 
-  // JSON-LD Structured Data
+  /** JSON-LD Structured Data */
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
@@ -133,11 +158,21 @@ export default async function HomePage() {
         <Features />
       </AnimateOnScroll>
 
-      {/* About Section - NEW */}
+      {/* Promotion Section */}
+      <AnimateOnScroll>
+        <PromotionSection />
+      </AnimateOnScroll>
+
+      {/* Category Highlights */}
+      <AnimateOnScroll>
+        <CategoryHighlights />
+      </AnimateOnScroll>
+
+      {/* About Section */}
       <AboutSection />
 
-      {/* Section Món Nổi Bật (Slider) */}
-      <section className="py-10 md:py-16" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>
+      {/* Section Món Nổi Bật (Slider) - Commented out for now */}
+      {/* <section className="py-10 md:py-16" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
             <span className="text-primary font-bold tracking-wider uppercase text-xs md:text-sm">Được yêu thích nhất</span>
@@ -149,12 +184,30 @@ export default async function HomePage() {
             )}
           </Suspense>
         </div>
-      </section>
+      </section> */}
 
       {/* Section Thực Đơn Mới */}
-      <section className="py-10 md:py-16" aria-label="Thực đơn" style={{ backgroundColor: '#F0F2F5' }}>
-        <div className="container mx-auto px-4">
-          <Suspense fallback={<div className="h-96 bg-gray-100 animate-pulse rounded-lg" />}>
+      <section className="relative py-10 md:py-16 overflow-hidden" aria-label="Thực đơn">
+        <div className="max-w-[1200px] mx-auto px-4">
+          <Suspense fallback={
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-md p-4">
+                  <div className="relative overflow-hidden rounded-lg bg-gray-200 aspect-[4/3] mb-3">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer"></div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-5 bg-gray-200 rounded w-3/4 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer"></div>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent animate-shimmer"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          }>
             {allProducts.length > 0 ? (
               <MenuSection products={allProducts} categoriesList={categories} />
             ) : (

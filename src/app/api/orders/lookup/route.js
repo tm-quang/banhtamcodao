@@ -1,4 +1,7 @@
-// src/app/api/orders/lookup/route.js
+/**
+ * Order lookup API route handler
+ * @file src/app/api/orders/lookup/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 

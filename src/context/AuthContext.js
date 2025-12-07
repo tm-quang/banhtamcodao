@@ -16,8 +16,12 @@ export const AuthProvider = ({ children }) => {
                     const data = await res.json();
                     setUser(data.user);
                 }
+                // 401 is expected when user is not logged in - no need to log error
             } catch (error) {
-                console.error("Failed to fetch user:", error);
+                // Only log actual network errors, not authorization failures
+                if (error.name !== 'AbortError') {
+                    console.error("Network error fetching user:", error);
+                }
             } finally {
                 setLoading(false);
             }

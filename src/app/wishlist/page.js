@@ -1,4 +1,7 @@
-// src/app/wishlist/page.js
+/**
+ * Wishlist page component
+ * @file src/app/wishlist/page.js
+ */
 'use client';
 
 import { useWishlist } from '@/context/WishlistContext';
@@ -11,7 +14,7 @@ export default function WishlistPage() {
 
   if (!isLoaded) {
     return (
-      <div className="container mx-auto px-4 pt-24 pb-8">
+      <div className="max-w-[1200px] mx-auto px-4 pt-24 pb-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-8"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -25,7 +28,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 pt-24 pb-8">
+    <div className="max-w-[1200px] mx-auto px-4 pt-24 pb-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-lobster text-primary dark:text-primary">
           Danh sách yêu thích

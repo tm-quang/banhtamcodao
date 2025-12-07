@@ -1,75 +1,80 @@
 // src/components/ProductCard.js
-'use client'; // Thêm 'use client' để sử dụng hook
+'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
-import { Plus } from 'lucide-react';
-import { useCart } from '@/context/CartContext'; // Import useCart
-import WishlistButton from './WishlistButton';
+import { ShoppingCart } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 
+/**
+ * Format currency to Vietnamese Dong
+ */
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 };
 
+/**
+ * ProductCard component - Hiển thị thẻ món ăn với ảnh, tên, giá và nút đặt món
+ */
 export default function ProductCard({ product }) {
-  const { addToCart } = useCart(); // Lấy hàm addToCart từ context
+  const { addToCart } = useCart();
   const hasDiscount = product.discount_price && product.discount_price < product.price;
 
-  // Hàm xử lý việc thêm vào giỏ hàng
+  /**
+   * Handle add to cart
+   */
   const handleAddToCart = (e) => {
-    e.stopPropagation(); // Ngăn không cho điều hướng đến trang chi tiết sản phẩm
     e.preventDefault();
-    addToCart(product, 1); // Thêm 1 sản phẩm vào giỏ
+    e.stopPropagation();
+    addToCart(product, 1);
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden group transition-all duration-300 hover:-translate-y-2 flex flex-col relative h-full product-card-shadow">
-      <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative w-full aspect-square rounded-t-3xl overflow-hidden">
-          <Image
-            src={product.image_url || '/placeholder.jpg'}
-            alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-110"
-          />
-          {/* Wishlist Button */}
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <WishlistButton product={product} size="small" />
-          </div>
-        </div>
+    <div className="bg-white rounded-2xl md:rounded-3xl overflow-hidden group transition-all duration-300 hover:-translate-y-1 flex flex-col h-full shadow-xl hover:shadow-md">
+      {/* Ảnh */}
+      <Link href={`/product/${product.slug}`} className="block flex-shrink-0 w-full relative overflow-hidden aspect-square">
+        <img
+          src={product.image_url || '/placeholder.jpg'}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
       </Link>
 
-      <div className="flex-grow px-3 md:px-4 pt-3 md:pt-4">
-        <h3 className="text-base md:text-xl font-bold text-secondary line-clamp-2 min-h-[44px]">
+      {/* Nội dung */}
+      <div className="p-4 flex flex-col flex-grow">
+        {/* Tên món */}
+        <h3 className="text-lg md:text-2xl font-bold text-gray-900 line-clamp-2 mb-2 leading-snug min-h-[2.5rem] md:min-h-[3.5rem]">
           <Link href={`/product/${product.slug}`} className="hover:text-primary transition-colors">
             {product.name}
           </Link>
         </h3>
-        <p className="hidden md:block text-base text-gray-400 mt-1">{product.category_name}</p>
-      </div>
 
-      <div className="px-3 md:px-4 pb-3 md:pb-4 mt-3 md:mt-6 min-h-[48px]">
-        <div className="flex flex-col">
-          <span className={`${hasDiscount ? 'text-sm md:text-sm text-gray-400 line-through' : 'text-xs md:text-sm opacity-0 select-none'}`}>
-            {formatCurrency(product.price)}
-          </span>
-          <p className={`text-xl md:text-xl font-bold ${hasDiscount ? 'text-primary' : 'text-secondary'}`}>
-            {formatCurrency(hasDiscount ? product.discount_price : product.price)}
-          </p>
-        </div>
-      </div>
+        {/* Giá và Button */}
+        <div className="mt-auto flex flex-col gap-2">
+          <div className="flex flex-col">
+            {hasDiscount ? (
+              <span className="text-base md:text-lg text-gray-500 line-through">
+                {formatCurrency(product.price)}
+              </span>
+            ) : (
+              /**
+               * Placeholder để giữ layout không bị giật khi không có giảm giá
+               */
+              <span className="text-xs md:text-sm opacity-0 select-none">
+                &nbsp;
+              </span>
+            )}
+            <span className={`text-xl md:text-3xl font-bold ${hasDiscount ? 'text-[#FF5B24]' : 'text-gray-900'}`}>
+              {formatCurrency(hasDiscount ? (product.discount_price || 0) : product.price)}
+            </span>
+          </div>
 
-      {/* Cập nhật nút bấm với hiệu ứng nền lõm và icon nổi */}
-      <div className="absolute bottom-3 right-3 md:bottom-4 md:right-4">
-        <div className="relative w-10 h-10 md:w-14 md:h-14 rounded-full add-to-cart-button-wrapper flex items-center justify-center">
           <button
             onClick={handleAddToCart}
-            className="bg-transparent text-primary rounded-full w-9 h-9 md:w-12 md:h-12 flex items-center justify-center hover:text-orange-600 transition-all duration-300 add-to-cart-button"
-            aria-label={`Thêm ${product.name} vào giỏ hàng`}
+            className="w-full mt-1 cursor-pointer py-3 px-3 rounded-3xl bg-primary text-white text-sm md:text-base font-semibold hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+            aria-label={`Đặt món ${product.name}`}
           >
-            <Plus size={20} className="md:hidden" />
-            <Plus size={24} className="hidden md:block" />
+            <ShoppingCart size={22} />
+            <span>Đặt món</span>
           </button>
         </div>
       </div>

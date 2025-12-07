@@ -2,18 +2,15 @@
 'use client';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { UtensilsCrossed, Heart } from 'lucide-react';
+import { UtensilsCrossed } from 'lucide-react';
 
+/**
+ * CallToAction component - Phần kêu gọi hành động
+ */
 export default function CallToAction() {
   return (
-    <section className="relative overflow-hidden bg-black/60 backdrop-blur-md text-white py-10 md:py-16">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-10 left-10 w-48 h-48 bg-primary/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden py-10 md:py-16">
+      <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="max-w-3xl mx-auto text-center"
           initial={{ opacity: 0, y: 20 }}
@@ -23,7 +20,7 @@ export default function CallToAction() {
         >
           {/* Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-4 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-4"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -35,22 +32,22 @@ export default function CallToAction() {
 
           {/* Heading */}
           <motion.h2
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight"
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 leading-tight text-gray-900"
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
-            <span className="bg-gradient-to-r from-white via-orange-100 to-white bg-clip-text text-transparent">
+            <span className="text-primary">
               Bánh Tằm
             </span>
             <br />
-            <span className="text-white">Hương Vị Quê Nhà</span>
+            <span className="text-gray-900">Hương Vị Quê Nhà</span>
           </motion.h2>
 
           {/* Description */}
           <motion.p
-            className="text-sm sm:text-lg text-gray-300 mb-6 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0"
+            className="text-sm sm:text-lg text-gray-600 mb-6 max-w-2xl mx-auto leading-relaxed px-2 sm:px-0"
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

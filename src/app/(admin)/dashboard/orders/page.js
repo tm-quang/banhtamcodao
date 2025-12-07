@@ -1,4 +1,7 @@
-// src/app/(admin)/dashboard/orders/page.js
+/**
+ * Admin orders management page
+ * @file src/app/(admin)/dashboard/orders/page.js
+ */
 import OrderTable from '@/components/admin/OrderTable';
 
 async function getOrders() {

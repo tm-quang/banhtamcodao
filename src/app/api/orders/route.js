@@ -1,11 +1,17 @@
-// src/app/api/orders/route.js
+/**
+ * Orders API route handler
+ * @file src/app/api/orders/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 
-// Tạo mã đơn hàng tự động theo format: DH-YYMM####
-// DH-: prefix cố định
-// YYMM: năm/tháng (2 chữ số năm + 2 chữ số tháng)
-// ####: 4 số random ngẫu nhiên, ưu tiên không trùng lặp trên toàn bộ database
+/**
+ * Tạo mã đơn hàng tự động theo format: DH-YYMM####
+ * DH-: prefix cố định
+ * YYMM: năm/tháng (2 chữ số năm + 2 chữ số tháng)
+ * ####: 4 số random ngẫu nhiên, ưu tiên không trùng lặp trên toàn bộ database
+ * @returns {Promise<string>} Order code
+ */
 async function generateOrderCode() {
     const now = new Date();
     const year = now.getFullYear().toString().slice(-2); // 2 chữ số cuối của năm
@@ -13,14 +19,15 @@ async function generateOrderCode() {
     const yymm = `${year}${month}`; // Ví dụ: 2510 (năm 2025, tháng 10)
 
     let attempts = 0;
-    const maxAttempts = 20; // Giảm số lần thử để tránh timeout, Supabase check nhanh hơn
+    /** Giảm số lần thử để tránh timeout, Supabase check nhanh hơn */
+    const maxAttempts = 20;
 
     while (attempts < maxAttempts) {
-        // Tạo 4 số random (0000-9999)
+        /** Tạo 4 số random (0000-9999) */
         const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         const orderCode = `DH-${yymm}${random}`;
 
-        // Kiểm tra xem mã đã tồn tại trong database chưa
+        /** Kiểm tra xem mã đã tồn tại trong database chưa */
         try {
             const { data, error } = await supabase
                 .from('orders')
@@ -30,20 +37,21 @@ async function generateOrderCode() {
 
             if (error) throw error;
 
-            // Nếu không trùng (data là null), trả về mã này
+            /** Nếu không trùng (data là null), trả về mã này */
             if (!data) {
                 return orderCode;
             }
         } catch (error) {
             console.error('Error checking order code:', error);
-            // Nếu lỗi check, cứ return đại để không block, hoặc continue
-            // Ở đây ta continue để thử mã khác
+            /** Nếu lỗi check, cứ return đại để không block, hoặc continue
+             * Ở đây ta continue để thử mã khác
+             */
         }
 
         attempts++;
     }
 
-    // Nếu sau nhiều lần thử vẫn trùng, thêm timestamp vào cuối để đảm bảo unique
+    /** Nếu sau nhiều lần thử vẫn trùng, thêm timestamp vào cuối để đảm bảo unique */
     const timestamp = Date.now().toString().slice(-4);
     return `DH-${yymm}${timestamp}`;
 }
@@ -58,6 +66,8 @@ export async function POST(request) {
             delivery_method,
             payment_method,
             total_amount,
+            subtotal,
+            shipping_fee,
             items_list,
             customer_note,
             delivery_date,
@@ -106,11 +116,16 @@ export async function POST(request) {
                     recipient_name,
                     phone_number,
                     delivery_address: finalDeliveryAddress,
+                    subtotal: subtotal || total_amount,
+                    shipping_fee: shipping_fee || 0,
                     total_amount,
                     items_list: itemsListString,
-                    customer_note: customer_note || null,
+                    note: customer_note || null,
                     status,
-                    order_time: order_time.toISOString() // Supabase timestamptz
+                    delivery_method: delivery_method || 'delivery',
+                    delivery_date: delivery_date || null,
+                    delivery_time: delivery_time || null,
+                    order_time: order_time.toISOString()
                 }
             ])
             .select();
@@ -128,11 +143,13 @@ export async function POST(request) {
 
     } catch (error) {
         console.error('API Error - POST /api/orders:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         return NextResponse.json(
             {
                 success: false,
                 message: 'Lỗi server khi tạo đơn hàng',
-                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+                error: error.message || 'Unknown error',
+                details: error.details || error.hint || null
             },
             { status: 500 }
         );

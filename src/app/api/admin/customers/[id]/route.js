@@ -1,89 +1,158 @@
-// src/app/api/admin/customers/[id]/route.js
+/**
+ * src/app/api/admin/customers/[id]/route.js
+ * API routes cho quản lý khách hàng theo ID
+ */
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
 
-// Cập nhật khách hàng
+/**
+ * Lấy thông tin chi tiết khách hàng
+ */
+export async function GET(request, { params }) {
+    try {
+        const { id } = params;
+        
+        // Lưu ý: Không join accounts vì accounts.id là BIGINT, không match với customers.account_id (UUID)
+        const { data: customers, error } = await supabaseAdmin
+            .from('customers')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error || !customers) {
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Không tìm thấy khách hàng.' 
+            }, { status: 404 });
+        }
+
+        // Lấy username và role từ user_metadata hoặc để null
+        // Có thể query riêng từ accounts nếu cần (nhưng cần cách link khác)
+        const customer = {
+            ...customers,
+            username: null, // Có thể lấy từ user_metadata nếu cần
+            role: 'customer', // Default role
+            status: 'active' // Default status
+        };
+
+        return NextResponse.json({ success: true, customer });
+    } catch (error) {
+        console.error('API Error - GET /api/admin/customers/[id]:', error);
+        return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
+    }
+}
+
+/**
+ * Cập nhật thông tin khách hàng
+ */
 export async function PUT(request, { params }) {
     try {
         const { id: customerId } = params;
         const { full_name, phone_number, email, role, status } = await request.json();
 
-        // Lấy account_id từ customer_id
-        const [customerRows] = await pool.execute('SELECT account_id FROM customers WHERE id = ?', [customerId]);
-        if (customerRows.length === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy khách hàng.' }, { status: 404 });
-        }
-        const accountId = customerRows[0].account_id;
+        /**
+         * Lấy account_id từ customer_id
+         */
+        const { data: customer, error: customerError } = await supabaseAdmin
+            .from('customers')
+            .select('account_id')
+            .eq('id', customerId)
+            .single();
 
-        // Cập nhật bảng customers
-        await pool.execute(
-            'UPDATE customers SET full_name = ?, phone_number = ?, email = ? WHERE id = ?',
-            [full_name, phone_number || null, email || null, customerId]
-        );
-        // Cập nhật bảng accounts
-        await pool.execute(
-            'UPDATE accounts SET role = ?, status = ? WHERE id = ?',
-            [role, status, accountId]
-        );
+        if (customerError || !customer) {
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Không tìm thấy khách hàng.' 
+            }, { status: 404 });
+        }
+
+        const accountId = customer.account_id;
+
+        /**
+         * Cập nhật bảng customers
+         */
+        const { error: updateCustomerError } = await supabaseAdmin
+            .from('customers')
+            .update({
+                full_name,
+                phone_number: phone_number || null,
+                email: email || null
+            })
+            .eq('id', customerId);
+
+        if (updateCustomerError) throw updateCustomerError;
+
+        /**
+         * Cập nhật bảng accounts
+         */
+        const { error: updateAccountError } = await supabaseAdmin
+            .from('accounts')
+            .update({
+                role,
+                status
+            })
+            .eq('id', accountId);
+
+        if (updateAccountError) throw updateAccountError;
 
         return NextResponse.json({ success: true, message: 'Cập nhật thành công!' });
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('API Error - PUT /api/admin/customers/[id]:', error);
         return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
     }
 }
 
-// Xóa khách hàng
+/**
+ * Xóa khách hàng
+ */
 export async function DELETE(request, { params }) {
-    const connection = await pool.getConnection();
     try {
         const { id: customerId } = params;
 
-        await connection.beginTransaction();
+        /**
+         * Lấy account_id từ customer
+         */
+        const { data: customer, error: customerError } = await supabaseAdmin
+            .from('customers')
+            .select('account_id')
+            .eq('id', customerId)
+            .single();
 
-        // 1. Lấy account_id từ customer
-        const [customerRows] = await connection.execute('SELECT account_id FROM customers WHERE id = ?', [customerId]);
-        if (customerRows.length === 0) {
-            await connection.rollback();
-            return NextResponse.json({ success: false, message: 'Không tìm thấy khách hàng.' }, { status: 404 });
+        if (customerError || !customer) {
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Không tìm thấy khách hàng.' 
+            }, { status: 404 });
         }
-        const accountId = customerRows[0].account_id;
 
-        // 2. Xóa record trong bảng customers trước
-        const [deleteCustomerResult] = await connection.execute('DELETE FROM customers WHERE id = ?', [customerId]);
-        if (deleteCustomerResult.affectedRows === 0) {
-             await connection.rollback();
-             return NextResponse.json({ success: false, message: 'Không tìm thấy khách hàng để xóa.' }, { status: 404 });
-        }
+        const accountId = customer.account_id;
 
-        // 3. Xóa record trong bảng accounts
-        await connection.execute('DELETE FROM accounts WHERE id = ?', [accountId]);
+        /**
+         * Xóa record trong bảng customers trước
+         */
+        const { error: deleteCustomerError } = await supabaseAdmin
+            .from('customers')
+            .delete()
+            .eq('id', customerId);
 
-        await connection.commit();
-        
+        if (deleteCustomerError) throw deleteCustomerError;
+
+        /**
+         * Xóa record trong bảng accounts
+         */
+        const { error: deleteAccountError } = await supabaseAdmin
+            .from('accounts')
+            .delete()
+            .eq('id', accountId);
+
+        if (deleteAccountError) throw deleteAccountError;
+
         return NextResponse.json({ success: true, message: 'Xóa khách hàng thành công!' });
     } catch (error) {
-        await connection.rollback();
-        console.error('API Error:', error);
-        return NextResponse.json({ success: false, message: 'Lỗi Server, không thể xóa khách hàng.' }, { status: 500 });
-    } finally {
-        connection.release();
-    }
-}
-export async function GET(request, { params }) {
-    try {
-        const { id } = params;
-        const [rows] = await pool.execute(
-            `SELECT c.*, a.username, a.role, a.status 
-             FROM customers c JOIN accounts a ON c.account_id = a.id 
-             WHERE c.id = ?`,
-            [id]
-        );
-        if (rows.length === 0) {
-            return NextResponse.json({ success: false, message: 'Không tìm thấy khách hàng.' }, { status: 404 });
-        }
-        return NextResponse.json({ success: true, customer: rows[0] });
-    } catch (error) {
-        return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
+        console.error('API Error - DELETE /api/admin/customers/[id]:', error);
+        return NextResponse.json({ 
+            success: false, 
+            message: 'Lỗi Server, không thể xóa khách hàng.' 
+        }, { status: 500 });
     }
 }

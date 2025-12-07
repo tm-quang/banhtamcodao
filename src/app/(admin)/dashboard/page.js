@@ -1,989 +1,711 @@
-// src/app/(admin)/dashboard/page.js
+/**
+ * Admin dashboard page - SMILE FOOD STYLE
+ * @file src/app/(admin)/dashboard/page.js
+ */
 'use client';
 
 import * as React from 'react';
-import { Card, CardContent, Typography, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Box, MenuItem, Select, FormControl, InputLabel, Divider, Stack, Avatar, LinearProgress, alpha, useMediaQuery, useTheme, Skeleton } from '@mui/material';
-import { BarChart } from '@mui/x-charts';
-import { DollarSign, ShoppingCart, CheckCircle2, XCircle, Utensils, Layers, CalendarRange, CalendarDays, CalendarCheck2, Calendar, TrendingUp, Users, Package } from 'lucide-react';
+import {
+    Box, Typography, Skeleton, alpha, Table, TableBody,
+    TableCell, TableContainer, TableHead, TableRow, Paper,
+    FormControl, Select, MenuItem
+} from '@mui/material';
+import { PieChart, BarChart } from '@mui/x-charts';
+import {
+    SlidersHorizontal, Calendar, Download, ShoppingBag, Clock,
+    DollarSign, TrendingUp, TrendingDown, ChevronRight, Info,
+    CheckCircle2, Clock3, XCircle, BarChart3, ChevronDown, UserPlus
+} from 'lucide-react';
 
-const StatCard = ({ title, value, icon, color, trend, trendValue }) => (
-    <Card sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        p: { xs: 2, sm: 2.5 }, 
-        height: { xs: 'auto', sm: 120 }, 
-        minHeight: { xs: 100, sm: 120 },
-        width: '100%', 
-        mx: 'auto', 
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', 
-        position: 'relative',
-        overflow: 'hidden',
-        background: `linear-gradient(135deg, ${alpha(color, 0.1)} 0%, ${alpha(color, 0.05)} 100%)`,
-        border: `1px solid ${alpha(color, 0.2)}`,
-        '&:hover': { 
-            boxShadow: `0 8px 24px ${alpha(color, 0.3)}`, 
-            transform: 'translateY(-4px)',
-            border: `1px solid ${alpha(color, 0.4)}`,
-        },
-        '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '4px',
-            height: '100%',
-            backgroundColor: color,
-        }
-    }}>
-        <Box sx={{ 
-            p: { xs: 1.5, sm: 2.5 }, 
-            borderRadius: '12px', 
-            mr: { xs: 1.5, sm: 2 }, 
-            color: '#fff', 
-            background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            boxShadow: `0 4px 12px ${alpha(color, 0.4)}`,
-            transition: 'all 0.3s ease',
-            flexShrink: 0,
-            '&:hover': {
-                transform: 'scale(1.1) rotate(5deg)',
-            }
-        }}>
-            {icon}
-        </Box>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography 
-                color="text.secondary" 
-                gutterBottom
-                sx={{ 
-                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                    fontWeight: 500,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap'
-                }}
-            >
-                {title}
-            </Typography>
-            <Typography 
-                variant="h5" 
-                component="div" 
-                sx={{ 
-                    fontWeight: 700,
-                    color: 'text.primary',
-                    mb: trend ? 0.5 : 0,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' },
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                }}
-            >
-                {value}
-            </Typography>
-            {trend && trendValue && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                    <TrendingUp size={14} style={{ color: '#10b981' }} />
-                    <Typography variant="caption" sx={{ color: '#10b981', fontWeight: 600 }}>
-                        {trendValue}
-                    </Typography>
-                </Box>
-            )}
-        </Box>
-    </Card>
+/**
+ * Format currency to VND
+ */
+const formatCurrency = (amount) => {
+    if (amount >= 1000000) {
+        return `${(amount / 1000000).toFixed(1)}M`;
+    }
+    if (amount >= 1000) {
+        return `${Math.round(amount / 1000)}K`;
+    }
+    return amount.toLocaleString('vi-VN');
+};
+
+/**
+ * Format date
+ */
+const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+};
+
+const formatTime = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+/**
+ * Month names in Vietnamese
+ */
+const MONTHS = [
+    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+];
+
+/**
+ * Enhanced StatCard matching reference design
+ */
+const StatCard = ({ title, value, subtitle, growth, icon: Icon, iconBg, decorativeIcon }) => {
+    const isPositive = growth >= 0;
+
+    return (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all duration-300">
+            {/* Decorative Icon */}
+            <div className="absolute top-4 right-4 opacity-50 group-hover:opacity-70 transition-opacity">
+                {decorativeIcon}
+            </div>
+
+            <div className="flex items-start gap-4">
+                {/* Icon */}
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${iconBg} shadow-lg`}>
+                    <Icon size={26} className="text-white" />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 pt-1">
+                    <p className="text-sm text-gray-500 mb-1">{title}</p>
+                    <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
+
+                    {/* Growth indicator */}
+                    {growth !== undefined && (
+                        <div className="flex items-center gap-1.5 mt-2">
+                            <span className={`flex items-center gap-0.5 text-xs font-semibold ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
+                                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                {isPositive ? '+' : ''}{growth}%
+                            </span>
+                            <span className="text-xs text-gray-400">vs tháng trước</span>
+                        </div>
+                    )}
+
+                    {subtitle && (
+                        <p className="text-xs text-gray-400 mt-1">{subtitle}</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * Status Badge Component
+ */
+const StatusBadge = ({ status }) => {
+    const statusConfig = {
+        'Hoàn thành': { bg: 'bg-green-50', text: 'text-green-600', icon: CheckCircle2 },
+        'Đã giao': { bg: 'bg-green-50', text: 'text-green-600', icon: CheckCircle2 },
+        'Chờ xử lý': { bg: 'bg-amber-50', text: 'text-amber-600', icon: Clock3 },
+        'Pending': { bg: 'bg-amber-50', text: 'text-amber-600', icon: Clock3 },
+        'Đã hủy': { bg: 'bg-red-50', text: 'text-red-500', icon: XCircle },
+        'Failed': { bg: 'bg-red-50', text: 'text-red-500', icon: XCircle },
+    };
+
+    const config = statusConfig[status] || statusConfig['Chờ xử lý'];
+    const IconComponent = config.icon;
+
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+            <IconComponent size={12} />
+            {status}
+        </span>
+    );
+};
+
+/**
+ * Decorative SVG icons for stat cards
+ */
+const DeliveryDecorativeIcon = () => (
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" className="text-amber-200">
+        <circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" opacity="0.5" />
+        <path d="M25 45L35 35L45 45L55 30" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+const ClockDecorativeIcon = () => (
+    <svg width="70" height="70" viewBox="0 0 70 70" fill="none" className="text-green-200">
+        <circle cx="35" cy="35" r="30" stroke="currentColor" strokeWidth="2" opacity="0.5" />
+        <circle cx="35" cy="35" r="20" stroke="currentColor" strokeWidth="2" opacity="0.3" />
+        <path d="M35 20V35L45 45" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+);
+
+const MoneyDecorativeIcon = () => (
+    <svg width="75" height="75" viewBox="0 0 75 75" fill="none" className="text-green-200">
+        <circle cx="37.5" cy="37.5" r="32" stroke="currentColor" strokeWidth="2" opacity="0.4" />
+        <text x="37.5" y="45" textAnchor="middle" fontSize="24" fill="currentColor" opacity="0.6" fontWeight="bold">$</text>
+    </svg>
 );
 
 export default function DashboardPage() {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-    const [month, setMonth] = React.useState(new Date().getMonth() + 1);
-    const [year, setYear] = React.useState(new Date().getFullYear());
-    const [chartWidth, setChartWidth] = React.useState(800);
-    const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState(null);
+    const [dataLoading, setDataLoading] = React.useState(true);
+    const [kpiStats, setKpiStats] = React.useState({});
+    const [recentOrders, setRecentOrders] = React.useState([]);
+    const [categoryDistribution, setCategoryDistribution] = React.useState([]);
+    const [newCustomers, setNewCustomers] = React.useState([]);
+
+    // Bar chart state
+    const [chartMonth, setChartMonth] = React.useState(new Date().getMonth() + 1);
+    const [chartYear, setChartYear] = React.useState(new Date().getFullYear());
+    const [chartLoading, setChartLoading] = React.useState(true);
     const [dailyRevenueK, setDailyRevenueK] = React.useState([]);
     const [dailyOrders, setDailyOrders] = React.useState([]);
     const [days, setDays] = React.useState([]);
-    
-    // State cho dữ liệu dashboard
-    const [recentOrders, setRecentOrders] = React.useState([]);
-    const [newCustomers, setNewCustomers] = React.useState([]);
-    const [topProducts, setTopProducts] = React.useState([]);
-    const [dataLoading, setDataLoading] = React.useState(true);
-    
     const chartContainerRef = React.useRef(null);
-    const months = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
-    
-    // Fetch dữ liệu dashboard (orders, customers, products)
+    const [chartWidth, setChartWidth] = React.useState(800);
+
+    // Fetch dashboard data
     React.useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 setDataLoading(true);
                 const response = await fetch('/api/admin/dashboard/data');
                 const result = await response.json();
-                
+
                 if (result.success) {
                     setRecentOrders(result.data.recentOrders || []);
+                    setKpiStats(result.data.kpiStats || {});
+                    setCategoryDistribution(result.data.categoryDistribution || []);
                     setNewCustomers(result.data.newCustomers || []);
-                    setTopProducts(result.data.topProducts || []);
-                } else {
-                    // Fallback về dữ liệu rỗng
-                    setRecentOrders([]);
-                    setNewCustomers([]);
-                    setTopProducts([]);
                 }
             } catch (err) {
                 console.error('Error fetching dashboard data:', err);
-                setRecentOrders([]);
-                setNewCustomers([]);
-                setTopProducts([]);
             } finally {
                 setDataLoading(false);
             }
         };
-        
+
         fetchDashboardData();
     }, []);
-    
-    // Fetch dữ liệu biểu đồ từ API
+
+    // Fetch chart data by month/year
     React.useEffect(() => {
         const fetchChartData = async () => {
             try {
-                setLoading(true);
-                setError(null);
-                
-                const response = await fetch(`/api/admin/dashboard/stats?month=${month}&year=${year}`);
+                setChartLoading(true);
+                const response = await fetch(`/api/admin/dashboard/stats?month=${chartMonth}&year=${chartYear}`);
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    setDays(result.data.days);
-                    setDailyRevenueK(result.data.dailyRevenueK);
-                    setDailyOrders(result.data.dailyOrders);
+                    setDays(result.data.days || []);
+                    setDailyRevenueK(result.data.dailyRevenueK || []);
+                    setDailyOrders(result.data.dailyOrders || []);
                 } else {
-                    setError(result.message || 'Không thể tải dữ liệu');
-                    // Fallback về dữ liệu rỗng
-                    const daysInMonth = new Date(year, month, 0).getDate();
+                    // Generate empty data for the month
+                    const daysInMonth = new Date(chartYear, chartMonth, 0).getDate();
                     setDays(Array.from({ length: daysInMonth }, (_, i) => i + 1));
                     setDailyRevenueK(Array(daysInMonth).fill(0));
                     setDailyOrders(Array(daysInMonth).fill(0));
                 }
             } catch (err) {
                 console.error('Error fetching chart data:', err);
-                setError('Lỗi khi tải dữ liệu');
-                // Fallback về dữ liệu rỗng
-                const daysInMonth = new Date(year, month, 0).getDate();
+                const daysInMonth = new Date(chartYear, chartMonth, 0).getDate();
                 setDays(Array.from({ length: daysInMonth }, (_, i) => i + 1));
                 setDailyRevenueK(Array(daysInMonth).fill(0));
                 setDailyOrders(Array(daysInMonth).fill(0));
             } finally {
-                setLoading(false);
+                setChartLoading(false);
             }
         };
-        
+
         fetchChartData();
-    }, [month, year]);
-    
+    }, [chartMonth, chartYear]);
+
+    // Update chart width on resize
     React.useEffect(() => {
         const updateChartWidth = () => {
             if (chartContainerRef.current) {
-                // Lấy chiều rộng thực tế của container (không bao gồm padding)
-                const containerWidth = chartContainerRef.current.clientWidth;
-                // Giới hạn chiều rộng tối đa bằng chiều rộng container
-                setChartWidth(Math.min(containerWidth, window.innerWidth - 100));
+                setChartWidth(chartContainerRef.current.clientWidth - 48);
             }
         };
-        
-        const timeoutId = setTimeout(updateChartWidth, 100);
+
+        updateChartWidth();
         window.addEventListener('resize', updateChartWidth);
-        
-        return () => {
-            clearTimeout(timeoutId);
-            window.removeEventListener('resize', updateChartWidth);
-        };
-    }, [month, year, days]);
+        return () => window.removeEventListener('resize', updateChartWidth);
+    }, []);
+
+    // Calculate totals for donut chart
+    const totalOrders = categoryDistribution.reduce((sum, cat) => sum + cat.value, 0) || 0;
+
+    // Generate year options (current year and 2 years back)
+    const currentYear = new Date().getFullYear();
+    const yearOptions = [currentYear - 2, currentYear - 1, currentYear];
 
     return (
-        <Box sx={{ 
-            p: { xs: 1.5, sm: 2, md: 3 }, 
-            bgcolor: '#f8fafc', 
-            minHeight: '100vh' 
-        }}>
-        <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }} sx={{ width: '100%', position: 'relative' }}>
-            {/* ROW 1: 6 cards - Responsive: 1 col mobile, 2 cols tablet, 3 cols desktop, 6 cols large */}
-            <Grid item xs={12} sm={6} md={4} lg={2}>
-                        <StatCard title="Đơn hàng" value="0" icon={<ShoppingCart size={22} />} color="#2563eb" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
-                        <StatCard title="Đơn hàng trong tháng" value="0" icon={<CalendarRange size={22} />} color="#7c3aed" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
-                        <StatCard title="Đã giao thành công" value="0" icon={<CheckCircle2 size={22} />} color="#10b981" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
-                        <StatCard title="Đã hủy" value="0" icon={<XCircle size={22} />} color="#ef4444" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
-                        <StatCard title="Tổng món ăn" value="0" icon={<Utensils size={22} />} color="#0ea5e9" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2}>
-                        <StatCard title="Danh mục" value="0" icon={<Layers size={22} />} color="#f59e0b" />
-            </Grid>
+        <div className="min-h-screen bg-gray-50/50">
+            {/* Filter Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Filters Button */}
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <SlidersHorizontal size={16} />
+                        Bộ lọc
+                    </button>
 
-            {/* ROW 2: 4 cards - Responsive: 1 col mobile, 2 cols tablet, 2 cols desktop, 3 cols large (căn giữa) */}
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-                        <StatCard title="Tổng doanh thu" value="0 đ" icon={<DollarSign size={22} />} color="#16a34a" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-                        <StatCard title="Doanh thu tháng" value="0 đ" icon={<CalendarDays size={22} />} color="#22c55e" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-                        <StatCard title="Doanh thu tuần" value="0 đ" icon={<CalendarCheck2 size={22} />} color="#059669" />
-                    </Grid>
-            <Grid item xs={12} sm={6} md={6} lg={3}>
-                        <StatCard title="Doanh thu ngày" value="0 đ" icon={<Calendar size={22} />} color="#34d399" />
-                    </Grid>
-        </Grid>
+                    {/* Date Range */}
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <Calendar size={16} />
+                        30 ngày qua
+                        <ChevronRight size={14} className="rotate-90 text-gray-400" />
+                    </button>
+                </div>
 
-        {/* Hàng 3: Đơn hàng mới nhất, Khách hàng mới, Top món bán chạy - Cùng 1 hàng, chia đều */}
-        <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' },
-            gap: { xs: 2, sm: 2.5, md: 3 },
-            mt: { xs: 2, sm: 2.5, md: 3 },
-            width: '100%'
-        }}>
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Card sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                    }
-                }}>
-                    <CardContent sx={{ 
-                        p: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                        overflow: 'hidden'
-                    }}>
-                        <Box sx={{ 
-                            p: { xs: 2, sm: 2.5 }, 
-                            borderBottom: '1px solid',
-                            borderColor: 'divider',
-                            background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
-                            flexShrink: 0
-                        }}>
-                            <Stack direction="row" alignItems="center" gap={1.5}>
-                                <Box sx={{ 
-                                    p: { xs: 0.75, sm: 1 }, 
-                                    borderRadius: 2, 
-                                    bgcolor: alpha('#2563eb', 0.1),
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}>
-                                    <ShoppingCart size={20} style={{ color: '#2563eb' }} />
-                                </Box>
-                                <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-                                    Đơn hàng mới nhất
-                                </Typography>
-                            </Stack>
-                        </Box>
-                        <TableContainer sx={{ 
-                            flex: 1,
-                            overflowY: 'auto',
-                            overflowX: 'auto',
-                            '&::-webkit-scrollbar': {
-                                width: 6,
-                                height: 6,
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                                backgroundColor: alpha('#000', 0.2),
-                                borderRadius: 3,
-                            }
-                        }}>
-                            <Table size="small" stickyHeader>
-                                <TableHead>
-                                    <TableRow sx={{ bgcolor: alpha('#f3f4f6', 0.5) }}>
-                                        <TableCell sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary',
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 },
-                                            whiteSpace: 'nowrap'
-                                        }}>Mã ĐH</TableCell>
-                                        <TableCell sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary',
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 }
-                                        }}>Khách hàng</TableCell>
-                                        <TableCell sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary',
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 }
-                                        }}>Tổng tiền</TableCell>
-                                        <TableCell sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary',
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 }
-                                        }}>Trạng thái</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {dataLoading ? (
-                                        <>
-                                            {[1, 2, 3, 4, 5].map((i) => (
-                                                <TableRow key={i}>
-                                                    <TableCell><Skeleton variant="text" width="60%" /></TableCell>
-                                                    <TableCell><Skeleton variant="text" width="40%" /></TableCell>
-                                                    <TableCell><Skeleton variant="text" width="30%" /></TableCell>
-                                                    <TableCell><Skeleton variant="rectangular" width={60} height={24} sx={{ borderRadius: 1 }} /></TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </>
-                                    ) : recentOrders.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Không có dữ liệu
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        recentOrders.map((row, index) => (
-                                        <TableRow 
-                                            key={row.id} 
-                                            hover
-                                            sx={{ 
-                                                transition: 'all 0.2s ease',
-                                                '&:hover': {
-                                                    bgcolor: alpha('#2563eb', 0.04),
-                                                    transform: 'scale(1.01)',
-                                                },
-                                                '&:last-child td': { borderBottom: 0 }
+                {/* Export Button */}
+                <button className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors shadow-lg shadow-green-600/25">
+                    <Download size={16} />
+                    Xuất PDF
+                </button>
+            </div>
+
+            {/* Stat Cards Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <StatCard
+                    title="Đơn hàng tháng"
+                    value={dataLoading ? '...' : `${kpiStats.monthlyOrders?.value || 0} đơn`}
+                    growth={kpiStats.monthlyOrders?.growth}
+                    icon={ShoppingBag}
+                    iconBg="bg-gradient-to-br from-amber-400 to-amber-500"
+                    decorativeIcon={<DeliveryDecorativeIcon />}
+                />
+                <StatCard
+                    title="Giờ làm việc tháng"
+                    value={dataLoading ? '...' : `${kpiStats.workHours?.value || 158} giờ`}
+                    growth={kpiStats.workHours?.growth || 20}
+                    icon={Clock}
+                    iconBg="bg-gradient-to-br from-green-400 to-green-500"
+                    decorativeIcon={<ClockDecorativeIcon />}
+                />
+                <StatCard
+                    title="Doanh thu"
+                    value={dataLoading ? '...' : `${formatCurrency(kpiStats.monthlyRevenue?.value || 0)} ₫`}
+                    growth={kpiStats.monthlyRevenue?.growth}
+                    icon={DollarSign}
+                    iconBg="bg-gradient-to-br from-green-500 to-green-600"
+                    decorativeIcon={<MoneyDecorativeIcon />}
+                />
+            </div>
+
+            {/* Charts Row - Pie Chart (left) + Bar Chart (right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+                {/* Statistics - Donut Chart (Left - Fixed Width) */}
+                <div className="lg:col-span-4">
+                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-gray-900">Thống kê</h3>
+                            <button className="text-sm text-green-600 font-medium hover:underline flex items-center gap-1">
+                                Xem thêm <ChevronRight size={14} />
+                            </button>
+                        </div>
+
+                        {dataLoading ? (
+                            <div className="flex items-center justify-center h-64">
+                                <Skeleton variant="circular" width={180} height={180} />
+                            </div>
+                        ) : (
+                            <>
+                                {/* Donut Chart with inline legend */}
+                                <div className="flex items-center justify-center gap-4">
+                                    <Box sx={{ position: 'relative', flexShrink: 0 }}>
+                                        <PieChart
+                                            series={[{
+                                                data: categoryDistribution.length > 0
+                                                    ? categoryDistribution.map((item, index) => ({
+                                                        id: index,
+                                                        value: item.value,
+                                                        label: item.name,
+                                                        color: item.color
+                                                    }))
+                                                    : [{ id: 0, value: 1, color: '#e5e7eb' }],
+                                                innerRadius: 50,
+                                                outerRadius: 85,
+                                                paddingAngle: 2,
+                                                cornerRadius: 4,
+                                                cx: 90,
+                                                cy: 85,
+                                            }]}
+                                            width={190}
+                                            height={180}
+                                            slotProps={{
+                                                legend: { hidden: true },
                                             }}
-                                        >
-                                            <TableCell sx={{ 
-                                                fontWeight: 600, 
-                                                color: '#2563eb',
-                                                fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                                py: { xs: 0.75, sm: 1 },
-                                                whiteSpace: 'nowrap'
-                                            }}>
-                                                {row.id}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                                                    <Avatar sx={{ 
-                                                        width: { xs: 24, sm: 28 }, 
-                                                        height: { xs: 24, sm: 28 }, 
-                                                        bgcolor: alpha('#2563eb', 0.1), 
-                                                        color: '#2563eb', 
-                                                        fontSize: { xs: '0.7rem', sm: '0.75rem' }, 
-                                                        fontWeight: 600 
-                                                    }}>
-                                                        {row.customer?.charAt(0)?.toUpperCase() || 'N'}
-                                                    </Avatar>
-                                                    <Typography variant="body2" sx={{ 
-                                                        fontWeight: 500,
-                                                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
-                                                        maxWidth: { xs: 60, sm: 100 }
-                                                    }}>
-                                                        {row.customer}
-                                                    </Typography>
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell sx={{ 
-                                                fontWeight: 600, 
-                                                color: 'text.primary',
-                                                fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                                whiteSpace: 'nowrap'
-                                            }}>
-                                                {row.total}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Chip 
-                                                    label={row.status} 
-                                                    color={row.status === 'Hoàn thành' || row.status === 'Đã giao' ? 'success' : 'default'} 
-                                                    size="small"
-                                                    sx={{ 
-                                                        fontWeight: 600,
-                                                        fontSize: { xs: '0.65rem', sm: '0.7rem' },
-                                                        height: { xs: 18, sm: 22 },
-                                                        boxShadow: `0 2px 4px ${alpha('#10b981', 0.2)}`
-                                                    }}
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </CardContent>
-                </Card>
-            </Box>
-            
-            {/* Khách hàng mới nhất */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Card sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                    }
-                }}>
-                    <CardContent sx={{ 
-                        p: { xs: 2, sm: 2.5 }, 
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                        overflow: 'hidden'
-                    }}>
-                        <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: { xs: 2, sm: 2.5 } }}>
-                            <Box sx={{ 
-                                p: { xs: 0.75, sm: 1 }, 
-                                borderRadius: 2, 
-                                bgcolor: alpha('#7c3aed', 0.1),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <Users size={20} style={{ color: '#7c3aed' }} />
-                            </Box>
-                            <Typography variant="h6" sx={{ 
-                                fontWeight: 700,
-                                fontSize: { xs: '1rem', sm: '1.25rem' }
-                            }}>
-                                Khách hàng mới nhất
-                            </Typography>
-                        </Stack>
-                        <Box sx={{ 
-                            display: 'flex', 
-                            flexDirection: 'column', 
-                            gap: { xs: 1.5, sm: 2 },
-                            flex: 1,
-                            overflowY: 'auto',
-                            '&::-webkit-scrollbar': {
-                                width: 6,
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                                backgroundColor: alpha('#000', 0.2),
-                                borderRadius: 3,
-                            }
-                        }}>
-                            {dataLoading ? (
-                                <Box sx={{ py: 2, px: 2 }}>
-                                    {[1, 2, 3].map((i) => (
-                                        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                                            <Skeleton variant="circular" width={36} height={36} />
-                                            <Box sx={{ flex: 1 }}>
-                                                <Skeleton variant="text" width="60%" height={20} />
-                                                <Skeleton variant="text" width="40%" height={16} />
-                                            </Box>
-                                        </Box>
-                                    ))}
-                                </Box>
-                            ) : newCustomers.length === 0 ? (
-                                <Box sx={{ textAlign: 'center', py: 3 }}>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Không có dữ liệu
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                newCustomers.map((customer, index) => (
-                                    <Box 
-                                        key={index} 
-                                        sx={{ 
-                                            display: 'flex', 
-                                            alignItems: 'center', 
-                                            gap: { xs: 1.5, sm: 2 },
-                                            p: { xs: 1, sm: 1.5 },
-                                            borderRadius: 2,
-                                            transition: 'all 0.2s ease',
-                                            '&:hover': {
-                                                bgcolor: alpha('#7c3aed', 0.05),
-                                                ...(isMobile ? {} : { transform: 'translateX(4px)' }),
-                                            }
-                                        }}
-                                    >
-                                        <Avatar sx={{ 
-                                            width: { xs: 32, sm: 36 }, 
-                                            height: { xs: 32, sm: 36 }, 
-                                            bgcolor: `linear-gradient(135deg, ${alpha('#7c3aed', 0.2)} 0%, ${alpha('#7c3aed', 0.1)} 100%)`,
-                                            color: '#7c3aed',
-                                            fontWeight: 700,
-                                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                                            boxShadow: `0 2px 8px ${alpha('#7c3aed', 0.2)}`
+                                        />
+                                        {/* Center Label */}
+                                        <Box sx={{
+                                            position: 'absolute',
+                                            top: '50%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            textAlign: 'center'
                                         }}>
-                                            {customer.name?.charAt(0)?.toUpperCase() || 'N'}
-                                        </Avatar>
-                                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                                            <Typography variant="body2" sx={{ 
-                                                fontWeight: 600, 
-                                                mb: 0.25,
-                                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                whiteSpace: 'nowrap'
-                                            }}>
-                                                {customer.name || 'N/A'}
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem' }}>
+                                                Tổng đơn
                                             </Typography>
-                                            <Typography variant="caption" color="text.secondary" sx={{ 
-                                                display: 'flex', 
-                                                alignItems: 'center', 
-                                                gap: 0.5,
-                                                fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                                            }}>
-                                                {customer.phone || 'N/A'}
+                                            <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                                                {totalOrders}
                                             </Typography>
                                         </Box>
                                     </Box>
+                                </div>
+
+                                {/* Legend with percentages */}
+                                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                                    {categoryDistribution.map((item, index) => {
+                                        const percentage = totalOrders > 0
+                                            ? ((item.value / totalOrders) * 100).toFixed(0)
+                                            : 0;
+                                        return (
+                                            <div key={index} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <span
+                                                        className="w-2.5 h-2.5 rounded-full"
+                                                        style={{ backgroundColor: item.color }}
+                                                    />
+                                                    <span className="text-sm text-gray-600">{item.name}</span>
+                                                </div>
+                                                <span className="text-sm font-semibold text-gray-900">{percentage}%</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Bar Chart - Revenue & Orders by Day (Right - Flex) */}
+                <div className="lg:col-span-8">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full">
+                        <div className="flex flex-wrap items-center justify-between p-5 border-b border-gray-100 gap-3">
+                            <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/25">
+                                    <BarChart3 size={18} className="text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-bold text-gray-900">Doanh thu & Đơn hàng theo ngày</h3>
+                                    <p className="text-xs text-gray-500">Biểu đồ thống kê theo tháng</p>
+                                </div>
+                            </div>
+
+                            {/* Month/Year Filters */}
+                            <div className="flex items-center gap-2">
+                                <FormControl size="small" sx={{ minWidth: 110 }}>
+                                    <Select
+                                        value={chartMonth}
+                                        onChange={(e) => setChartMonth(e.target.value)}
+                                        sx={{
+                                            borderRadius: '10px',
+                                            bgcolor: 'grey.50',
+                                            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.200' },
+                                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
+                                            '& .MuiSelect-select': { py: 1, fontSize: '0.8rem', fontWeight: 500 }
+                                        }}
+                                        IconComponent={(props) => <ChevronDown size={14} {...props} style={{ right: 10, position: 'absolute', pointerEvents: 'none' }} />}
+                                    >
+                                        {MONTHS.map((name, index) => (
+                                            <MenuItem key={index + 1} value={index + 1}>{name}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+
+                                <FormControl size="small" sx={{ minWidth: 85 }}>
+                                    <Select
+                                        value={chartYear}
+                                        onChange={(e) => setChartYear(e.target.value)}
+                                        sx={{
+                                            borderRadius: '10px',
+                                            bgcolor: 'grey.50',
+                                            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'grey.200' },
+                                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'primary.main' },
+                                            '& .MuiSelect-select': { py: 1, fontSize: '0.8rem', fontWeight: 500 }
+                                        }}
+                                        IconComponent={(props) => <ChevronDown size={14} {...props} style={{ right: 10, position: 'absolute', pointerEvents: 'none' }} />}
+                                    >
+                                        {yearOptions.map((year) => (
+                                            <MenuItem key={year} value={year}>{year}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </div>
+                        </div>
+
+                        {/* Chart Container - Full width, no scroll */}
+                        <div ref={chartContainerRef} className="p-4">
+                            {/* Custom Legend */}
+                            <div className="flex items-center justify-center gap-6 mb-3">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-sm bg-green-600"></span>
+                                    <span className="text-xs font-semibold text-gray-600">Doanh thu (K)</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-sm bg-blue-600"></span>
+                                    <span className="text-xs font-semibold text-gray-600">Đơn hàng</span>
+                                </div>
+                            </div>
+
+                            {chartLoading ? (
+                                <div className="flex items-center justify-center h-64">
+                                    <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            ) : (
+                                <Box sx={{ width: '100%', height: 280 }}>
+                                    <BarChart
+                                        xAxis={[{
+                                            scaleType: 'band',
+                                            data: days.map(d => `${d}`),
+                                            tickLabelStyle: { fontSize: 9, fill: '#6b7280', fontWeight: 500 },
+                                            categoryGapRatio: 0.3,
+                                            barGapRatio: 0.1
+                                        }]}
+                                        yAxis={[
+                                            {
+                                                id: 'revenueAxis',
+                                                scaleType: 'linear',
+                                                tickLabelStyle: { fontSize: 10, fill: '#16a34a', fontWeight: 500 },
+                                                valueFormatter: (v) => `${v}K`
+                                            },
+                                            {
+                                                id: 'ordersAxis',
+                                                scaleType: 'linear',
+                                                tickLabelStyle: { fontSize: 10, fill: '#2563eb', fontWeight: 500 }
+                                            }
+                                        ]}
+                                        series={[
+                                            {
+                                                data: dailyRevenueK,
+                                                label: 'Doanh thu (K)',
+                                                color: '#16a34a',
+                                                yAxisId: 'revenueAxis',
+                                                valueFormatter: (v) => `${v?.toLocaleString() || 0}K ₫`
+                                            },
+                                            {
+                                                data: dailyOrders,
+                                                label: 'Đơn hàng',
+                                                color: '#2563eb',
+                                                yAxisId: 'ordersAxis',
+                                                valueFormatter: (v) => `${v || 0} đơn`
+                                            }
+                                        ]}
+                                        width={chartWidth > 0 ? chartWidth : 700}
+                                        height={280}
+                                        margin={{ left: 45, right: 45, top: 20, bottom: 25 }}
+                                        slotProps={{
+                                            legend: {
+                                                hidden: true
+                                            }
+                                        }}
+                                        sx={{
+                                            '& .MuiBarElement-root': { rx: 2, ry: 2 },
+                                            '& .MuiChartsAxis-line': { stroke: '#e5e7eb' },
+                                            '& .MuiChartsAxis-tick': { stroke: '#e5e7eb' }
+                                        }}
+                                    />
+                                </Box>
+                            )}
+                        </div>
+
+                        {/* Chart Summary - Compact */}
+                        <div className="px-4 pb-4">
+                            <div className="grid grid-cols-4 gap-3">
+                                <div className="bg-green-50 rounded-lg p-3">
+                                    <p className="text-xs text-green-700 font-medium mb-0.5">Tổng doanh thu</p>
+                                    <p className="text-lg font-bold text-green-600">
+                                        {formatCurrency(dailyRevenueK.reduce((a, b) => a + (b || 0), 0) * 1000)} ₫
+                                    </p>
+                                </div>
+                                <div className="bg-blue-50 rounded-lg p-3">
+                                    <p className="text-xs text-blue-700 font-medium mb-0.5">Tổng đơn hàng</p>
+                                    <p className="text-lg font-bold text-blue-600">
+                                        {dailyOrders.reduce((a, b) => a + (b || 0), 0)} đơn
+                                    </p>
+                                </div>
+                                <div className="bg-amber-50 rounded-lg p-3">
+                                    <p className="text-xs text-amber-700 font-medium mb-0.5">Ngày cao nhất</p>
+                                    <p className="text-lg font-bold text-amber-600">
+                                        {formatCurrency(Math.max(...dailyRevenueK.filter(v => v > 0), 0) * 1000)} ₫
+                                    </p>
+                                </div>
+                                <div className="bg-purple-50 rounded-lg p-3">
+                                    <p className="text-xs text-purple-700 font-medium mb-0.5">TB mỗi ngày</p>
+                                    <p className="text-lg font-bold text-purple-600">
+                                        {formatCurrency(Math.round((dailyRevenueK.reduce((a, b) => a + (b || 0), 0) / (days.length || 1)) * 1000))} ₫
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* New Customers & Orders History Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* New Customers - Left */}
+                <div className="lg:col-span-4">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full">
+                        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/25">
+                                    <UserPlus size={16} className="text-white" />
+                                </div>
+                                <h3 className="text-base font-bold text-gray-900">Khách hàng mới</h3>
+                            </div>
+                            <button className="text-sm text-green-600 font-medium hover:underline flex items-center gap-1">
+                                Xem thêm <ChevronRight size={14} />
+                            </button>
+                        </div>
+
+                        <div className="divide-y divide-gray-100">
+                            {dataLoading ? (
+                                [1, 2, 3, 4, 5].map(i => (
+                                    <div key={i} className="p-4 flex items-center gap-3">
+                                        <Skeleton variant="circular" width={40} height={40} />
+                                        <div className="flex-1">
+                                            <Skeleton width="60%" height={16} />
+                                            <Skeleton width="40%" height={12} sx={{ mt: 0.5 }} />
+                                        </div>
+                                    </div>
+                                ))
+                            ) : newCustomers.length === 0 ? (
+                                <div className="p-8 text-center">
+                                    <Typography color="text.secondary" variant="body2">Chưa có khách hàng mới</Typography>
+                                </div>
+                            ) : (
+                                newCustomers.slice(0, 6).map((customer, index) => (
+                                    <div key={customer.id || index} className="p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors cursor-pointer">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-green-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                            {customer.name?.charAt(0)?.toUpperCase() || 'K'}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-900 text-sm truncate">
+                                                {customer.name || `Khách hàng ${index + 1}`}
+                                            </p>
+                                            <p className="text-xs text-gray-500 truncate">
+                                                {customer.email || customer.phone || 'Không có thông tin'}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs text-gray-400">
+                                                {formatDate(customer.created_at) || 'Hôm nay'}
+                                            </p>
+                                        </div>
+                                    </div>
                                 ))
                             )}
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Box>
-            
-            {/* Top 5 món bán chạy */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Card sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                    }
-                }}>
-                    <CardContent sx={{ 
-                        p: { xs: 2, sm: 2.5 }, 
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
-                        overflow: 'hidden'
-                    }}>
-                        <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: { xs: 2, sm: 2.5 } }}>
-                            <Box sx={{ 
-                                p: { xs: 0.75, sm: 1 }, 
-                                borderRadius: 2, 
-                                bgcolor: alpha('#f59e0b', 0.1),
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}>
-                                <Package size={20} style={{ color: '#f59e0b' }} />
-                            </Box>
-                            <Typography variant="h6" sx={{ 
-                                fontWeight: 700,
-                                fontSize: { xs: '1rem', sm: '1.25rem' }
-                            }}>
-                                Top 5 món bán chạy
-                            </Typography>
-                        </Stack>
-                        <TableContainer sx={{
-                            flex: 1,
-                            overflowY: 'auto',
-                            '&::-webkit-scrollbar': {
-                                width: 6,
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                                backgroundColor: alpha('#000', 0.2),
-                                borderRadius: 3,
-                            }
-                        }}>
-                            <Table size="small" stickyHeader>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Orders History - Right */}
+                <div className="lg:col-span-8">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full">
+                        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+                            <h3 className="text-base font-bold text-gray-900">Lịch sử đơn hàng</h3>
+                            <button className="text-sm text-green-600 font-medium hover:underline flex items-center gap-1">
+                                Xem thêm <ChevronRight size={14} />
+                            </button>
+                        </div>
+
+                        <TableContainer component={Paper} elevation={0}>
+                            <Table size="small">
                                 <TableHead>
-                                    <TableRow sx={{ bgcolor: alpha('#f3f4f6', 0.5) }}>
-                                        <TableCell sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary', 
-                                            width: { xs: 50, sm: 60 },
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 }
-                                        }}>#</TableCell>
-                                        <TableCell sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary',
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 }
-                                        }}>Tên món</TableCell>
-                                        <TableCell align="right" sx={{ 
-                                            fontWeight: 700, 
-                                            color: 'text.primary',
-                                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                                            py: { xs: 0.75, sm: 1 }
-                                        }}>Đã bán</TableCell>
+                                    <TableRow sx={{ bgcolor: 'grey.50' }}>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem', py: 1.5 }}>
+                                            Mã đơn hàng
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem', py: 1.5 }}>
+                                            Trạng thái
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem', py: 1.5 }}>
+                                            Ngày và Giờ
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem', py: 1.5 }}>
+                                            Số tiền
+                                        </TableCell>
+                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', fontSize: '0.75rem', py: 1.5, width: 50 }}>
+                                        </TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     {dataLoading ? (
-                                        <>
-                                            {[1, 2, 3, 4, 5].map((i) => (
-                                                <TableRow key={i}>
-                                                    <TableCell><Skeleton variant="circular" width={32} height={32} /></TableCell>
-                                                    <TableCell>
-                                                        <Box>
-                                                            <Skeleton variant="text" width="70%" height={18} />
-                                                            <Skeleton variant="rectangular" width="100%" height={4} sx={{ mt: 0.5, borderRadius: 1 }} />
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell align="right"><Skeleton variant="rectangular" width={50} height={22} sx={{ borderRadius: 1, ml: 'auto' }} /></TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </>
-                                    ) : topProducts.length === 0 ? (
+                                        [1, 2, 3, 4, 5].map(i => (
+                                            <TableRow key={i}>
+                                                <TableCell><Skeleton width="70%" /></TableCell>
+                                                <TableCell><Skeleton width={70} height={24} /></TableCell>
+                                                <TableCell><Skeleton width="80%" /></TableCell>
+                                                <TableCell><Skeleton width="50%" /></TableCell>
+                                                <TableCell><Skeleton width={20} /></TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : recentOrders.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={3} align="center" sx={{ py: 3 }}>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    Không có dữ liệu
-                                                </Typography>
+                                            <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                                                <Typography color="text.secondary" variant="body2">Chưa có đơn hàng</Typography>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        topProducts.map((p, i) => {
-                                            const maxSold = Math.max(...topProducts.map(tp => tp.sold || 0), 1);
-                                            const percentage = ((p.sold || 0) / maxSold) * 100;
-                                            const rankColors = ['#fbbf24', '#94a3b8', '#f59e0b', '#64748b', '#d97706'];
-                                            return (
-                                                <TableRow 
-                                                    key={i} 
-                                                    hover
-                                                    sx={{ 
-                                                        transition: 'all 0.2s ease',
-                                                        '&:hover': {
-                                                            bgcolor: alpha('#f59e0b', 0.04),
-                                                        },
-                                                        '&:last-child td': { borderBottom: 0 }
-                                                    }}
-                                                >
-                                                    <TableCell>
-                                                        <Box sx={{ 
-                                                            width: { xs: 28, sm: 32 }, 
-                                                            height: { xs: 28, sm: 32 }, 
-                                                            borderRadius: '50%', 
-                                                            bgcolor: alpha(rankColors[i] || '#f59e0b', 0.1),
-                                                            color: rankColors[i] || '#f59e0b',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            fontWeight: 700,
-                                                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                                                            border: `2px solid ${alpha(rankColors[i] || '#f59e0b', 0.3)}`
-                                                        }}>
-                                                            {i + 1}
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                            <Typography variant="body2" sx={{ 
-                                                                fontWeight: 600,
-                                                                fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis',
-                                                                whiteSpace: 'nowrap'
-                                                            }}>
-                                                                {p.name || 'N/A'}
-                                                            </Typography>
-                                                            <Box sx={{ 
-                                                                width: '100%', 
-                                                                height: 4, 
-                                                                borderRadius: 2, 
-                                                                bgcolor: alpha('#f59e0b', 0.1),
-                                                                overflow: 'hidden'
-                                                            }}>
-                                                                <Box sx={{ 
-                                                                    width: `${percentage}%`, 
-                                                                    height: '100%', 
-                                                                    bgcolor: rankColors[i] || '#f59e0b',
-                                                                    borderRadius: 2,
-                                                                    transition: 'width 0.5s ease',
-                                                                    boxShadow: `0 2px 4px ${alpha(rankColors[i] || '#f59e0b', 0.3)}`
-                                                                }} />
-                                                            </Box>
-                                                        </Box>
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        <Chip 
-                                                            label={`${p.sold || 0} đơn`}
-                                                            sx={{ 
-                                                                fontWeight: 700,
-                                                                fontSize: { xs: '0.65rem', sm: '0.7rem' },
-                                                                height: { xs: 18, sm: 22 },
-                                                                bgcolor: alpha(rankColors[i] || '#f59e0b', 0.1),
-                                                                color: rankColors[i] || '#f59e0b',
-                                                                border: `1px solid ${alpha(rankColors[i] || '#f59e0b', 0.3)}`
-                                                            }}
-                                                            size="small"
-                                                        />
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })
+                                        recentOrders.slice(0, 6).map((order, index) => (
+                                            <TableRow
+                                                key={order.id || index}
+                                                hover
+                                                sx={{
+                                                    '&:hover': { bgcolor: 'grey.50' },
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                <TableCell sx={{ py: 1.5 }}>
+                                                    <span className="font-semibold text-gray-900 text-sm">
+                                                        #{order.id || `DH-${10250000 + index}`}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell sx={{ py: 1.5 }}>
+                                                    <StatusBadge status={order.status || 'Hoàn thành'} />
+                                                </TableCell>
+                                                <TableCell sx={{ py: 1.5 }}>
+                                                    <div>
+                                                        <span className="text-gray-900 text-xs">
+                                                            {formatDate(order.created_at) || '1/10/2024'}
+                                                        </span>
+                                                        <span className="text-gray-400 text-xs ml-1">
+                                                            lúc {formatTime(order.created_at) || '5:12 PM'}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell sx={{ py: 1.5 }}>
+                                                    <span className="font-bold text-green-600 text-sm">
+                                                        {typeof order.total === 'number'
+                                                            ? order.total.toLocaleString('vi-VN') + ' ₫'
+                                                            : order.total || `${78000 - index * 10000} ₫`}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell sx={{ py: 1.5 }}>
+                                                    <button className="p-1 rounded-md hover:bg-gray-100 transition-colors">
+                                                        <Info size={16} className="text-gray-400" />
+                                                    </button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
                                     )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                    </CardContent>
-                </Card>
-            </Box>
-        </Box>
-
-        {/* Hàng 5: Biểu đồ cột mới - Grouped Bar Chart */}
-        <Grid container spacing={{ xs: 2, sm: 2.5, md: 3 }} sx={{ width: '100%', mt: { xs: 2, sm: 2.5, md: 3 } }}>
-            <Grid item xs={12} sx={{ width: '100%' }}>
-                <Card sx={{
-                    background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    transition: 'all 0.3s ease',
-                    width: '100%',
-                    '&:hover': {
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                    }
-                }}>
-                    <CardContent sx={{ 
-                        p: { xs: 2, sm: 2.5, md: 3 }, 
-                        width: '100%' 
-                    }}>
-                        <Stack 
-                            direction={{ xs: 'column', md: 'row' }} 
-                            alignItems={{ xs: 'flex-start', md: 'center' }} 
-                            justifyContent="space-between" 
-                            spacing={{ xs: 2, md: 0 }}
-                            sx={{ mb: { xs: 2, md: 3 } }}
-                        >
-                            <Box>
-                                <Typography variant="h5" sx={{ 
-                                    fontWeight: 700, 
-                                    mb: 0.5,
-                                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
-                                }}>
-                                    Doanh thu và số đơn theo ngày
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary" sx={{
-                                    fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                                    display: { xs: 'none', sm: 'block' }
-                                }}>
-                                    Phân tích chi tiết doanh thu và đơn hàng theo từng ngày
-                                </Typography>
-                            </Box>
-                            <Stack 
-                                direction="row" 
-                                spacing={{ xs: 1, sm: 2 }}
-                                sx={{ width: { xs: '100%', md: 'auto' } }}
-                            >
-                                <FormControl size="small" sx={{ 
-                                    minWidth: { xs: '48%', md: 130 },
-                                    width: { xs: '48%', md: 'auto' }
-                                }}>
-                                    <InputLabel sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Tháng</InputLabel>
-                                    <Select 
-                                        label="Tháng" 
-                                        value={month} 
-                                        onChange={(e) => setMonth(e.target.value)}
-                                        sx={{ 
-                                            borderRadius: 2,
-                                            fontSize: { xs: '0.875rem', sm: '1rem' },
-                                            '& .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: alpha('#2563eb', 0.3),
-                                            },
-                                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: alpha('#2563eb', 0.5),
-                                            },
-                                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: '#2563eb',
-                                            }
-                                        }}
-                                    >
-                                        {Array.from({ length: 12 }).map((_, i) => (
-                                            <MenuItem key={i+1} value={i+1}>{`Tháng ${i+1}`}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                                <FormControl size="small" sx={{ 
-                                    minWidth: { xs: '48%', md: 130 },
-                                    width: { xs: '48%', md: 'auto' }
-                                }}>
-                                    <InputLabel sx={{ fontWeight: 600, fontSize: { xs: '0.875rem', sm: '1rem' } }}>Năm</InputLabel>
-                                    <Select 
-                                        label="Năm" 
-                                        value={year} 
-                                        onChange={(e) => setYear(e.target.value)}
-                                        sx={{ 
-                                            borderRadius: 2,
-                                            fontSize: { xs: '0.875rem', sm: '1rem' },
-                                            '& .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: alpha('#2563eb', 0.3),
-                                            },
-                                            '&:hover .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: alpha('#2563eb', 0.5),
-                                            },
-                                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: '#2563eb',
-                                            }
-                                        }}
-                                    >
-                                        {[year-1, year, year+1].map(y => (
-                                            <MenuItem key={y} value={y}>{y}</MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </Stack>
-                        </Stack>
-                        <Divider sx={{ mb: { xs: 2, md: 3 }, borderColor: alpha('#000', 0.1) }} />
-                        {/* Custom legend với thiết kế đẹp hơn */}
-                        <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            gap: { xs: 2, sm: 3, md: 4 }, 
-                            mb: 2,
-                            p: { xs: 1, sm: 1.5 },
-                            borderRadius: 2,
-                            bgcolor: alpha('#f3f4f6', 0.5),
-                            flexWrap: { xs: 'wrap', sm: 'nowrap' }
-                        }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ 
-                                    width: { xs: 12, sm: 16 }, 
-                                    height: { xs: 12, sm: 16 }, 
-                                    bgcolor: '#ea580c', 
-                                    borderRadius: 1,
-                                    boxShadow: `0 2px 4px ${alpha('#ea580c', 0.3)}`
-                                }} />
-                                <Typography variant="body2" sx={{ 
-                                    fontWeight: 600,
-                                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                                }}>
-                                    Doanh thu (ngàn ₫)
-                                </Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                                <Box sx={{ 
-                                    width: { xs: 12, sm: 16 }, 
-                                    height: { xs: 12, sm: 16 }, 
-                                    bgcolor: '#6366f1',
-                                    borderRadius: 1,
-                                    boxShadow: `0 2px 4px ${alpha('#6366f1', 0.3)}`
-                                }} />
-                                <Typography variant="body2" sx={{ 
-                                    fontWeight: 600,
-                                    fontSize: { xs: '0.75rem', sm: '0.875rem' }
-                                }}>
-                                    Số đơn
-                                </Typography>
-                            </Box>
-                        </Box>
-                        <Box 
-                            ref={chartContainerRef}
-                            sx={{ 
-                                height: { xs: 300, sm: 350, md: 400 },
-                                borderRadius: 2,
-                                bgcolor: '#ffffff',
-                                p: { xs: 1, sm: 1.5, md: 2 },
-                                border: `1px solid ${alpha('#e5e7eb', 0.5)}`,
-                                width: '100%',
-                                maxWidth: '100%',
-                                overflow: { xs: 'auto', md: 'hidden' },
-                                boxSizing: 'border-box',
-                                position: 'relative',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                '&::-webkit-scrollbar': {
-                                    height: 6,
-                                },
-                                '&::-webkit-scrollbar-thumb': {
-                                    backgroundColor: alpha('#000', 0.2),
-                                    borderRadius: 3,
-                                }
-                            }}
-                        >
-                            {loading ? (
-                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, p: 4 }}>
-                                    <Skeleton variant="rectangular" width="80%" height={300} sx={{ borderRadius: 2 }} />
-                                    <Skeleton variant="text" width="40%" height={24} />
-                                </Box>
-                            ) : error ? (
-                                <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="body1" color="error">
-                                        {error}
-                                    </Typography>
-                                </Box>
-                            ) : days.length > 0 && dailyRevenueK.length > 0 ? (
-                            <BarChart
-                                    xAxis={[{ 
-                                        scaleType: 'band', 
-                                        data: days, 
-                                        label: 'Ngày', 
-                                        tickLabelStyle: { fontSize: 11, fontWeight: 500 } 
-                                    }]}
-                                    yAxis={[{ 
-                                        label: 'Giá trị', 
-                                        tickLabelStyle: { fontSize: 11, fontWeight: 500 } 
-                                    }]}
-                                    series={[
-                                        { 
-                                            data: dailyRevenueK, 
-                                            color: '#ea580c', 
-                                            label: 'Doanh thu (ngàn ₫)',
-                                            valueFormatter: (v) => `${v}k`
-                                        },
-                                        { 
-                                            data: dailyOrders, 
-                                            color: '#6366f1', 
-                                            label: 'Số đơn',
-                                            valueFormatter: (v) => `${v}`
-                                        }
-                                    ]}
-                                    width={chartWidth}
-                                    height={isMobile ? 280 : isTablet ? 330 : 380}
-                                    slotProps={{ 
-                                        legend: { 
-                                            direction: 'row',
-                                            position: { vertical: 'top', horizontal: 'right' },
-                                            padding: 0
-                                        } 
-                                    }}
-                                />
-                            ) : (
-                                <Box sx={{ textAlign: 'center' }}>
-                                    <Typography variant="body1" color="text.secondary">
-                                        Không có dữ liệu
-                                    </Typography>
-                            </Box>
-                            )}
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Grid>
-
-        </Grid>
-        </Box>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }

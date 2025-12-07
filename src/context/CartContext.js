@@ -29,7 +29,7 @@ export const CartProvider = ({ children }) => {
   const openMiniCart = useCallback(() => {
     setIsMiniCartOpen(true);
   }, []);
-  
+
   // Hàm đóng mini cart
   const closeMiniCart = useCallback(() => {
     setIsMiniCartOpen(false);
@@ -61,15 +61,15 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = (productId) => {
     let removedItemName = '';
     setCartItems(prevItems => {
-        const itemToRemove = prevItems.find(item => item.id === productId);
-        if (itemToRemove) {
-            removedItemName = itemToRemove.name;
-        }
-        return prevItems.filter(item => item.id !== productId);
+      const itemToRemove = prevItems.find(item => item.id === productId);
+      if (itemToRemove) {
+        removedItemName = itemToRemove.name;
+      }
+      return prevItems.filter(item => item.id !== productId);
     });
-    
+
     if (removedItemName) {
-        showToast(`Đã xóa "${removedItemName}" khỏi giỏ hàng.`, 'error');
+      showToast(`Đã xóa "${removedItemName}" khỏi giỏ hàng.`, 'error');
     }
   };
 
@@ -84,10 +84,15 @@ export const CartProvider = ({ children }) => {
       )
     );
   };
-  
+
   const clearCart = () => {
     setCartItems([]);
     showToast('Đã xóa toàn bộ giỏ hàng.', 'error');
+  };
+
+  // Silent version - no toast (for order completion)
+  const clearCartSilent = () => {
+    setCartItems([]);
   };
 
   // Cung cấp đầy đủ các state và hàm cho các component con
@@ -97,6 +102,7 @@ export const CartProvider = ({ children }) => {
     removeFromCart,
     updateQuantity,
     clearCart,
+    clearCartSilent,
     isMiniCartOpen,
     openMiniCart,
     closeMiniCart,

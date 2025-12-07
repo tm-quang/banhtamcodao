@@ -54,7 +54,7 @@ export default function Testimonials() {
     };
 
     return (
-        <section className="py-10 md:py-16 bg-white relative overflow-hidden" aria-label="Đánh giá khách hàng">
+        <section className="py-10 md:py-16 relative overflow-hidden" aria-label="Đánh giá khách hàng">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-5 pointer-events-none">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl"></div>

@@ -2,33 +2,37 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { 
-  Skeleton, 
-  SkeletonText, 
-  SkeletonButton, 
-  SkeletonImage, 
+import {
+  Skeleton,
+  SkeletonText,
+  SkeletonButton,
+  SkeletonImage,
   SkeletonCard,
   SkeletonTableRow,
   SkeletonProductCard,
   SkeletonFormSection,
   SkeletonOrderSummary,
   SkeletonCheckout,
-  SkeletonLoadingOverlay
+  SkeletonLoadingOverlay,
+  SkeletonOrderConfirmation,
+  RingSpinner
 } from './Skeleton';
 
 // Re-export để tương thích ngược
-export { 
-  Skeleton, 
-  SkeletonText, 
-  SkeletonButton, 
-  SkeletonImage, 
+export {
+  Skeleton,
+  SkeletonText,
+  SkeletonButton,
+  SkeletonImage,
   SkeletonCard,
   SkeletonTableRow,
   SkeletonProductCard,
   SkeletonFormSection,
   SkeletonOrderSummary,
   SkeletonCheckout,
-  SkeletonLoadingOverlay
+  SkeletonLoadingOverlay,
+  SkeletonOrderConfirmation,
+  RingSpinner
 };
 
 // Alias để tương thích ngược với code cũ

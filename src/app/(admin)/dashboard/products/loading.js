@@ -1,4 +1,7 @@
-// src/app/(admin)/dashboard/products/loading.js
+/**
+ * Admin products loading component
+ * @file src/app/(admin)/dashboard/products/loading.js
+ */
 import { Box, Skeleton, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 export default function Loading() {

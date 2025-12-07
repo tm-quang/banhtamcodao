@@ -1,7 +1,10 @@
-// src/app/api/admin/products/[id]/route.js
+/**
+ * src/app/api/admin/products/[id]/route.js
+ * API routes cho cập nhật và xóa sản phẩm theo ID
+ */
 import { NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
-import { slugify } from '@/lib/slugify'; // <-- 1. Import hàm slugify
+import { supabaseAdmin } from '@/lib/supabase';
+import { slugify } from '@/lib/slugify';
 
 export async function PUT(request, { params }) {
     try {
@@ -21,7 +24,7 @@ export async function PUT(request, { params }) {
         const finalDiscountPrice = discount_price ? parseFloat(discount_price) : null;
         const finalIsSpecial = is_special ? true : false;
 
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('products')
             .update({
                 name,
@@ -45,12 +48,17 @@ export async function PUT(request, { params }) {
         return NextResponse.json({ success: false, message: 'Lỗi Server', error: error.message }, { status: 500 });
     }
 }
-// HÀM DELETE - Xóa sản phẩm (Giữ nguyên)
+/**
+ * HÀM DELETE - Xóa sản phẩm (Giữ nguyên)
+ * @param {Request} request - Request object
+ * @param {Object} params - Route parameters
+ * @returns {Promise<NextResponse>} Response
+ */
 export async function DELETE(request, { params }) {
     try {
         const { id } = params;
 
-        const { error } = await supabase.from('products').delete().eq('id', id);
+        const { error } = await supabaseAdmin.from('products').delete().eq('id', id);
 
         if (error) throw error;
 

@@ -1,4 +1,7 @@
-// src/app/account/page.js
+/**
+ * Account page - Redirects to profile
+ * @file src/app/account/page.js
+ */
 'use client';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,5 +11,6 @@ export default function AccountPage() {
     useEffect(() => {
         router.replace('/account/profile');
     }, [router]);
-    return null; // Hoặc một component loading
+    /** Hoặc một component loading */
+    return null;
 }

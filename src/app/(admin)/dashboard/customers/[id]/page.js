@@ -1,4 +1,7 @@
-// src/app/(admin)/dashboard/customers/[id]/page.js
+/**
+ * Admin customer details page
+ * @file src/app/(admin)/dashboard/customers/[id]/page.js
+ */
 import CustomerDetailsClient from '@/components/admin/CustomerDetailsClient';
 import { Box, Typography } from '@mui/material';
 import Link from 'next/link';

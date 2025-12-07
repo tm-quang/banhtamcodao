@@ -1,9 +1,16 @@
-// src/app/api/products/route.js
+/**
+ * Products API route handler
+ * @file src/app/api/products/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 import { slugify } from '@/lib/slugify';
 
-// Hàm GET để lấy tất cả sản phẩm đang hoạt động
+/**
+ * Hàm GET để lấy tất cả sản phẩm đang hoạt động
+ * @param {Request} request - Request object
+ * @returns {Promise<NextResponse>} Response with products
+ */
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -13,18 +20,20 @@ export async function GET(request) {
     const order = searchParams.get('order') || 'asc';
     const priceRange = searchParams.get('priceRange');
 
-    // Xây dựng query Supabase
-    // select('*, categories(name)') để lấy tên danh mục
+    /** Xây dựng query Supabase
+     * select('*, categories(name)') để lấy tên danh mục
+     */
     let query = supabase
       .from('products')
       .select('*, categories(name)')
       .eq('status', 'active');
 
-    // Thêm điều kiện tìm kiếm
+    /** Thêm điều kiện tìm kiếm */
     if (search) {
-      // Supabase không hỗ trợ OR trực tiếp giữa các bảng khác nhau dễ dàng như SQL thuần
-      // Nhưng với text search đơn giản, ta có thể dùng .or()
-      // Lưu ý: cú pháp .or('name.ilike.%term%,description.ilike.%term%')
+      /** Supabase không hỗ trợ OR trực tiếp giữa các bảng khác nhau dễ dàng như SQL thuần
+       * Nhưng với text search đơn giản, ta có thể dùng .or()
+       * Lưu ý: cú pháp .or('name.ilike.%term%,description.ilike.%term%')
+       */
       const term = `%${search}%`;
       query = query.or(`name.ilike.${term},description.ilike.${term}`);
     }

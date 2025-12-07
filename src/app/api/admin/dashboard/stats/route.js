@@ -1,4 +1,7 @@
-// src/app/api/admin/dashboard/stats/route.js
+/**
+ * Admin dashboard stats API route handler
+ * @file src/app/api/admin/dashboard/stats/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 

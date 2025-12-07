@@ -1,18 +1,20 @@
-// src/app/login/page.js
+/**
+ * Login page component
+ * @file src/app/login/page.js
+ */
 import LoginForm from "@/components/LoginForm";
-import Link from "next/link"; // Import Link
+import Link from "next/link";
 
 export const metadata = {
-  title: 'Đăng nhập - Bánh Tằm Cô Đào',
+    title: 'Đăng nhập - Bánh Tằm Cô Đào',
 };
 
 export default function LoginPage() {
     return (
-        <div className="container mx-auto px-4 pt-24 pb-8 flex justify-center">
-            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-lg">
+        <div className="min-h-screen flex items-center justify-center px-4 pt-6 pb-8">
+            <div className="w-full max-w-md p-6 sm:p-8 space-y-6 bg-white rounded-3xl shadow-xl border border-gray-100">
                 <LoginForm />
-                {/* Thêm liên kết đến trang đăng ký */}
-                <p className="text-center text-sm mt-4">
+                <p className="text-center text-sm text-gray-500">
                     Chưa có tài khoản?{' '}
                     <Link href="/register" className="font-semibold text-primary hover:underline">
                         Đăng ký ngay

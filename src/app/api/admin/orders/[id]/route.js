@@ -1,12 +1,15 @@
-// src/app/api/admin/orders/[id]/route.js
+/**
+ * src/app/api/admin/orders/[id]/route.js
+ * API routes cho quản lý đơn hàng theo ID
+ */
 import { NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function GET(request, { params }) {
     try {
         const { id } = params;
 
-        const { data: order, error } = await supabase
+        const { data: order, error } = await supabaseAdmin
             .from('orders')
             .select('*')
             .eq('id', id)
@@ -25,7 +28,12 @@ export async function GET(request, { params }) {
         return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
     }
 }
-// --- HÀM MỚI: CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG ---
+/**
+ * HÀM MỚI: CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG
+ * @param {Request} request - Request object
+ * @param {Object} params - Route parameters
+ * @returns {Promise<NextResponse>} Response
+ */
 export async function PUT(request, { params }) {
     try {
         const { id } = params;
@@ -47,7 +55,7 @@ export async function PUT(request, { params }) {
             return NextResponse.json({ success: false, message: 'Không có thông tin nào để cập nhật.' }, { status: 400 });
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('orders')
             .update(updates)
             .eq('id', id);
@@ -61,11 +69,16 @@ export async function PUT(request, { params }) {
     }
 }
 
-// --- HÀM MỚI: XÓA ĐƠN HÀNG ---
+/**
+ * HÀM MỚI: XÓA ĐƠN HÀNG
+ * @param {Request} request - Request object
+ * @param {Object} params - Route parameters
+ * @returns {Promise<NextResponse>} Response
+ */
 export async function DELETE(request, { params }) {
     try {
         const { id } = params;
-        const { error } = await supabase.from('orders').delete().eq('id', id);
+        const { error } = await supabaseAdmin.from('orders').delete().eq('id', id);
 
         if (error) throw error;
 

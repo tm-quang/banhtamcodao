@@ -1,7 +1,10 @@
-// src/app/(admin)/dashboard/customers/page.js
+/**
+ * Admin customers management page
+ * @file src/app/(admin)/dashboard/customers/page.js
+ */
 import CustomerTable from '@/components/admin/CustomerTable';
 
-// 1. Hàm lấy dữ liệu trên server
+/** Hàm lấy dữ liệu trên server */
 async function getCustomers() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3300';
     try {
@@ -19,7 +22,7 @@ export const metadata = {
     title: 'Quản lý Khách hàng - Trang Quản Trị',
 };
 
-// 2. Chuyển thành Server Component và truyền data xuống
+/** Chuyển thành Server Component và truyền data xuống */
 export default async function CustomersPage() {
     const customers = await getCustomers();
     return (

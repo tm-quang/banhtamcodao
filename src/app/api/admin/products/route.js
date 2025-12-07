@@ -1,11 +1,14 @@
-// src/app/api/admin/products/route.js
+/**
+ * src/app/api/admin/products/route.js
+ * API routes cho quản lý sản phẩm
+ */
 import { NextResponse } from 'next/server';
-import supabase from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 import { slugify } from '@/lib/slugify';
 
 export async function GET(request) {
     try {
-        const { data: rows, error } = await supabase
+        const { data: rows, error } = await supabaseAdmin
             .from('products')
             .select(`
 id, name, slug, description, price, discount_price,
@@ -51,7 +54,7 @@ export async function POST(request) {
         is_special = is_special ? true : false;
         status = status || 'active';
 
-        const { data: result, error } = await supabase
+        const { data: result, error } = await supabaseAdmin
             .from('products')
             .insert([{
                 name,

@@ -1,4 +1,7 @@
-// src/app/(admin)/dashboard/products/page.js
+/**
+ * Admin products management page
+ * @file src/app/(admin)/dashboard/products/page.js
+ */
 import ProductTable from '@/components/admin/ProductTable';
 
 async function fetchData() {

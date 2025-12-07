@@ -8,7 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-export default function SearchBar({ className = '' }) {
+export default function SearchBar({ className = '', isContactPage = false }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -164,7 +164,7 @@ export default function SearchBar({ className = '' }) {
       {!showSearchBox && (
         <button
           onClick={toggleSearchBox}
-          className="p-2 hover:text-primary transition-colors"
+          className={`p-2 ${isContactPage ? 'hover:text-white/80 text-white' : 'hover:text-primary'} transition-colors`}
           aria-label="Mở tìm kiếm"
         >
           <Search size={22} />

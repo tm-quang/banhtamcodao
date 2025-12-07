@@ -1,4 +1,7 @@
-// src/app/account/orders/page.js
+/**
+ * Account orders page component
+ * @file src/app/account/orders/page.js
+ */
 'use client';
 import { useAuth } from '@/context/AuthContext';
 import { useMemo, useState, useEffect } from 'react';

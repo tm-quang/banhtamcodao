@@ -1,7 +1,7 @@
+'use client';
+
 import Link from 'next/link';
-import Image from 'next/image';
 import { Menu, X, LogIn, LogOut, Settings, Shield, User as UserIcon, Facebook, Twitter, Heart, ShoppingCart } from 'lucide-react';
-import { FaUserCircle } from "react-icons/fa";
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState, useRef } from 'react';
@@ -20,17 +20,11 @@ const Header = () => {
   const pathname = usePathname();
   const headerRef = useRef(null);
 
-  const transparentHeaderPaths = ['/', '/contact', '/menu'];
-  const isTransparentPage = transparentHeaderPaths.includes(pathname);
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (headerRef.current && !headerRef.current.contains(event.target)) {
-        setIsUserMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  /**
+   * Các trang có header trong suốt khi chưa cuộn: trang chủ, menu (có hero), contact (có background image)
+   */
+  const transparentHeaderPaths = ['/', '/menu', '/contact', '/order-tracking', '/login', '/register', '/account'];
+  const isTransparentPage = transparentHeaderPaths.some(path => pathname.startsWith(path));
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -67,13 +61,26 @@ const Header = () => {
     const t = setTimeout(() => setFlashWishlistCount(false), 700);
     return () => clearTimeout(t);
   }, [wishlistCount, isClient]);
-  const isSolid = !isTransparentPage || isScrolled;
-  const textColorClass = isSolid ? 'text-white' : 'text-gray-900';
-  const headerClass = `fixed top-0 w-full z-50 ${textColorClass} transition-colors duration-500 ease-in-out ${isSolid ? 'bg-secondary shadow-md' : 'bg-transparent'} h-14 md:h-16`;
+
+  /**
+   * Logic màu nền header:
+   * - Trang chủ: trong suốt khi chưa cuộn, #FFFBF7 khi cuộn
+   * - Trang contact: trong suốt với text trắng (vì có background image tối)
+   * - Các trang khác: #FFFBF7 ngay từ đầu
+   */
+  const isContactPage = pathname === '/contact';
+  const textColorClass = isContactPage ? 'text-white' : 'text-black';
+  const bgClass = isTransparentPage && !isScrolled ? 'bg-transparent' : 'bg-[#FFFBF7]';
+  /**
+   * Shadow: khi có nền dùng shadow nhẹ, khi trong suốt không có shadow
+   */
+  const shadowClass = bgClass === 'bg-transparent' ? '' : 'shadow-sm';
+  const headerClass = `fixed top-0 w-full z-50 ${textColorClass} transition-colors duration-500 ease-in-out ${bgClass} ${shadowClass} h-14 md:h-16`;
 
   const navLinks = [
-    { href: '/', label: 'Trang chủ' }, { href: '/menu', label: 'Thực đơn' },
-    { href: '/cart', label: 'Giỏ hàng' }, { href: '/order-tracking', label: 'Tra cứu đơn hàng' },
+    { href: '/', label: 'Trang chủ' },
+    { href: '/menu', label: 'Thực đơn' },
+    { href: '/order-tracking', label: 'Tra cứu đơn hàng' },
     { href: '/contact', label: 'Liên hệ' },
   ];
 
@@ -90,47 +97,48 @@ const Header = () => {
   return (
     <>
       <header className={headerClass} ref={headerRef}>
-        <div className="container mx-auto flex h-full justify-between items-center px-2">
+        <div className="max-w-[1200px] mx-auto flex h-full justify-between items-center px-2">
           <div className="w-48">
             <Link href="/">
-              <Image
+              <img
                 src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png"
-                alt="Bánh Tằm Cô Đào Logo" width={180} height={40} priority
+                alt="Bánh Tằm Cô Đào Logo" width={180} height={40}
+                loading="eager"
               />
             </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-5">
-            <nav className="flex items-center gap-7 text-2xl">
-              <Link href="/" className="relative group transition-colors py-2 hover:text-primary font-lobster">
-                <span className="relative z-10">Trang chủ</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+            <nav className="flex items-center gap-7">
+              <Link href="/" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
+                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Trang chủ</span>
+                <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
-              <Link href="/menu" className="relative group transition-colors py-2 hover:text-primary font-lobster">
-                <span className="relative z-10">Thực đơn</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              <Link href="/menu" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
+                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Thực đơn</span>
+                <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
-              <Link href="/contact" className="relative group transition-colors py-2 hover:text-primary font-lobster">
-                <span className="relative z-10">Liên hệ</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              <Link href="/order-tracking" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
+                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Đơn hàng</span>
+                <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
-              <Link href="/order-tracking" className="relative group transition-colors py-2 hover:text-primary font-lobster">
-                <span className="relative z-10">Đơn hàng</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              <Link href="/contact" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
+                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Liên hệ</span>
+                <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
             </nav>
           </div>
 
           <div className="flex items-center gap-3 px-1">
             <div className="hidden md:block">
-              <SearchBar />
+              <SearchBar isContactPage={isContactPage} />
             </div>
             <Link
               href="/wishlist"
-              className={`relative hover:text-primary transition-colors p-1 ${isWishlistAnimating ? 'animate-wishlist-bounce' : ''}`}
+              className={`relative ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} transition-colors p-1 ${isWishlistAnimating ? 'animate-wishlist-bounce' : ''}`}
               aria-label={`Danh sách yêu thích, ${wishlistCount} sản phẩm`}
             >
-              <Heart size={24} />
+              <Heart size={24} className={isContactPage ? 'text-white' : ''} />
               {isClient && wishlistCount > 0 && (
                 <span className={`absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${flashWishlistCount ? 'animate-cart-count-flash' : ''}`}>
                   {wishlistCount}
@@ -138,33 +146,35 @@ const Header = () => {
               )}
             </Link>
 
-            <button
-              onClick={handleCartIconClick}
-              className={`relative hover:text-primary transition-colors p-1 hidden md:inline-flex ${isCartAnimating ? 'animate-cart-bounce' : ''}`}
-              aria-label={`Mở xem nhanh giỏ hàng, ${totalItems} sản phẩm`}
-              style={{ transformOrigin: 'center' }}
-            >
-              <ShoppingCart size={24} />
-              {isClient && totalItems > 0 && (
-                <span className={`absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${flashCartCount && totalItems > 0 ? 'animate-cart-count-flash' : ''}`}>
-                  {totalItems}
-                </span>
-              )}
-            </button>
+            <div className="relative">
+              <button
+                onClick={handleCartIconClick}
+                className={`cursor-pointer relative ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} transition-colors p-1 hidden md:inline-flex ${isCartAnimating ? 'animate-cart-bounce' : ''}`}
+                aria-label={`Mở xem nhanh giỏ hàng, ${totalItems} sản phẩm`}
+                style={{ transformOrigin: 'center' }}
+              >
+                <ShoppingCart size={24} className={isContactPage ? 'text-white' : ''} />
+                {isClient && totalItems > 0 && (
+                  <span className={`absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${flashCartCount && totalItems > 0 ? 'animate-cart-count-flash' : ''}`}>
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+            </div>
 
             <div className="relative hidden md:block">
               {user ? (
-                <button onClick={handleUserMenuToggle} className="hover:text-primary transition-colors p-1">
-                  <FaUserCircle size={24} />
+                <button onClick={handleUserMenuToggle} className={`cursor-pointer ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} transition-colors p-1`}>
+                  <UserIcon size={24} className={isContactPage ? 'text-white' : ''} />
                 </button>
               ) : (
-                <Link href="/login" className="hover:text-primary transition-colors p-1">
-                  <FaUserCircle size={24} />
+                <Link href="/login" className={`${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} transition-colors p-1`}>
+                  <UserIcon size={24} className={isContactPage ? 'text-white' : ''} />
                 </Link>
               )}
 
               {user && isUserMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50 text-secondary" onClick={() => setIsUserMenuOpen(false)}>
+                <div className="cursor-pointer absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50 text-secondary" onClick={() => setIsUserMenuOpen(false)}>
                   <div className="p-4 border-b">
                     <p className="font-lobster font-bold">{user.full_name}</p>
                     <p className="text-sm text-gray-500 font-lobster">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
@@ -174,36 +184,43 @@ const Header = () => {
                     {user.role === 'admin' && (
                       <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 font-lobster"><Shield size={16} /> Quản trị Website</Link>
                     )}
-                    <button onClick={logout} className="w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-red-600 font-lobster"><LogOut size={16} /> Đăng xuất</button>
+                    <button onClick={logout} className="cursor-pointer w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-red-600 font-lobster"><LogOut size={16} /> Đăng xuất</button>
                   </nav>
                 </div>
               )}
             </div>
 
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden hover:text-primary transition-colors relative z-[110] p-2">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className={`cursor-pointer md:hidden ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} transition-colors relative z-[110] p-2`}>
               <div className={`transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : 'rotate-0'}`}>
-                {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                {isMenuOpen ? <X size={28} className={isContactPage ? 'text-white' : ''} /> : <Menu size={28} className={isContactPage ? 'text-white' : ''} />}
               </div>
             </button>
           </div>
         </div>
       </header>
 
-      <div className={`fixed inset-0 bg-black/60 z-[90] transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMenuOpen(false)}></div>
+      <div className={`cursor-pointer fixed inset-0 bg-black/60 z-[90] transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMenuOpen(false)}></div>
       <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-[100] flex flex-col transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
           <Link href="/" onClick={() => setIsMenuOpen(false)}>
-            <Image src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png" alt="Bánh Tằm Cô Đào Logo" width={180} height={38} />
+            <img src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png" alt="Bánh Tằm Cô Đào Logo" width={180} height={38} />
           </Link>
-          <button onClick={() => setIsMenuOpen(false)} className="text-black hover:text-primary"><X size={28} /></button>
+          <button onClick={() => setIsMenuOpen(false)} className="cursor-pointer text-black hover:text-primary"><X size={28} /></button>
         </div>
         <nav className="flex-grow p-4 overflow-y-auto">
           <ul className="flex flex-col gap-2">
             {navLinks.map(link => (
               <li key={link.href}><Link href={link.href} onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">{link.label}</Link></li>
             ))}
-            {user?.role === 'admin' && (
-              <li><Link href="/admin" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">Admin</Link></li>
+            {user ? (
+              <>
+                {user.role === 'admin' && (
+                  <li><Link href="/admin" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">Admin</Link></li>
+                )}
+                <li><button onClick={() => { logout(); setIsMenuOpen(false); }} className="block text-xl text-red-600 font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors w-full text-left">Đăng xuất</button></li>
+              </>
+            ) : (
+              <li><Link href="/login" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">Đăng nhập</Link></li>
             )}
           </ul>
         </nav>
@@ -217,7 +234,7 @@ const Header = () => {
                 <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors">
                   <UserIcon size={20} /> Tài khoản
                 </Link>
-                <button onClick={logout} className="flex items-center justify-center gap-2 w-full bg-red-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-red-700 transition-colors">
+                <button onClick={logout} className="cursor-pointer flex items-center justify-center gap-2 w-full bg-red-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-red-700 transition-colors">
                   <LogOut size={20} /> Đăng xuất
                 </button>
               </div>

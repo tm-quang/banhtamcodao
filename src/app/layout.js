@@ -1,4 +1,7 @@
-// src/app/layout.js
+/**
+ * Root layout component
+ * @file src/app/layout.js
+ */
 import './globals.css';
 import { Roboto, Lobster } from 'next/font/google';
 import { CartProvider } from '@/context/CartContext';
@@ -27,7 +30,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
-      <body className={`${roboto.variable} ${lobster.variable} font-roboto text-gray-800`} style={{ backgroundColor: '#F0F2F5' }}>
+      <body className={`${roboto.variable} ${lobster.variable} font-roboto text-gray-800`}>
         {/* Cấu trúc đúng: AuthProvider bao bọc tất cả */}
         <AuthProvider>
           <ToastProvider>

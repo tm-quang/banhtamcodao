@@ -1,8 +1,15 @@
-// src/app/api/products/featured/route.js
+/**
+ * Featured products API route handler
+ * @file src/app/api/products/featured/route.js
+ */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
 
-// Hàm GET để lấy các sản phẩm nổi bật
+/**
+ * Hàm GET để lấy các sản phẩm nổi bật
+ * @param {Request} request - Request object
+ * @returns {Promise<NextResponse>} Response with featured products
+ */
 export async function GET(request) {
   try {
     const { data: rows, error } = await supabase
