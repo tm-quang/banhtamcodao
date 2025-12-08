@@ -2,6 +2,8 @@
  * src/app/(admin)/layout.js
  * Admin layout với authentication guard sử dụng Supabase Auth
  */
+export const dynamic = 'force-dynamic';
+
 import Sidebar from "@/components/admin/Sidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { cookies } from 'next/headers';
