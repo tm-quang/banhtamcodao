@@ -285,7 +285,7 @@ body {
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
-/* CategorySlider - Ensure proper scrolling on mobile */
+/* CategorySlider - Ensure proper scrolling on mobile and center alignment */
 .category-swiper {
   overflow: hidden !important;
   width: 100% !important;
@@ -295,6 +295,8 @@ body {
 .category-swiper .swiper-wrapper {
   display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto !important;
 }
 
 .category-swiper .swiper-slide {
