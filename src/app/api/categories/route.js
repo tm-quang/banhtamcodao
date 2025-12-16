@@ -11,6 +11,16 @@ import supabase from '@/lib/supabase';
  */
 export async function GET() {
     try {
+        // Kiểm tra Supabase client
+        if (!supabase) {
+            console.error('Supabase client chưa được khởi tạo. Vui lòng kiểm tra biến môi trường.');
+            return NextResponse.json({ 
+                success: false, 
+                message: 'Database chưa được cấu hình. Vui lòng liên hệ quản trị viên.',
+                categories: [] 
+            }, { status: 503 });
+        }
+
         const { data: rows, error } = await supabase
             .from('categories')
             .select('*')

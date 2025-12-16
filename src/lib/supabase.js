@@ -45,5 +45,15 @@ export function checkSupabaseAdmin() {
     return supabaseAdmin;
 }
 
+/**
+ * Helper function để kiểm tra supabase client có sẵn sàng không
+ */
+export function checkSupabase() {
+    if (!supabase) {
+        throw new Error('Supabase client chưa được khởi tạo. Vui lòng kiểm tra NEXT_PUBLIC_SUPABASE_URL và NEXT_PUBLIC_SUPABASE_ANON_KEY trong biến môi trường.');
+    }
+    return supabase;
+}
+
 export default supabase;
 export { supabaseAdmin };

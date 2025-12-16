@@ -13,6 +13,16 @@ import { slugify } from '@/lib/slugify';
  */
 export async function GET(request) {
   try {
+    // Kiểm tra Supabase client
+    if (!supabase) {
+      console.error('Supabase client chưa được khởi tạo. Vui lòng kiểm tra biến môi trường.');
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Database chưa được cấu hình. Vui lòng liên hệ quản trị viên.',
+        products: [] 
+      }, { status: 503 });
+    }
+
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const category = searchParams.get('category');

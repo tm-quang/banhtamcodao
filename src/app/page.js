@@ -3,7 +3,7 @@
  * @file src/app/page.js
  */
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import HeroSection from '@/components/HeroSection';
 import Features from '@/components/Features';
 import CallToAction from '@/components/CallToAction';
@@ -14,12 +14,12 @@ import PromotionSection from '@/components/PromotionSection';
 import CategoryHighlights from '@/components/CategoryHighlights';
 
 /** Lazy load các component nặng */
-const FeaturedSlider = dynamic(() => import('@/components/FeaturedSlider'), {
+const FeaturedSlider = dynamicImport(() => import('@/components/FeaturedSlider'), {
   loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />,
   ssr: true
 });
 
-const MenuSection = dynamic(() => import('@/components/MenuSection'), {
+const MenuSection = dynamicImport(() => import('@/components/MenuSection'), {
   loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-lg" />,
   ssr: true
 });
@@ -29,24 +29,38 @@ const MenuSection = dynamic(() => import('@/components/MenuSection'), {
  * @returns {string} Base URL của API
  */
 function getBaseUrl() {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+  // Trong server-side (build time), cần absolute URL
+  if (typeof window === 'undefined') {
+    // Server-side: sử dụng env variable hoặc Vercel URL
+    if (process.env.NEXT_PUBLIC_API_URL) {
+      return process.env.NEXT_PUBLIC_API_URL;
+    }
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
+    // Fallback cho local development
+    return 'http://localhost:3300';
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3300';
+  // Client-side: sử dụng window.location
+  return process.env.NEXT_PUBLIC_API_URL || window.location.origin;
 }
 
 async function getFeaturedProducts() {
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/products/featured`, {
-    cache: 'no-store',
-    next: { revalidate: 300 } // Revalidate every 5 minutes
-  });
-  if (!res.ok) { return []; }
-  const data = await res.json();
-  return data.products || [];
+  try {
+    const baseUrl = getBaseUrl();
+    const res = await fetch(`${baseUrl}/api/products/featured`, {
+      next: { revalidate: 300 } // Revalidate every 5 minutes
+    });
+    if (!res.ok) { 
+      console.error('Failed to fetch featured products:', res.status);
+      return []; 
+    }
+    const data = await res.json();
+    return data.products || [];
+  } catch (error) {
+    console.error('Error fetching featured products:', error);
+    return [];
+  }
 }
 
 /**
@@ -54,26 +68,43 @@ async function getFeaturedProducts() {
  * @returns {Promise<Array>} Danh sách tất cả sản phẩm
  */
 async function getAllProducts() {
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/products`, {
-    cache: 'no-store',
-    next: { revalidate: 300 } // Revalidate every 5 minutes
-  });
-  if (!res.ok) { return []; }
-  const data = await res.json();
-  return data.products || [];
+  try {
+    const baseUrl = getBaseUrl();
+    const res = await fetch(`${baseUrl}/api/products`, {
+      next: { revalidate: 300 } // Revalidate every 5 minutes
+    });
+    if (!res.ok) { 
+      console.error('Failed to fetch products:', res.status);
+      return []; 
+    }
+    const data = await res.json();
+    return data.products || [];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
 }
 
 async function getCategories() {
-  const baseUrl = getBaseUrl();
-  const res = await fetch(`${baseUrl}/api/categories`, {
-    cache: 'no-store',
-    next: { revalidate: 300 }
-  });
-  if (!res.ok) { return []; }
-  const data = await res.json();
-  return data.categories || [];
+  try {
+    const baseUrl = getBaseUrl();
+    const res = await fetch(`${baseUrl}/api/categories`, {
+      next: { revalidate: 300 }
+    });
+    if (!res.ok) { 
+      console.error('Failed to fetch categories:', res.status);
+      return []; 
+    }
+    const data = await res.json();
+    return data.categories || [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
 }
+
+// Force dynamic rendering để tránh lỗi build
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Bánh Tằm Cô Đào - Đặc Sản Miền Tây | Món Ngon Chuẩn Vị',
