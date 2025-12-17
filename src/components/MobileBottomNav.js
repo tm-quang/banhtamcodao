@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, UtensilsCrossed, ShoppingCart, FileText, User } from 'lucide-react';
+import { Home, SquareMenu, Handbag, FileText, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function MobileBottomNav() {
@@ -15,8 +15,8 @@ export default function MobileBottomNav() {
 
   const navItems = [
     { id: 'home', name: 'Trang chủ', href: '/', icon: Home },
-    { id: 'menu', name: 'Menu', href: '/menu', icon: UtensilsCrossed },
-    { id: 'cart', name: 'Giỏ hàng', href: '/cart', icon: ShoppingCart, isCart: true },
+    { id: 'menu', name: 'Menu', href: '/menu', icon: SquareMenu },
+    { id: 'cart', name: 'Giỏ hàng', href: '/cart', icon: Handbag, isCart: true },
     { id: 'orders', name: 'Đơn hàng', href: '/order-tracking', icon: FileText },
     { id: 'account', name: 'Tài khoản', href: '/account', icon: User },
   ];
@@ -62,10 +62,10 @@ export default function MobileBottomNav() {
                 className="relative flex flex-col items-center justify-center flex-1 h-full"
               >
                 <div
-                  className={`border border-gray-500 relative flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white shadow-md transition-transform duration-300 ${shouldAnimate ? 'animate-zoom-once' : ''
+                  className={`shadow-md relative flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white transition-transform duration-300 ${shouldAnimate ? 'animate-zoom-once' : ''
                     }`}
                 >
-                  <Icon size={22} strokeWidth={2.5} />
+                  <Icon size={28} strokeWidth={2.5} />
                   {totalItems > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 border-2 border-white">
                       {totalItems > 99 ? '99+' : totalItems}

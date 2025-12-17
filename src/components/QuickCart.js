@@ -45,10 +45,10 @@ export default function QuickCart({ onClose }) {
                             <span>{formatCurrency(subtotal)}</span>
                         </div>
                         <div className="flex gap-2">
-                             <Link href="/cart" onClick={onClose} className="w-1/2 text-center bg-white border border-gray-300 text-secondary font-bold py-2 px-4 rounded-md hover:bg-gray-100 transition-colors">
+                             <Link href="/cart" onClick={onClose} className="w-1/2 text-center bg-white border border-gray-300 text-secondary font-bold py-2 px-4 rounded-2xl hover:bg-gray-100 transition-colors">
                                 Xem giỏ hàng
                             </Link>
-                            <Link href="/checkout" onClick={onClose} className="w-1/2 text-center bg-primary text-light font-bold py-2 px-4 rounded-md hover:bg-orange-600 transition-colors">
+                            <Link href="/checkout" onClick={onClose} className="w-1/2 text-center bg-primary text-light font-bold py-2 px-4 rounded-2xl hover:bg-orange-600 transition-colors">
                                 Thanh toán
                             </Link>
                         </div>

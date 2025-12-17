@@ -82,25 +82,21 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
         setIsUploading(true);
         setImagePreview(URL.createObjectURL(file));
 
-        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-        if (!cloudName) {
-            alert('Lỗi: Chưa cấu hình Cloudinary Cloud Name!');
-            setIsUploading(false);
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'banhtamcodao');
-
-        const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-
         try {
-            const uploadRes = await fetch(uploadUrl, { method: 'POST', body: formData });
-            const uploadData = await uploadRes.json();
-            if (uploadData.error) throw new Error(uploadData.error.message);
+            // Use Server Action for secure upload (uses private CLOUDINARY_API_SECRET)
+            const { uploadImage } = await import('@/app/actions/cloudinary');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'banhtamcodao');
 
-            const secureUrl = uploadData.secure_url;
+            const result = await uploadImage(formData);
+
+            if (!result.success) {
+                throw new Error(result.error || 'Upload failed');
+            }
+
+            const secureUrl = result.url;
             setProduct(prev => ({ ...prev, image_url: secureUrl }));
             setImagePreview(secureUrl);
         } catch (error) {

@@ -14,7 +14,8 @@ import { PieChart, BarChart } from '@mui/x-charts';
 import {
     SlidersHorizontal, Calendar, Download, ShoppingBag, Clock,
     DollarSign, TrendingUp, TrendingDown, ChevronRight, Info,
-    CheckCircle2, Clock3, XCircle, BarChart3, ChevronDown, UserPlus
+    CheckCircle2, Clock3, XCircle, BarChart3, ChevronDown, UserPlus,
+    Truck
 } from 'lucide-react';
 
 /**
@@ -129,28 +130,18 @@ const StatusBadge = ({ status }) => {
 };
 
 /**
- * Decorative SVG icons for stat cards
+ * Decorative icons for stat cards using lucide-react
  */
 const DeliveryDecorativeIcon = () => (
-    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" className="text-amber-200">
-        <circle cx="40" cy="40" r="35" stroke="currentColor" strokeWidth="2" strokeDasharray="5 5" opacity="0.5" />
-        <path d="M25 45L35 35L45 45L55 30" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <Truck size={80} className="text-amber-200 opacity-50" strokeWidth={1.5} />
 );
 
 const ClockDecorativeIcon = () => (
-    <svg width="70" height="70" viewBox="0 0 70 70" fill="none" className="text-green-200">
-        <circle cx="35" cy="35" r="30" stroke="currentColor" strokeWidth="2" opacity="0.5" />
-        <circle cx="35" cy="35" r="20" stroke="currentColor" strokeWidth="2" opacity="0.3" />
-        <path d="M35 20V35L45 45" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-    </svg>
+    <Clock size={70} className="text-green-200 opacity-50" strokeWidth={1.5} />
 );
 
 const MoneyDecorativeIcon = () => (
-    <svg width="75" height="75" viewBox="0 0 75 75" fill="none" className="text-green-200">
-        <circle cx="37.5" cy="37.5" r="32" stroke="currentColor" strokeWidth="2" opacity="0.4" />
-        <text x="37.5" y="45" textAnchor="middle" fontSize="24" fill="currentColor" opacity="0.6" fontWeight="bold">$</text>
-    </svg>
+    <DollarSign size={75} className="text-green-200 opacity-50" strokeWidth={1.5} />
 );
 
 export default function DashboardPage() {

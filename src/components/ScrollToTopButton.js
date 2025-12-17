@@ -31,9 +31,10 @@ export default function ScrollToTopButton() {
   return (
     <button
       onClick={scrollToTop}
-      className={`fixed bottom-24 right-5 z-40 w-12 h-12 rounded-full bg-secondary text-light flex items-center justify-center shadow-lg transition-opacity duration-300 hover:bg-gray-700 ${
+      className={`fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-gray-600 text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-gray-700 hover:scale-110 ${
         isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
+      aria-label="Lên đầu trang"
     >
       <ArrowUp size={24} />
     </button>

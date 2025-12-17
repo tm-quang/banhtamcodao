@@ -1,59 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
 /**
- * Tạo Supabase client với anon key (cho client-side và public operations)
+ * src/lib/supabase.js
+ * Compatibility layer - re-exports server-side Supabase client
+ * 
+ * ⚠️ IMPORTANT: This file exports the SERVER version (includes SUPABASE_SERVICE_ROLE_KEY)
+ * 
+ * Usage:
+ * - ✅ API Routes / Server Components: Use this file (backward compatibility)
+ * - ✅ Client Components: Use @/lib/supabase-client instead
+ * 
+ * This file maintains backward compatibility with existing API routes and server components.
+ * Client components should import from @/lib/supabase-client to avoid bundling server code.
  */
-const supabase = supabaseUrl && supabaseAnonKey 
-    ? createClient(supabaseUrl, supabaseAnonKey)
-    : null;
 
-/**
- * Tạo Supabase client với service role key (cho server-side admin operations)
- * Service role key bypasses Row Level Security (RLS)
- */
-const supabaseAdmin = supabaseUrl && supabaseServiceRoleKey
-    ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    })
-    : null;
+// Re-export clients from supabase-server
+export { default, supabaseAdmin } from './supabase-server';
 
-/**
- * Kiểm tra và cảnh báo nếu thiếu cấu hình
- */
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('⚠️ NEXT_PUBLIC_SUPABASE_URL hoặc NEXT_PUBLIC_SUPABASE_ANON_KEY chưa được cấu hình');
-}
-
-if (!supabaseServiceRoleKey) {
-    console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY chưa được cấu hình. Các API routes admin có thể không hoạt động.');
-}
-
-/**
- * Helper function để kiểm tra supabaseAdmin có sẵn sàng không
- */
-export function checkSupabaseAdmin() {
-    if (!supabaseAdmin) {
-        throw new Error('Supabase admin client chưa được khởi tạo. Vui lòng kiểm tra SUPABASE_SERVICE_ROLE_KEY trong file .env.local');
-    }
-    return supabaseAdmin;
-}
-
-/**
- * Helper function để kiểm tra supabase client có sẵn sàng không
- */
-export function checkSupabase() {
-    if (!supabase) {
-        throw new Error('Supabase client chưa được khởi tạo. Vui lòng kiểm tra NEXT_PUBLIC_SUPABASE_URL và NEXT_PUBLIC_SUPABASE_ANON_KEY trong biến môi trường.');
-    }
-    return supabase;
-}
-
-export default supabase;
-export { supabaseAdmin };
+// Re-export helper functions from supabase-helpers
+export { checkSupabaseAdmin, checkSupabase } from './supabase-helpers';

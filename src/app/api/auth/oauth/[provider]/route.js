@@ -33,7 +33,12 @@ export async function GET(request, { params }) {
 
         // Lấy URL callback từ request
         const { searchParams } = new URL(request.url);
-        const redirectTo = searchParams.get('redirect_to') || `${request.nextUrl.origin}/api/auth/callback`;
+        
+        // Ưu tiên environment variable (production), fallback về request origin
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || request.nextUrl.origin;
+        const redirectTo = searchParams.get('redirect_to') || `${baseUrl}/api/auth/callback`;
+        
+        console.log('OAuth API redirect URL:', redirectTo);
 
         // Tạo Supabase client
         // Lưu ý: signInWithOAuth cần được gọi từ client-side hoặc với cấu hình đặc biệt

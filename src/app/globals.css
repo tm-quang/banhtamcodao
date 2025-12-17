@@ -7,6 +7,7 @@ html,
 body {
   overflow-x: hidden;
   max-width: 100%;
+  font-family: var(--font-roboto), 'Roboto', sans-serif;
 }
 
 body {
@@ -16,13 +17,16 @@ body {
 }
 
 /* Đảm bảo tất cả elements mặc định dùng Roboto */
-* {
+*,
+*::before,
+*::after {
   font-family: var(--font-roboto), 'Roboto', sans-serif;
 }
 
-/* Chỉ những element có class font-lobster mới dùng Lobster */
-.font-lobster {
-  font-family: var(--font-lobster), 'Lobster', cursive;
+/* Chỉ những element có class font-lobster mới dùng Lobster - ưu tiên cao hơn */
+.font-lobster,
+.font-lobster * {
+  font-family: var(--font-lobster), 'Lobster', cursive !important;
 }
 
 @layer utilities {

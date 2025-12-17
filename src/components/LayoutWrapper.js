@@ -9,6 +9,7 @@ import MiniCart from '@/components/MiniCart'; // <-- Import MiniCart
 import MobileBottomNav from '@/components/MobileBottomNav';
 import { useCart } from '@/context/CartContext'; // <-- Import useCart
 import ScrollToTop from '@/components/ScrollToTop';
+import ScrollToTopButton from '@/components/ScrollToTopButton';
 
 export default function LayoutWrapper({ children }) {
   const pathname = usePathname();
@@ -33,6 +34,7 @@ export default function LayoutWrapper({ children }) {
       </div>
       
       <HelpButton />
+      <ScrollToTopButton />
 
       <MobileBottomNav />
       

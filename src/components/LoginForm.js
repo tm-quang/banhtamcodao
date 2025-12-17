@@ -75,8 +75,12 @@ export default function LoginForm() {
             }
 
             const supabase = createClient(supabaseUrl, supabaseAnonKey);
-            const currentOrigin = window.location.origin;
-            const redirectTo = `${currentOrigin}/auth/callback`;
+            
+            // Lấy base URL: ưu tiên environment variable (production), fallback về window.location.origin
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+            const redirectTo = `${baseUrl}/auth/callback`;
+            
+            console.log('OAuth redirect URL:', redirectTo);
 
             const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
                 provider: provider.toLowerCase(),

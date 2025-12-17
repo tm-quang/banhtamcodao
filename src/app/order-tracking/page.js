@@ -4,24 +4,26 @@
  */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import Image from 'next/image';
 import {
     Search, Phone, Calendar, MapPin, User, FileText,
     CheckCircle2, Clock, Truck, XCircle, AlertCircle,
     ChevronDown, Package, Sparkles, UtensilsCrossed,
-    ShoppingBag, CookingPot, FileWarning
+    ShoppingBag, CookingPot, FileWarning, RotateCcw, Tag
 } from 'lucide-react';
 import { TextSkeleton } from '@/components/LoadingAnimations';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 };
 
 /**
- * Order status timeline component with visual progress bar
+ * Order status timeline component - redesigned with centered icons and simple colors
  */
 const OrderStatusTimeline = ({ currentStatus }) => {
     const statuses = [
@@ -36,58 +38,82 @@ const OrderStatusTimeline = ({ currentStatus }) => {
 
     if (isCancelled) {
         return (
-            <div className="flex items-center justify-center gap-2 py-3 px-4 bg-rose-50 rounded-xl border border-rose-200">
-                <XCircle className="w-5 h-5 text-rose-500" />
-                <span className="font-semibold text-rose-700">Đơn hàng đã bị hủy</span>
+            <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                    <XCircle className="w-5 h-5 text-gray-600" />
+                </div>
+                <span className="font-semibold text-gray-700">Đơn hàng đã bị hủy</span>
             </div>
         );
     }
 
     return (
-        <div className="py-4 px-2 sm:px-4 bg-white rounded-xl border border-gray-100">
-            <div className="flex items-center justify-between">
+        <div className="py-6 px-4 bg-white rounded-3xl border border-gray-100 shadow-md">
+            <div className="relative flex items-center w-full">
+                {/* Background line - chạy qua tất cả các icon (màu xám) */}
+                <div 
+                    className="absolute h-0.5 bg-gray-300 left-0 right-0 z-0"
+                    style={{ 
+                        top: '24px',
+                        left: '24px',
+                        right: '24px'
+                    }}
+                ></div>
+                
+                {/* Progress line - chỉ hiển thị từ đầu đến bước hiện tại (màu xanh lá) */}
+                {/* Nếu đã hoàn thành, line kéo dài toàn bộ, nếu chưa thì chỉ đến bước hiện tại */}
+                {currentIndex >= 0 && (
+                    <div 
+                        className="absolute h-0.5 bg-green-500 z-0 transition-all duration-500"
+                        style={{ 
+                            top: '24px',
+                            left: '24px',
+                            width: currentIndex === statuses.length - 1 
+                                ? `calc(100% - 48px)` // Đã hoàn thành: line kéo dài toàn bộ
+                                : `calc(${currentIndex * (100 / (statuses.length - 1))}% - ${currentIndex * (48 / (statuses.length - 1))}px)` // Chưa hoàn thành: chỉ đến bước hiện tại
+                        }}
+                    ></div>
+                )}
+                
                 {statuses.map((status, index) => {
                     const Icon = status.icon;
-                    const isCompleted = index < currentIndex; // Đã hoàn thành bước này
-                    const isCurrent = index === currentIndex;  // Đang ở bước này
-                    const isPending = index > currentIndex;    // Chưa đến bước này
+                    // Nếu đã đến bước cuối cùng (Hoàn thành), tất cả đều là completed
+                    const isAllCompleted = currentIndex === statuses.length - 1;
+                    const isCompleted = isAllCompleted ? true : index < currentIndex;
+                    const isCurrent = !isAllCompleted && index === currentIndex;
+                    const isPending = !isAllCompleted && index > currentIndex;
 
                     return (
-                        <div key={status.key} className="flex items-center flex-1">
-                            <div className="flex flex-col items-center gap-1.5">
-                                <div
-                                    className={`
-                                        relative p-2 sm:p-2.5 rounded-full transition-all duration-300
-                                        ${isCompleted ? 'bg-emerald-500 text-white shadow-lg' : ''}
-                                        ${isCurrent ? 'bg-primary text-white shadow-xl ring-4 ring-primary/20 scale-110' : ''}
-                                        ${isPending ? 'bg-gray-100 text-gray-400' : ''}
-                                    `}
-                                >
-                                    {/* Hiện dấu check cho bước đã hoàn thành */}
-                                    {isCompleted ? (
-                                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    ) : (
-                                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    )}
-                                    {/* Dấu hiệu đang xử lý cho bước hiện tại */}
-                                    {isCurrent && (
-                                        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full animate-pulse border-2 border-white"></span>
-                                    )}
+                        <div key={status.key} className="flex items-center flex-1 relative z-10">
+                            {/* Icon và Label container */}
+                            <div className="flex flex-col items-center gap-2 w-full">
+                                {/* Icon container - đảm bảo cùng kích thước cho tất cả */}
+                                <div className="relative w-12 h-12 flex items-center justify-center">
+                                    <div
+                                        className={`
+                                            w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 relative z-10
+                                            ${isCompleted ? 'bg-green-500 text-white shadow-md' : ''}
+                                            ${isCurrent ? 'bg-primary text-white shadow-md' : ''}
+                                            ${isPending ? 'bg-gray-100 text-gray-400' : ''}
+                                        `}
+                                        style={isCurrent ? { transform: 'scale(1.1)' } : {}}
+                                    >
+                                        {isCompleted ? (
+                                            <CheckCircle2 className="w-8 h-8" />
+                                        ) : (
+                                            <Icon className="w-8 h-8" />
+                                        )}
+                                    </div>
                                 </div>
-                                <span className={`text-[10px] sm:text-xs font-semibold text-center leading-tight
-                                    ${isCompleted ? 'text-emerald-600' : ''}
+                                {/* Label */}
+                                <span className={`text-xs font-medium text-center leading-tight whitespace-nowrap transition-colors duration-300
+                                    ${isCompleted ? 'text-green-600' : ''}
                                     ${isCurrent ? 'text-primary' : ''}
                                     ${isPending ? 'text-gray-400' : ''}
                                 `}>
                                     {status.label}
                                 </span>
                             </div>
-                            {/* Line nối giữa các bước */}
-                            {index < statuses.length - 1 && (
-                                <div className={`flex-1 h-1 mx-1 sm:mx-2 rounded-full transition-all duration-500 
-                                    ${index < currentIndex ? 'bg-emerald-400' : 'bg-gray-200'}
-                                `}></div>
-                            )}
                         </div>
                     );
                 })}
@@ -97,14 +123,40 @@ const OrderStatusTimeline = ({ currentStatus }) => {
 };
 
 /**
+ * Helper function to mask phone number (show only first 4 digits)
+ */
+const maskPhone = (phone) => {
+    if (!phone) return '';
+    if (phone.length <= 4) return phone;
+    return phone.substring(0, 4) + 'xxxxxx';
+};
+
+/**
+ * Helper function to truncate address
+ */
+const truncateAddress = (address, maxLength = 50) => {
+    if (!address) return 'Chưa cập nhật';
+    if (address.length <= maxLength) return address;
+    return address.substring(0, maxLength) + '...';
+};
+
+/**
  * Enhanced Order Card component
  */
 const OrderCard = ({ order }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isReordering, setIsReordering] = useState(false);
+    const { addToCart } = useCart();
+    const { showToast } = useToast();
 
     const items = order.items_list.split('|||').map(itemStr => {
         try { return JSON.parse(itemStr); } catch { return null; }
     }).filter(Boolean);
+
+    // Calculate discount/voucher amount
+    const subtotal = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const discountAmount = subtotal - (order.total_amount || 0);
+    const hasVoucher = discountAmount > 0 || order.voucher_code;
 
     const getStatusConfig = (status) => {
         const configs = {
@@ -169,7 +221,7 @@ const OrderCard = ({ order }) => {
     const StatusIcon = statusConfig.icon;
 
     return (
-        <div className={`group relative overflow-hidden rounded-2xl border-2 ${statusConfig.border} bg-white shadow-lg hover:shadow-xl transition-shadow`}>
+        <div className={`group relative overflow-hidden rounded-3xl border-2 ${statusConfig.border} bg-white shadow-md hover:shadow-xl transition-shadow`}>
             {/* Decorative gradient line at top */}
             <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${statusConfig.gradient}`}></div>
 
@@ -247,7 +299,6 @@ const OrderCard = ({ order }) => {
                                     </div>
                                     <span className="text-gray-300">•</span>
                                     <div className="flex items-center gap-1.5">
-                                        <UtensilsCrossed className="w-4 h-4" />
                                         <span>{items.length} món</span>
                                     </div>
                                 </div>
@@ -260,7 +311,7 @@ const OrderCard = ({ order }) => {
                                 </p>
                                 <p className="text-xs text-gray-500">Tổng thanh toán</p>
                             </div>
-                            <div className={`p-2 rounded-xl bg-gray-100 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
+                            <div className={`p-2 rounded-3xl bg-gray-200 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
                                 <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-primary' : 'text-gray-600'}`} />
                             </div>
                         </div>
@@ -277,42 +328,44 @@ const OrderCard = ({ order }) => {
 
                         {/* Recipient & Address Info */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="flex items-start gap-3 p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                    <User className="w-5 h-5 text-primary" />
+                            <div className="flex items-start gap-3 p-4 rounded-3xl bg-white border border-gray-100 shadow-md">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <User className="w-5 h-5 text-gray-700" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Người nhận</p>
-                                    <p className="font-semibold text-gray-900">{order.recipient_name}</p>
+                                    <p className="font-semibold text-gray-900 mb-1">{order.recipient_name || 'Chưa cập nhật'}</p>
                                     {order.recipient_phone && (
-                                        <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                        <p className="text-sm text-gray-600 flex items-center gap-1.5">
                                             <Phone className="w-3.5 h-3.5" />
-                                            {order.recipient_phone}
+                                            {maskPhone(order.recipient_phone)}
                                         </p>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-4 rounded-xl bg-white border border-gray-100 shadow-sm">
-                                <div className="p-2 rounded-lg bg-primary/10">
-                                    <MapPin className="w-5 h-5 text-primary" />
+                            <div className="flex items-start gap-3 p-4 rounded-3xl bg-white border border-gray-100 shadow-md">
+                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                    <MapPin className="w-5 h-5 text-gray-700" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Địa chỉ giao hàng</p>
-                                    <p className="font-semibold text-gray-900">{order.delivery_address || 'Chưa cập nhật'}</p>
+                                    <p className="font-semibold text-gray-900">{truncateAddress(order.delivery_address)}</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Order Items - Simple Table Format */}
-                        <div className="rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                            <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
-                                <ShoppingBag className="w-4 h-4 text-primary" />
+                        <div className="rounded-3xl bg-white shadow-md overflow-hidden">
+                            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-300">
+                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                    <FileText className="w-4 h-4 text-gray-700" />
+                                </div>
                                 <p className="font-semibold text-gray-900">Chi tiết đơn hàng</p>
                                 <span className="ml-auto text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full border">{items.length} món</span>
                             </div>
 
                             {/* Table Header */}
-                            <div className="hidden sm:grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                            <div className="hidden sm:grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50/50 text-xs font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-200">
                                 <div className="col-span-5">Tên món</div>
                                 <div className="col-span-2 text-right">Đơn giá</div>
                                 <div className="col-span-2 text-center">SL</div>
@@ -342,11 +395,11 @@ const OrderCard = ({ order }) => {
                                                 {formatCurrency(item.price)}
                                             </div>
                                             <div className="col-span-2 text-center">
-                                                <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary font-semibold text-sm">
+                                                <span className="inline-flex items-center justify-center w-8 h-8 text-gray-600 font-semibold text-sm">
                                                     {item.qty}
                                                 </span>
                                             </div>
-                                            <div className="col-span-3 text-right font-semibold text-primary">
+                                            <div className="col-span-3 text-right font-semibold text-red-600">
                                                 {formatCurrency(item.price * item.qty)}
                                             </div>
                                         </div>
@@ -354,25 +407,115 @@ const OrderCard = ({ order }) => {
                                 ))}
                             </div>
 
+                            {/* Discount/Voucher Line */}
+                            {hasVoucher && (
+                                <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/50">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                                                <Tag className="w-4 h-4 text-gray-600" />
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-700">Đã áp dụng voucher</span>
+                                        </div>
+                                        {discountAmount > 0 && (
+                                            <span className="text-sm font-semibold text-emerald-600">-{formatCurrency(discountAmount)}</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Order Total */}
-                            <div className="px-4 py-3 border-t-2 border-dashed border-gray-200 bg-gray-50/50">
+                            <div className="px-4 py-3 border-t border-dashed border-gray-300 bg-gray-50/50">
                                 <div className="flex items-center justify-between">
-                                    <span className="font-semibold text-gray-700">Tổng cộng:</span>
-                                    <span className="text-xl font-bold text-primary">{formatCurrency(order.total_amount)}</span>
+                                    <span className="font-semibold text-gray-700 text-lg">Tổng cộng:</span>
+                                    <span className="text-xl font-bold text-red-600">{formatCurrency(order.total_amount)}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Notes if any */}
                         {order.customer_note && (
-                            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-start gap-2">
-                                <FileWarning className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <div className="p-3 rounded-3xl bg-amber-50 shadow-md border border-amber-200 flex items-start gap-2">
+                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <FileWarning className="w-4 h-4 text-amber-600" />
+                                </div>
                                 <div>
                                     <p className="text-xs font-semibold text-amber-700 mb-0.5">Ghi chú</p>
                                     <p className="text-sm text-amber-800">{order.customer_note}</p>
                                 </div>
                             </div>
                         )}
+
+                        {/* Reorder Button */}
+                        <button
+                            onClick={async () => {
+                                setIsReordering(true);
+                                try {
+                                    // Fetch current product prices
+                                    const productPromises = items.map(async (item) => {
+                                        try {
+                                            const res = await fetch(`/api/products?search=${encodeURIComponent(item.name)}`);
+                                            const data = await res.json();
+                                            if (data.success && data.products && data.products.length > 0) {
+                                                const product = data.products[0];
+                                                return {
+                                                    ...product,
+                                                    quantity: item.qty,
+                                                    finalPrice: product.discount_price || product.price
+                                                };
+                                            }
+                                            // Fallback: use old price if product not found
+                                            return {
+                                                id: item.id || Date.now(),
+                                                name: item.name,
+                                                price: item.price,
+                                                discount_price: null,
+                                                quantity: item.qty,
+                                                finalPrice: item.price
+                                            };
+                                        } catch (error) {
+                                            console.error('Error fetching product:', error);
+                                            return {
+                                                id: item.id || Date.now(),
+                                                name: item.name,
+                                                price: item.price,
+                                                discount_price: null,
+                                                quantity: item.qty,
+                                                finalPrice: item.price
+                                            };
+                                        }
+                                    });
+
+                                    const products = await Promise.all(productPromises);
+                                    
+                                    // Add all items to cart
+                                    products.forEach(product => {
+                                        addToCart(product, product.quantity);
+                                    });
+
+                                    showToast('Đã thêm đơn hàng vào giỏ hàng', 'success');
+                                } catch (error) {
+                                    console.error('Error reordering:', error);
+                                    showToast('Có lỗi xảy ra khi đặt lại đơn hàng', 'error');
+                                } finally {
+                                    setIsReordering(false);
+                                }
+                            }}
+                            disabled={isReordering}
+                            className="w-full flex items-center justify-center gap-2 shadow-md bg-primary text-white font-semibold py-3.5 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                        >
+                            {isReordering ? (
+                                <>
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Đang xử lý...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <RotateCcw className="w-5 h-5" />
+                                    <span>Đặt lại</span>
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
             )}
@@ -386,9 +529,9 @@ const OrderCard = ({ order }) => {
 const EmptyState = ({ searched, error }) => {
     if (error) {
         return (
-            <div className="text-center bg-white rounded-2xl shadow-lg border border-rose-100 p-8 sm:p-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-rose-100 mb-4">
-                    <AlertCircle className="w-10 h-10 text-rose-500" />
+            <div className="text-center bg-white rounded-3xl shadow-md p-8 sm:p-12">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 mb-4 shadow-inner">
+                    <AlertCircle className="w-10 h-10 text-red-500" />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Không tìm thấy đơn hàng</h2>
                 <p className="text-gray-600 max-w-md mx-auto mb-6">
@@ -401,46 +544,49 @@ const EmptyState = ({ searched, error }) => {
         );
     }
 
-    if (!searched) {
-        return (
-            <div className="text-center py-8 sm:py-12">
-                <div className="relative inline-block mb-6">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center">
-                        <CookingPot className="w-12 h-12 sm:w-16 sm:h-16 text-primary/60" />
-                    </div>
-                </div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
-                    Nhập số điện thoại để tra cứu
-                </h3>
-                <p className="text-gray-500 text-sm sm:text-base max-w-md mx-auto">
-                    Hệ thống sẽ tìm kiếm tất cả đơn hàng được đặt với số điện thoại của bạn
-                </p>
-            </div>
-        );
-    }
+    // if (!searched) {
+    //     return (
+    //         <div className="text-center py-8 sm:py-12">
+    //             <div className="relative inline-block mb-6">
+    //                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center">
+    //                     <CookingPot className="w-12 h-12 sm:w-16 sm:h-16 text-primary/60" />
+    //                 </div>
+    //             </div>
+    //             <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2">
+    //                 Nhập số điện thoại để tra cứu
+    //             </h3>
+    //             <p className="text-gray-500 text-sm sm:text-base max-w-md mx-auto">
+    //                 Hệ thống sẽ tìm kiếm tất cả đơn hàng được đặt với số điện thoại của bạn
+    //             </p>
+    //         </div>
+    //     );
+    // }
 
-    return (
-        <div className="text-center bg-white rounded-2xl shadow-lg border border-dashed border-gray-200 p-8 sm:p-12">
-            <div className="relative inline-block mb-6">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gray-100 flex items-center justify-center">
-                    <FileText className="w-12 h-12 sm:w-14 sm:h-14 text-gray-300" />
-                </div>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">Không tìm thấy đơn hàng</h2>
-            <p className="text-gray-600 max-w-md mx-auto">
-                Số điện thoại bạn nhập không khớp với bất kỳ đơn hàng nào trong hệ thống.
-                Vui lòng kiểm tra lại hoặc liên hệ với chúng tôi.
-            </p>
-        </div>
-    );
+    // return (
+    //     <div className="text-center bg-white rounded-3xl shadow-md p-8 sm:p-12">
+    //         <div className="relative inline-block mb-6">
+    //             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gray-100 flex items-center justify-center">
+    //                 <FileText className="w-12 h-12 sm:w-14 sm:h-14 text-gray-300" />
+    //             </div>
+    //         </div>
+    //         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">Không tìm thấy đơn hàng</h2>
+    //         <p className="text-gray-600 max-w-md mx-auto">
+    //             Số điện thoại bạn nhập không khớp với bất kỳ đơn hàng nào trong hệ thống.
+    //             Vui lòng kiểm tra lại hoặc liên hệ với chúng tôi.
+    //         </p>
+    //     </div>
+    // );
 };
 
 export default function OrderTrackingPage() {
     const [phoneNumber, setPhoneNumber] = useState('');
+    const [allOrders, setAllOrders] = useState([]);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ordersPerPage = 5;
 
     const handleSearch = async (e) => {
         e.preventDefault();
@@ -462,8 +608,13 @@ export default function OrderTrackingPage() {
             });
             const data = await res.json();
             if (data.success) {
-                setOrders(data.orders || []);
-                if (!data.orders || data.orders.length === 0) {
+                // Sort by order_time descending (newest first)
+                const sortedOrders = (data.orders || []).sort((a, b) => 
+                    new Date(b.order_time) - new Date(a.order_time)
+                );
+                setAllOrders(sortedOrders);
+                setCurrentPage(1);
+                if (sortedOrders.length === 0) {
                     setError('Không tìm thấy đơn hàng nào với số điện thoại này');
                 }
             } else {
@@ -475,6 +626,17 @@ export default function OrderTrackingPage() {
             setLoading(false);
         }
     };
+
+    // Pagination logic
+    const totalPages = Math.ceil(allOrders.length / ordersPerPage);
+    
+    // Update displayed orders when page or allOrders changes
+    useEffect(() => {
+        const startIndex = (currentPage - 1) * ordersPerPage;
+        const endIndex = startIndex + ordersPerPage;
+        const currentOrders = allOrders.slice(startIndex, endIndex);
+        setOrders(currentOrders);
+    }, [currentPage, allOrders, ordersPerPage]);
 
     return (
         <div className="min-h-screen">
@@ -517,7 +679,7 @@ export default function OrderTrackingPage() {
             <div className="max-w-[1200px] mx-auto px-4 -mt-6 relative z-20">
                 <div className="max-w-2xl mx-auto">
                     <form onSubmit={handleSearch}>
-                        <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border border-gray-100">
+                        <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-md">
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <div className="flex-1 relative">
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-3xl bg-primary/10">
@@ -554,10 +716,10 @@ export default function OrderTrackingPage() {
                                 </button>
                             </div>
 
-                            {error && !loading && searched && orders.length === 0 && (
-                                <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 flex items-center gap-2">
-                                    <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
-                                    <p className="text-sm text-rose-700">{error}</p>
+                            {error && !loading && searched && allOrders.length === 0 && (
+                                <div className="mt-4 p-3 rounded-2xl bg-red-50 border border-red-400 flex items-center gap-2">
+                                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                                    <p className="text-sm text-red-700">{error}</p>
                                 </div>
                             )}
                         </div>
@@ -577,23 +739,58 @@ export default function OrderTrackingPage() {
                         </div>
                     )}
 
-                    {!loading && searched && orders.length > 0 && (
+                    {!loading && searched && allOrders.length > 0 && (
                         <div className="space-y-4">
                             <div className="text-center mb-6 sm:mb-8">
                                 <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full mb-3">
                                     <CheckCircle2 className="w-5 h-5" />
-                                    <span className="font-semibold">Tìm thấy {orders.length} đơn hàng</span>
+                                    <span className="font-semibold">Tìm thấy {allOrders.length} đơn hàng</span>
                                 </div>
                                 <p className="text-gray-500 text-sm">Bấm vào đơn hàng để xem chi tiết</p>
                             </div>
                             {orders.map(order => (
                                 <OrderCard key={order.id} order={order} />
                             ))}
+                            
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-2 mt-6">
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        Trước
+                                    </button>
+                                    <div className="flex items-center gap-1">
+                                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`px-3 py-2 rounded-lg font-medium transition-all ${
+                                                    currentPage === page
+                                                        ? 'bg-primary text-white'
+                                                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button
+                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {!loading && orders.length === 0 && (
-                        <EmptyState searched={searched} error={searched && orders.length === 0 ? error : null} />
+                    {!loading && allOrders.length === 0 && (
+                        <EmptyState searched={searched} error={searched && allOrders.length === 0 ? error : null} />
                     )}
                 </div>
             </div>

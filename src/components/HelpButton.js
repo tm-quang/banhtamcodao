@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Phone, X } from 'lucide-react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 
 // Component con cho từng nút liên hệ (đã được thu nhỏ)
 const ContactLink = ({ href, title, bgColor, children }) => (
@@ -26,10 +27,14 @@ const ContactLink = ({ href, title, bgColor, children }) => (
 export default function HelpButton() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const pathname = usePathname();
 
   const phoneNumber = '0933960788';
   const zaloLink = `https://zalo.me/${phoneNumber}`;
   const facebookLink = 'https://m.me/your-facebook-page-id'; // THAY THẾ LINK FACEBOOK CỦA BẠN
+
+  // Chỉ hiển thị ở trang chủ
+  const isHomePage = pathname === '/';
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,8 +48,13 @@ export default function HelpButton() {
     };
   }, [isOpen]);
 
+  // Chỉ hiển thị ở trang chủ - đặt sau tất cả hooks
+  if (!isHomePage) {
+    return null;
+  }
+
   return (
-    <div ref={menuRef} className="fixed bottom-32 right-4 z-40 flex flex-col items-end pointer-events-none">
+    <div ref={menuRef} className="fixed bottom-36 right-4 z-40 flex flex-col items-end pointer-events-none">
       <div
         className={`flex flex-col items-end gap-3 mb-3 transition-all duration-300 ease-in-out ${
           isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-4 pointer-events-none'

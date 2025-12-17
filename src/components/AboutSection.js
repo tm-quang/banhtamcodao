@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { CheckCircle, Heart } from 'lucide-react';
 
 /**
  * AboutSection component - Phần giới thiệu về Bánh Tằm Cô Đào
@@ -52,9 +53,7 @@ export default function AboutSection() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 shadow-inner">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                    <CheckCircle className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2} />
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-gray-800 text-sm md:text-base">Nguyên liệu sạch</h4>
@@ -62,9 +61,7 @@ export default function AboutSection() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 shadow-inner">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                    </svg>
+                                    <Heart className="h-5 w-5 md:h-6 md:w-6" strokeWidth={2} fill="currentColor" />
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-gray-800 text-sm md:text-base">Chuẩn vị miền Tây</h4>

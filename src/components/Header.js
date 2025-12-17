@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, X, LogIn, LogOut, Settings, Shield, User as UserIcon, Facebook, Twitter, Heart, ShoppingCart } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, Settings, Shield, User as UserIcon, Facebook, Twitter, Heart, Handbag, Home, SquareMenu, FileText, MessageCircle } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState, useRef } from 'react';
@@ -19,6 +19,7 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const pathname = usePathname();
   const headerRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   /**
    * Các trang có header trong suốt khi chưa cuộn: trang chủ, menu (có hero), contact (có background image)
@@ -36,13 +37,65 @@ const Header = () => {
   }, [pathname, isTransparentPage]);
 
   useEffect(() => {
-    document.body.style.overflow = isMenuOpen ? 'hidden' : 'auto';
-    return () => { document.body.style.overflow = 'auto'; };
+    if (isMenuOpen) {
+      // Lưu scroll position hiện tại
+      const scrollY = window.scrollY;
+      // Prevent scroll
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Khôi phục scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+    return () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
   }, [isMenuOpen]);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Đóng user menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isUserMenuOpen && userMenuRef.current) {
+        // Kiểm tra nếu click không phải vào popup menu và không phải vào button toggle
+        const clickedInsideMenu = userMenuRef.current.contains(event.target);
+        const clickedOnToggleButton = event.target.closest('button[onClick*="handleUserMenuToggle"]') !== null;
+        
+        if (!clickedInsideMenu && !clickedOnToggleButton) {
+          setIsUserMenuOpen(false);
+        }
+      }
+    };
+
+    if (isUserMenuOpen) {
+      // Sử dụng setTimeout để tránh đóng ngay khi mở
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+      }, 0);
+
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      };
+    }
+  }, [isUserMenuOpen]);
 
   const totalItems = isClient ? (cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0) : 0;
   const [flashCartCount, setFlashCartCount] = useState(false);
@@ -78,10 +131,10 @@ const Header = () => {
   const headerClass = `fixed top-0 w-full z-50 ${textColorClass} transition-colors duration-500 ease-in-out ${bgClass} ${shadowClass} h-14 md:h-16`;
 
   const navLinks = [
-    { href: '/', label: 'Trang chủ' },
-    { href: '/menu', label: 'Thực đơn' },
-    { href: '/order-tracking', label: 'Tra cứu đơn hàng' },
-    { href: '/contact', label: 'Liên hệ' },
+    { href: '/', label: 'Trang chủ', icon: Home },
+    { href: '/menu', label: 'Thực đơn', icon: SquareMenu },
+    { href: '/order-tracking', label: 'Tra cứu đơn hàng', icon: FileText },
+    { href: '/contact', label: 'Liên hệ', icon: MessageCircle },
   ];
 
   const handleCartIconClick = (e) => {
@@ -92,6 +145,10 @@ const Header = () => {
   const handleUserMenuToggle = (e) => {
     e.preventDefault();
     setIsUserMenuOpen(prev => !prev);
+  }
+
+  const handleUserMenuClose = () => {
+    setIsUserMenuOpen(false);
   }
 
   return (
@@ -110,20 +167,20 @@ const Header = () => {
 
           <div className="hidden md:flex items-center gap-5">
             <nav className="flex items-center gap-7">
-              <Link href="/" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
-                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Trang chủ</span>
+              <Link href="/" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`}>
+                <span className="relative z-10">Trang chủ</span>
                 <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
-              <Link href="/menu" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
-                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Thực đơn</span>
+              <Link href="/menu" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`}>
+                <span className="relative z-10">Thực đơn</span>
                 <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
-              <Link href="/order-tracking" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
-                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Đơn hàng</span>
+              <Link href="/order-tracking" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`}>
+                <span className="relative z-10">Đơn hàng</span>
                 <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
-              <Link href="/contact" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`} style={{ fontFamily: "'Lobster', cursive" }}>
-                <span className="relative z-10" style={{ fontFamily: "'Lobster', cursive" }}>Liên hệ</span>
+              <Link href="/contact" className={`relative group transition-colors py-2 ${isContactPage ? 'hover:text-white/80' : 'hover:text-primary'} font-lobster text-2xl`}>
+                <span className="relative z-10">Liên hệ</span>
                 <span className={`absolute left-0 -bottom-0.5 h-0.5 w-0 ${isContactPage ? 'bg-white' : 'bg-primary'} transition-all duration-300 group-hover:w-full`}></span>
               </Link>
             </nav>
@@ -153,7 +210,7 @@ const Header = () => {
                 aria-label={`Mở xem nhanh giỏ hàng, ${totalItems} sản phẩm`}
                 style={{ transformOrigin: 'center' }}
               >
-                <ShoppingCart size={24} className={isContactPage ? 'text-white' : ''} />
+                <Handbag size={24} className={isContactPage ? 'text-white' : ''} />
                 {isClient && totalItems > 0 && (
                   <span className={`absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center ${flashCartCount && totalItems > 0 ? 'animate-cart-count-flash' : ''}`}>
                     {totalItems}
@@ -174,17 +231,40 @@ const Header = () => {
               )}
 
               {user && isUserMenuOpen && (
-                <div className="cursor-pointer absolute top-full right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50 text-secondary" onClick={() => setIsUserMenuOpen(false)}>
+                <div 
+                  ref={userMenuRef}
+                  className="absolute top-full right-0 mt-2 w-64 bg-white rounded-3xl shadow-xl border z-50 text-secondary"
+                >
                   <div className="p-4 border-b">
-                    <p className="font-lobster font-bold">{user.full_name}</p>
-                    <p className="text-sm text-gray-500 font-lobster">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
+                    <p className="font-bold">{user.full_name}</p>
+                    <p className="text-sm text-gray-500">{user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng'}</p>
                   </div>
                   <nav className="p-2">
-                    <Link href="/account" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 font-lobster"><Settings size={16} /> Thông tin tài khoản</Link>
+                    <Link 
+                      href="/account" 
+                      onClick={handleUserMenuClose}
+                      className="flex items-center gap-3 px-3 py-2 rounded-3xl hover:bg-gray-100 transition-colors"
+                    >
+                      <Settings size={16} /> Thông tin tài khoản
+                    </Link>
                     {user.role === 'admin' && (
-                      <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 font-lobster"><Shield size={16} /> Quản trị Website</Link>
+                      <Link 
+                        href="/admin" 
+                        onClick={handleUserMenuClose}
+                        className="flex items-center gap-3 px-3 py-2 rounded-3xl hover:bg-gray-100 transition-colors"
+                      >
+                        <Shield size={16} /> Quản trị Website
+                      </Link>
                     )}
-                    <button onClick={logout} className="cursor-pointer w-full text-left flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-red-600 font-lobster"><LogOut size={16} /> Đăng xuất</button>
+                    <button 
+                      onClick={() => {
+                        handleUserMenuClose();
+                        logout();
+                      }} 
+                      className="cursor-pointer w-full text-left flex items-center gap-3 px-3 py-2 rounded-3xl hover:bg-gray-100 text-red-600 transition-colors"
+                    >
+                      <LogOut size={16} /> Đăng xuất
+                    </button>
                   </nav>
                 </div>
               )}
@@ -199,57 +279,147 @@ const Header = () => {
         </div>
       </header>
 
-      <div className={`cursor-pointer fixed inset-0 bg-black/60 z-[90] transition-opacity duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMenuOpen(false)}></div>
-      <div className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-[100] flex flex-col transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex justify-between items-center p-4 border-b border-gray-200 flex-shrink-0">
-          <Link href="/" onClick={() => setIsMenuOpen(false)}>
-            <img src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png" alt="Bánh Tằm Cô Đào Logo" width={180} height={38} />
+      {/* Backdrop overlay */}
+      <div 
+        className={`fixed inset-0 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-sm z-[90] transition-all duration-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} 
+        onClick={() => setIsMenuOpen(false)}
+      ></div>
+      
+      {/* Sidebar */}
+      <div className={`fixed top-0 left-0 h-full w-[320px] max-w-[85vw] bg-gradient-to-b from-white via-[#FFFBF7] to-white shadow-[4px_0_24px_rgba(0,0,0,0.12)] z-[100] flex flex-col transition-transform duration-300 ease-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        {/* Header với logo và close button */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-200/60 flex-shrink-0 bg-gradient-to-r from-primary/8 via-primary/5 to-transparent backdrop-blur-sm">
+          <Link 
+            href="/" 
+            onClick={() => setIsMenuOpen(false)} 
+            className="hover:opacity-80 transition-all duration-200 hover:scale-105"
+          >
+            <img 
+              src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png" 
+              alt="Bánh Tằm Cô Đào Logo" 
+              width={180} 
+              height={38}
+              className="drop-shadow-sm"
+            />
           </Link>
-          <button onClick={() => setIsMenuOpen(false)} className="cursor-pointer text-black hover:text-primary"><X size={28} /></button>
+          <button 
+            onClick={() => setIsMenuOpen(false)} 
+            className="cursor-pointer text-gray-500 hover:text-primary hover:bg-primary/10 p-2.5 rounded-full transition-all duration-200 active:scale-95"
+            aria-label="Đóng menu"
+          >
+            <X size={22} strokeWidth={2.5} />
+          </button>
         </div>
-        <nav className="flex-grow p-4 overflow-y-auto">
+
+        {/* Navigation Menu */}
+        <nav className="flex-grow p-5 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent">
           <ul className="flex flex-col gap-2">
-            {navLinks.map(link => (
-              <li key={link.href}><Link href={link.href} onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">{link.label}</Link></li>
-            ))}
-            {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <li><Link href="/admin" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">Admin</Link></li>
-                )}
-                <li><button onClick={() => { logout(); setIsMenuOpen(false); }} className="block text-xl text-red-600 font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors w-full text-left">Đăng xuất</button></li>
-              </>
-            ) : (
-              <li><Link href="/login" onClick={() => setIsMenuOpen(false)} className="block text-xl text-black font-lobster hover:text-primary py-3 px-2 rounded-md transition-colors">Đăng nhập</Link></li>
+            {navLinks.map((link, index) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
+              
+              return (
+                <li key={link.href} style={{ animationDelay: `${index * 50}ms` }}>
+                  <Link 
+                    href={link.href} 
+                    onClick={() => setIsMenuOpen(false)} 
+                    className={`group relative flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+                      isActive 
+                        ? 'bg-gradient-to-r from-primary/15 to-primary/5 text-primary shadow-md shadow-primary/10' 
+                        : 'text-gray-700 hover:text-primary hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/3'
+                    } active:scale-[0.97]`}
+                  >
+                    {/* Icon */}
+                    <div className={`flex-shrink-0 transition-all duration-300 ${
+                      isActive 
+                        ? 'text-primary scale-110' 
+                        : 'text-gray-500 group-hover:text-primary group-hover:scale-110'
+                    }`}>
+                      <Icon size={22} strokeWidth={2} />
+                    </div>
+                    
+                    {/* Label */}
+                    <span className={`text-base font-semibold tracking-wide transition-colors duration-300 ${
+                      isActive ? 'text-primary' : 'text-gray-800 group-hover:text-primary'
+                    }`}>
+                      {link.label}
+                    </span>
+
+                    {/* Active indicator */}
+                    {isActive && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                    )}
+
+                    {/* Hover effect overlay */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-transparent transition-all duration-300 pointer-events-none"></div>
+                  </Link>
+                </li>
+              );
+            })}
+
+            {/* Admin Link */}
+            {user?.role === 'admin' && (
+              <li style={{ animationDelay: `${navLinks.length * 50}ms` }}>
+                <Link 
+                  href="/admin" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className={`group relative flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+                    pathname.startsWith('/admin')
+                      ? 'bg-gradient-to-r from-purple-500/15 to-purple-500/5 text-purple-600 shadow-md shadow-purple-500/10' 
+                      : 'text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-500/8 hover:to-purple-500/3'
+                  } active:scale-[0.97]`}
+                >
+                  <div className={`flex-shrink-0 transition-all duration-300 ${
+                    pathname.startsWith('/admin')
+                      ? 'text-purple-600 scale-110' 
+                      : 'text-gray-500 group-hover:text-purple-600 group-hover:scale-110'
+                  }`}>
+                    <Shield size={22} strokeWidth={2} />
+                  </div>
+                  <span className={`text-base font-semibold tracking-wide transition-colors duration-300 ${
+                    pathname.startsWith('/admin') ? 'text-purple-600' : 'text-gray-800 group-hover:text-purple-600'
+                  }`}>
+                    Admin
+                  </span>
+                  {pathname.startsWith('/admin') && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
+                  )}
+                </Link>
+              </li>
+            )}
+
+            {/* Login Link (khi chưa đăng nhập) */}
+            {!user && (
+              <li style={{ animationDelay: `${navLinks.length * 50}ms` }}>
+                <Link 
+                  href="/login" 
+                  onClick={() => setIsMenuOpen(false)} 
+                  className={`group relative flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 ${
+                    pathname.startsWith('/login') || pathname.startsWith('/register')
+                      ? 'bg-gradient-to-r from-primary/15 to-primary/5 text-primary shadow-md shadow-primary/10' 
+                      : 'text-gray-700 hover:text-primary hover:bg-gradient-to-r hover:from-primary/8 hover:to-primary/3'
+                  } active:scale-[0.97]`}
+                >
+                  <div className={`flex-shrink-0 transition-all duration-300 ${
+                    pathname.startsWith('/login') || pathname.startsWith('/register')
+                      ? 'text-primary scale-110' 
+                      : 'text-gray-500 group-hover:text-primary group-hover:scale-110'
+                  }`}>
+                    <LogIn size={22} strokeWidth={2} />
+                  </div>
+                  <span className={`text-base font-semibold tracking-wide transition-colors duration-300 ${
+                    pathname.startsWith('/login') || pathname.startsWith('/register') ? 'text-primary' : 'text-gray-800 group-hover:text-primary'
+                  }`}>
+                    Đăng nhập
+                  </span>
+                  {(pathname.startsWith('/login') || pathname.startsWith('/register')) && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                  )}
+                </Link>
+              </li>
             )}
           </ul>
         </nav>
-
-        {/* --- PHẦN FOOTER CỦA MENU --- */}
-        <div className="flex-shrink-0 p-4 border-t border-gray-200">
-          {user ? (
-            // Giao diện khi đã đăng nhập
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Link href="/account" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                  <UserIcon size={20} /> Tài khoản
-                </Link>
-                <button onClick={logout} className="cursor-pointer flex items-center justify-center gap-2 w-full bg-red-600 text-white font-lobster font-bold py-3 rounded-lg hover:bg-red-700 transition-colors">
-                  <LogOut size={20} /> Đăng xuất
-                </button>
-              </div>
-              <div className="flex justify-center gap-4 pt-2">
-                <a href="#" className="text-gray-400 hover:text-primary"><Facebook /></a>
-                <a href="#" className="text-gray-400 hover:text-primary"><Twitter /></a>
-              </div>
-            </div>
-          ) : (
-            // Giao diện khi chưa đăng nhập
-            <Link href="/login" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-center w-full bg-primary text-light font-lobster font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors">
-              <LogIn size={20} className="mr-2" /> Đăng nhập | Đăng ký
-            </Link>
-          )}
-        </div>
       </div>
     </>
   );
