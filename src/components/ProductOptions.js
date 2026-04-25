@@ -69,24 +69,24 @@ export default function ProductOptions({ options = [], basePrice = 0, onOptionsC
     }
 
     return (
-        <div className="space-y-6 border-t pt-6 mt-6">
+        <div className="space-y-4 md:space-y-6 border-t pt-4 md:pt-6 mt-4 md:mt-6">
             {/* Size Options */}
             {sizeOptions.length > 0 && (
                 <div>
-                    <h3 className="text-lg font-semibold text-secondary mb-3">Chọn kích cỡ</h3>
-                    <div className="grid grid-cols-3 gap-3">
+                    <h3 className="text-base md:text-lg font-semibold text-secondary mb-2 md:mb-3">Chọn kích cỡ</h3>
+                    <div className="grid grid-cols-3 gap-2 md:gap-3">
                         {sizeOptions.map((size) => (
                             <button
                                 key={size.id}
                                 onClick={() => handleSizeChange(size)}
-                                className={`p-3 rounded-lg border-2 transition-all ${selectedSize?.id === size.id
+                                className={`p-2 md:p-3 rounded-2xl border-2 transition-all ${selectedSize?.id === size.id
                                         ? 'border-primary bg-primary/5 ring-2 ring-primary/30'
                                         : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
-                                <div className="font-medium text-secondary">{size.name}</div>
+                                <div className="font-medium text-sm md:text-base text-secondary">{size.name}</div>
                                 {size.price_adjustment > 0 && (
-                                    <div className="text-sm text-primary mt-1">
+                                    <div className="text-xs md:text-sm text-primary mt-1">
                                         +{formatCurrency(size.price_adjustment)}
                                     </div>
                                 )}
@@ -99,24 +99,24 @@ export default function ProductOptions({ options = [], basePrice = 0, onOptionsC
             {/* Topping Options */}
             {toppingOptions.length > 0 && (
                 <div>
-                    <h3 className="text-lg font-semibold text-secondary mb-3">Thêm topping</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-secondary mb-2 md:mb-3">Thêm topping</h3>
                     <div className="space-y-2">
                         {toppingOptions.map((topping) => (
                             <label
                                 key={topping.id}
-                                className="flex items-center justify-between p-3 rounded-lg border-2 border-gray-200 hover:border-gray-300 cursor-pointer transition-all"
+                                className="flex items-center justify-between p-2.5 md:p-3 rounded-2xl border-2 border-gray-200 hover:border-gray-300 cursor-pointer transition-all"
                             >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 md:gap-3">
                                     <input
                                         type="checkbox"
                                         checked={selectedToppings.some(t => t.id === topping.id)}
                                         onChange={() => handleToppingToggle(topping)}
-                                        className="w-5 h-5 text-primary focus:ring-primary rounded"
+                                        className="w-4 h-4 md:w-5 md:h-5 text-primary focus:ring-primary rounded"
                                     />
-                                    <span className="font-medium text-secondary">{topping.name}</span>
+                                    <span className="font-medium text-sm md:text-base text-secondary">{topping.name}</span>
                                 </div>
                                 {topping.price_adjustment > 0 && (
-                                    <span className="text-primary font-medium">
+                                    <span className="text-sm md:text-base text-primary font-medium">
                                         +{formatCurrency(topping.price_adjustment)}
                                     </span>
                                 )}
@@ -128,15 +128,15 @@ export default function ProductOptions({ options = [], basePrice = 0, onOptionsC
 
             {/* Special Instructions */}
             <div>
-                <h3 className="text-lg font-semibold text-secondary mb-3">Ghi chú đặc biệt</h3>
+                <h3 className="text-base md:text-lg font-semibold text-secondary mb-2 md:mb-3">Ghi chú đặc biệt</h3>
                 <textarea
                     value={specialInstructions}
                     onChange={(e) => setSpecialInstructions(e.target.value)}
                     placeholder="Ví dụ: Ít đường, nhiều đá, không hành..."
                     rows="3"
-                    className="w-full border-2 border-gray-200 rounded-lg p-3 focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition-all resize-none"
+                    className="w-full border-2 border-gray-200 rounded-2xl p-2.5 md:p-3 focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none transition-all resize-none text-sm md:text-base"
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-xs md:text-sm text-gray-500 mt-2">
                     Chúng tôi sẽ cố gắng đáp ứng yêu cầu của bạn
                 </p>
             </div>

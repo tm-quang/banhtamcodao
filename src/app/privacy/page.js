@@ -13,12 +13,12 @@ export default function PrivacyPage() {
     return (
         <div className="min-h-screen pt-24 pb-12 px-4">
             <div className="max-w-3xl mx-auto">
-                <Link href="/register" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
+                <Link href="#" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
                     <ArrowLeft size={18} />
-                    Quay lại đăng ký
+                    Về trang chủ
                 </Link>
 
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-10">
+                <div className="bg-white rounded-2xl shadow-md border border-gray-300 p-6 sm:p-10">
                     <h1 className="text-3xl font-bold text-secondary mb-6">Chính sách bảo mật</h1>
 
                     <div className="prose prose-gray max-w-none space-y-6 text-gray-600">
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
                             <ul className="list-none space-y-1">
                                 <li><strong>Email:</strong> banhtamcodao@gmail.com</li>
                                 <li><strong>Hotline:</strong> 0933 960 788</li>
-                                <li><strong>Địa chỉ:</strong> An Thới, Phú Quốc, Kiên Giang</li>
+                                <li><strong>Địa chỉ:</strong> Tổ 4, Khu Phố 1, Đặc Khu Phú Quốc, An Giang</li>
                             </ul>
                         </section>
                     </div>

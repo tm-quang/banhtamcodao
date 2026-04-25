@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Button, Paper, Typography, Chip, IconButton, TextField, InputAdornment, Tooltip, alpha, Stack } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { PlusCircle, Edit, Trash2, Search, Zap, X, Calendar, Percent, Eye, EyeOff } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Search, Zap, X, Calendar, Percent, Eye, EyeOff, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import FlashSaleModal from '@/components/admin/FlashSaleModal';
 
@@ -15,13 +15,6 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
 };
 
-// Stats Badge Component
-const StatBadge = ({ label, value, color }) => (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${color}`}>
-        <span className="text-sm font-bold">{value}</span>
-        <span className="text-xs opacity-80">{label}</span>
-    </div>
-);
 
 export default function FlashSalesPage() {
     const [flashSales, setFlashSales] = useState([]);
@@ -75,16 +68,25 @@ export default function FlashSalesPage() {
         const url = isEditMode ? `/api/admin/flash-sales/${data.id}` : '/api/admin/flash-sales';
         const method = isEditMode ? 'PUT' : 'POST';
         try {
-            const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) {
+            const res = await fetch(url, { 
+                method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(data) 
+            });
+            
+            const result = await res.json();
+            
+            if (res.ok && result.success) {
                 setIsModalOpen(false);
                 setEditingFlashSale(null);
                 fetchFlashSales();
+                alert(result.message || 'Thành công!');
             } else {
-                alert('Có lỗi xảy ra!');
+                alert(result.message || 'Có lỗi xảy ra! Vui lòng thử lại.');
             }
         } catch (error) {
-            alert('Có lỗi xảy ra!');
+            console.error('Error saving flash sale:', error);
+            alert('Có lỗi xảy ra! Vui lòng kiểm tra kết nối và thử lại.');
         }
     };
 
@@ -218,10 +220,10 @@ export default function FlashSalesPage() {
                         label={label}
                         size="small"
                         sx={{
-                            bgcolor: color,
-                            color: textColor,
-                            fontWeight: 600,
-                            fontSize: '0.7rem',
+                            bgcolor: isExpired ? alpha('#ef4444', 1) : isRunning ? alpha('#16a34a', 1) : params.value === 'active' ? alpha('#f59e0b', 1) : alpha('#4b5563', 1),
+                            color: '#FFFFFF',
+                            fontWeight: 500,
+                            fontSize: '0.9rem',
                         }}
                     />
                 );
@@ -229,100 +231,221 @@ export default function FlashSalesPage() {
         },
         {
             field: 'actions',
-            headerName: '',
-            width: 120,
+            headerName: 'Thao tác',
+            width: 180,
+            minWidth: 160,
+            headerAlign: 'center',
             align: 'center',
             sortable: false,
             renderCell: (params) => (
-                <Stack direction="row" spacing={0.5}>
-                    <Tooltip title={params.row.status === 'active' ? 'Tắt' : 'Bật'} arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => handleToggleStatus(params.row)}
-                            sx={{
-                                color: params.row.status === 'active' ? '#10b981' : '#6b7280',
-                                '&:hover': { bgcolor: alpha(params.row.status === 'active' ? '#10b981' : '#6b7280', 0.1) }
-                            }}
-                        >
-                            {params.row.status === 'active' ? <Eye size={16} /> : <EyeOff size={16} />}
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Sửa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => { setEditingFlashSale(params.row); setIsModalOpen(true); }}
-                            sx={{ color: '#3b82f6', '&:hover': { bgcolor: alpha('#3b82f6', 0.1) } }}
-                        >
-                            <Edit size={16} />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Xóa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => handleDelete(params.row.id)}
-                            sx={{ color: '#ef4444', '&:hover': { bgcolor: alpha('#ef4444', 0.1) } }}
-                        >
-                            <Trash2 size={16} />
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Stack direction="row" spacing={0.5}>
+                        <Tooltip title={params.row.status === 'active' ? 'Tắt' : 'Bật'} arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => handleToggleStatus(params.row)}
+                                sx={{
+                                    color: params.row.status === 'active' ? '#10b981' : '#6b7280',
+                                    '&:hover': { bgcolor: alpha(params.row.status === 'active' ? '#10b981' : '#6b7280', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                {params.row.status === 'active' ? <Eye size={20} /> : <EyeOff size={20} />}
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Sửa" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => { setEditingFlashSale(params.row); setIsModalOpen(true); }}
+                                sx={{ 
+                                    color: '#f97316', 
+                                    '&:hover': { bgcolor: alpha('#f97316', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Edit size={20} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => handleDelete(params.row.id)}
+                                sx={{ 
+                                    color: '#EF4444', 
+                                    '&:hover': { bgcolor: alpha('#EF4444', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Trash2 size={20} />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                </Box>
             )
         }
     ];
 
     return (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box 
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            suppressHydrationWarning={true}
+        >
             {/* Compact Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                        <Zap size={20} className="text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-gray-900">Flash Sale</h1>
-                        <span className="text-sm text-gray-500">{stats.running} đang chạy</span>
-                    </div>
+                    <h1 className="text-xl font-bold text-gray-900">Quản lý Flash Sale</h1>
+                    <span className="text-sm text-gray-500">({stats.total} chương trình)</span>
                 </div>
-                <Button
-                    variant="contained"
-                    startIcon={<PlusCircle size={18} />}
-                    onClick={() => { setEditingFlashSale(null); setIsModalOpen(true); }}
-                    sx={{
-                        bgcolor: '#f59e0b',
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        px: 2.5,
-                        '&:hover': { bgcolor: '#d97706' }
-                    }}
-                >
-                    Thêm Flash Sale
-                </Button>
             </div>
 
-            {/* Filter & Stats Row */}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                {/* Tổng */}
+                <Box sx={{ 
+                    p: 2,
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Zap 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Zap size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.total}</p>
+                        <p className="text-sm opacity-90">Tổng chương trình</p>
+                    </div>
+                </Box>
+                {/* Đang chạy */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Clock 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Clock size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.running}</p>
+                        <p className="text-sm opacity-90">Đang chạy</p>
+                    </div>
+                </Box>
+                {/* Hoạt động */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <CheckCircle 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <CheckCircle size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.active}</p>
+                        <p className="text-sm opacity-90">Hoạt động</p>
+                    </div>
+                </Box>
+                {/* Tắt */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <XCircle 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <XCircle size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.inactive}</p>
+                        <p className="text-sm opacity-90">Đã tắt</p>
+                    </div>
+                </Box>
+            </div>
+
+            {/* Filter & Actions Row */}
             <Paper
                 elevation={0}
                 sx={{
                     p: 2,
                     mb: 2,
                     borderRadius: 2,
-                    bgcolor: '#fffbeb',
+                    bgcolor: '#f8fafc',
                     border: '1px solid',
-                    borderColor: alpha('#f59e0b', 0.2),
+                    borderColor: 'divider',
                 }}
             >
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Stats */}
-                    <div className="flex items-center gap-2 mr-2">
-                        <StatBadge label="Tổng" value={stats.total} color="bg-yellow-100 text-yellow-700" />
-                        <StatBadge label="Đang chạy" value={stats.running} color="bg-green-100 text-green-700" />
-                        <StatBadge label="Hoạt động" value={stats.active} color="bg-orange-100 text-orange-700" />
-                        <StatBadge label="Tắt" value={stats.inactive} color="bg-gray-100 text-gray-700" />
-                    </div>
-
-                    <div className="h-6 w-px bg-yellow-300 hidden md:block" />
-
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     {/* Search */}
                     <TextField
                         variant="outlined"
@@ -338,7 +461,8 @@ export default function FlashSalesPage() {
                             ),
                         }}
                         sx={{
-                            width: 200,
+                            flex: 1,
+                            minWidth: 220,
                             '& .MuiOutlinedInput-root': {
                                 bgcolor: 'white',
                                 borderRadius: 1.5,
@@ -357,6 +481,30 @@ export default function FlashSalesPage() {
                             Xóa lọc
                         </Button>
                     )}
+
+                    {/* Add Button */}
+                    <Button
+                        variant="contained"
+                        startIcon={<PlusCircle size={18} />}
+                        onClick={() => { setEditingFlashSale(null); setIsModalOpen(true); }}
+                        sx={{
+                            bgcolor: '#f59e0b',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            px: 2.5,
+                            py: 1,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 6px -1px rgba(245, 158, 11, 0.3)',
+                            '&:hover': {
+                                bgcolor: '#d97706',
+                                boxShadow: '0 10px 15px -3px rgba(245, 158, 11, 0.4)',
+                                transform: 'translateY(-1px)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                        }}
+                    >
+                        + Thêm Flash Sale
+                    </Button>
                 </div>
             </Paper>
 
@@ -365,14 +513,16 @@ export default function FlashSalesPage() {
                 elevation={0}
                 sx={{
                     flex: 1,
-                    minHeight: 0,
+                    minHeight: 600,
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: 'divider',
+                    bgcolor: 'white',
+                    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                     overflow: 'hidden',
                     '& .MuiDataGrid-root': { border: 'none' },
                     '& .MuiDataGrid-columnHeaders': {
-                        bgcolor: '#fffbeb',
+                        bgcolor: '#f8fafc',
                         borderBottom: '1px solid',
                         borderColor: 'divider',
                     },
@@ -396,17 +546,29 @@ export default function FlashSalesPage() {
                     rows={filteredFlashSales}
                     columns={columns}
                     loading={loading}
-                    rowHeight={70}
+                    rowHeight={68}
                     disableRowSelectionOnClick
-                    pageSizeOptions={[10, 25, 50]}
+                    pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
-                        pagination: { paginationModel: { pageSize: 10 } },
+                        pagination: { paginationModel: { pageSize: 25 } },
                     }}
                     localeText={{
                         noRowsLabel: 'Chưa có Flash Sale nào',
                         MuiTablePagination: {
                             labelRowsPerPage: 'Hiển thị:',
                             labelDisplayedRows: ({ from, to, count }) => `${from}-${to} / ${count}`,
+                        }
+                    }}
+                    sx={{
+                        '& .MuiDataGrid-virtualScroller': {
+                            '&::-webkit-scrollbar': {
+                                width: 6,
+                                height: 6,
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                bgcolor: alpha('#000', 0.15),
+                                borderRadius: 3,
+                            }
                         }
                     }}
                 />

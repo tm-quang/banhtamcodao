@@ -240,7 +240,7 @@ export default function OrderConfirmationContent() {
                             <div className="p-6 text-center">
                                 <div className="p-4 rounded-2xl inline-block mb-4 border-2 border-dashed border-gray-400">
                                     <img
-                                        src={`https://img.vietqr.io/image/970415-107870460026-compact2.png?amount=${order.total_amount}&addInfo=${order.order_code}&accountName=LE%20THI%20NGOC%20DAO`}
+                                        src={`https://img.vietqr.io/image/970415-107870460026-compact.png?amount=${order.total_amount}&addInfo=${order.order_code}`}
                                         alt="QR thanh toán"
                                         className="w-56 h-56 mx-auto"
                                     />

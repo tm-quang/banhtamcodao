@@ -13,12 +13,12 @@ export default function TermsPage() {
     return (
         <div className="min-h-screen pt-24 pb-12 px-4">
             <div className="max-w-3xl mx-auto">
-                <Link href="/register" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
+                <Link href="#" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
                     <ArrowLeft size={18} />
-                    Quay lại đăng ký
+                    Về trang chủ
                 </Link>
 
-                <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 sm:p-10">
+                <div className="bg-white rounded-2xl shadow-md border border-gray-300 p-6 sm:p-10">
                     <h1 className="text-3xl font-bold text-secondary mb-6">Điều khoản dịch vụ</h1>
 
                     <div className="prose prose-gray max-w-none space-y-6 text-gray-600">
@@ -32,16 +32,15 @@ export default function TermsPage() {
                         <section>
                             <h2 className="text-xl font-semibold text-secondary mb-3">2. Điều kiện sử dụng</h2>
                             <ul className="list-disc pl-5 space-y-2">
-                                <li>Bạn phải từ 18 tuổi trở lên hoặc có sự đồng ý của phụ huynh để sử dụng dịch vụ.</li>
-                                <li>Thông tin cá nhân bạn cung cấp phải chính xác và trung thực.</li>
-                                <li>Bạn chịu trách nhiệm bảo mật thông tin tài khoản của mình.</li>
+                                <li>Chúng tôi sẽ sử dụng thông tin cá nhân của bạn vào mục đích xử lý đơn hàng, và các mục đích khác liên quan đến việc bán hàng và giao hàng. </li>
+                                <li>Chúng tôi không chịu trách nhiệm khi bạn cung cấp sai thông tin.</li>
                             </ul>
                         </section>
 
                         <section>
                             <h2 className="text-xl font-semibold text-secondary mb-3">3. Đặt hàng và thanh toán</h2>
                             <ul className="list-disc pl-5 space-y-2">
-                                <li>Giá sản phẩm có thể thay đổi mà không cần thông báo trước.</li>
+                                <li>Giá sản phẩm có thể thay đổi và tùy thời điểm.</li>
                                 <li>Chúng tôi có quyền từ chối hoặc hủy đơn hàng trong các trường hợp bất khả kháng.</li>
                                 <li>Phương thức thanh toán được hỗ trợ: Tiền mặt khi nhận hàng (COD), chuyển khoản ngân hàng.</li>
                             </ul>
@@ -63,7 +62,7 @@ export default function TermsPage() {
                             <ul className="list-none space-y-1">
                                 <li><strong>Email:</strong> banhtamcodao@gmail.com</li>
                                 <li><strong>Hotline:</strong> 0933 960 788</li>
-                                <li><strong>Địa chỉ:</strong> An Thới, Phú Quốc, Kiên Giang</li>
+                                <li><strong>Địa chỉ:</strong> Tổ 4, Khu Phố 1, Đặc Khu Phú Quốc, An Giang</li>
                             </ul>
                         </section>
                     </div>

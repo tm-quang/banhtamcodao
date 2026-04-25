@@ -38,43 +38,43 @@ const OrderStatusTimeline = ({ currentStatus }) => {
 
     if (isCancelled) {
         return (
-            <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                    <XCircle className="w-5 h-5 text-gray-600" />
+            <div className="flex items-center justify-center gap-2 py-3 px-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <XCircle className="w-5 h-5 text-red-600" />
                 </div>
-                <span className="font-semibold text-gray-700">Đơn hàng đã bị hủy</span>
+                <span className="font-semibold text-red-700">Đơn hàng đã bị hủy</span>
             </div>
         );
     }
 
     return (
-        <div className="py-6 px-4 bg-white rounded-3xl border border-gray-100 shadow-md">
+        <div className="py-6 px-4 bg-white rounded-2xl border border-gray-300 shadow-md">
             <div className="relative flex items-center w-full">
                 {/* Background line - chạy qua tất cả các icon (màu xám) */}
-                <div 
+                <div
                     className="absolute h-0.5 bg-gray-300 left-0 right-0 z-0"
-                    style={{ 
+                    style={{
                         top: '24px',
                         left: '24px',
                         right: '24px'
                     }}
                 ></div>
-                
+
                 {/* Progress line - chỉ hiển thị từ đầu đến bước hiện tại (màu xanh lá) */}
                 {/* Nếu đã hoàn thành, line kéo dài toàn bộ, nếu chưa thì chỉ đến bước hiện tại */}
                 {currentIndex >= 0 && (
-                    <div 
+                    <div
                         className="absolute h-0.5 bg-green-500 z-0 transition-all duration-500"
-                        style={{ 
+                        style={{
                             top: '24px',
                             left: '24px',
-                            width: currentIndex === statuses.length - 1 
+                            width: currentIndex === statuses.length - 1
                                 ? `calc(100% - 48px)` // Đã hoàn thành: line kéo dài toàn bộ
                                 : `calc(${currentIndex * (100 / (statuses.length - 1))}% - ${currentIndex * (48 / (statuses.length - 1))}px)` // Chưa hoàn thành: chỉ đến bước hiện tại
                         }}
                     ></div>
                 )}
-                
+
                 {statuses.map((status, index) => {
                     const Icon = status.icon;
                     // Nếu đã đến bước cuối cùng (Hoàn thành), tất cả đều là completed
@@ -180,7 +180,7 @@ const OrderCard = ({ order }) => {
             },
             'Đang vận chuyển': {
                 icon: Truck,
-                gradient: 'from-indigo-400 to-purple-500',
+                gradient: 'from-indigo-400 to-blue-500',
                 headerBg: 'bg-white',
                 border: 'border-indigo-200',
                 text: 'text-indigo-700',
@@ -221,9 +221,9 @@ const OrderCard = ({ order }) => {
     const StatusIcon = statusConfig.icon;
 
     return (
-        <div className={`group relative overflow-hidden rounded-3xl border-2 ${statusConfig.border} bg-white shadow-md hover:shadow-xl transition-shadow`}>
+        <div className={`group relative overflow-hidden rounded-2xl border ${statusConfig.border} bg-white shadow-md hover:shadow-md transition-shadow`}>
             {/* Decorative gradient line at top */}
-            <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${statusConfig.gradient}`}></div>
+            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${statusConfig.gradient}`}></div>
 
             {/* Header - Always visible */}
             <button
@@ -236,7 +236,7 @@ const OrderCard = ({ order }) => {
                         {/* Row 1: Icon + Order code + Chevron */}
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg flex-shrink-0">
+                                <div className="relative w-10 h-10 overflow-hidden shadow-lg flex-shrink-0">
                                     <Image src="/images/banner-logo/banhtamcodao-logo.png" alt="Logo" fill className="object-contain" />
                                 </div>
                                 <div className="flex-1 min-w-0">
@@ -249,8 +249,8 @@ const OrderCard = ({ order }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className={`p-2 rounded-xl bg-gray-100 transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
-                                <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-primary' : 'text-gray-600'}`} />
+                            <div className={`p-2 rounded-full bg-gray-200 transition-transform duration-300 ${isExpanded ? 'rotate-180 bg-gray-500' : ''}`}>
+                                <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-white' : 'text-gray-600'}`} />
                             </div>
                         </div>
 
@@ -262,7 +262,6 @@ const OrderCard = ({ order }) => {
                             </div>
                             <span className="text-gray-300">•</span>
                             <div className="flex items-center gap-1.5">
-                                <UtensilsCrossed className="w-3.5 h-3.5" />
                                 <span>{items.length} món</span>
                             </div>
                         </div>
@@ -270,7 +269,7 @@ const OrderCard = ({ order }) => {
                         {/* Row 3: Total */}
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">Tổng thanh toán</span>
-                            <p className="text-xl font-bold text-primary">
+                            <p className="text-xl font-bold text-red-600">
                                 {formatCurrency(order.total_amount)}
                             </p>
                         </div>
@@ -306,12 +305,12 @@ const OrderCard = ({ order }) => {
                         </div>
                         <div className="flex items-center gap-4 flex-shrink-0">
                             <div className="text-right">
-                                <p className="text-2xl font-bold text-primary">
+                                <p className="text-2xl font-bold text-red-600">
                                     {formatCurrency(order.total_amount)}
                                 </p>
                                 <p className="text-xs text-gray-500">Tổng thanh toán</p>
                             </div>
-                            <div className={`p-2 rounded-3xl bg-gray-200 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
+                            <div className={`p-2 rounded-2xl bg-gray-200 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
                                 <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-primary' : 'text-gray-600'}`} />
                             </div>
                         </div>
@@ -328,9 +327,9 @@ const OrderCard = ({ order }) => {
 
                         {/* Recipient & Address Info */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="flex items-start gap-3 p-4 rounded-3xl bg-white border border-gray-100 shadow-md">
-                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                    <User className="w-5 h-5 text-gray-700" />
+                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-gray-300 shadow-md">
+                                <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0">
+                                    <User className="w-5 h-5 text-white" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Người nhận</p>
@@ -343,9 +342,9 @@ const OrderCard = ({ order }) => {
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-4 rounded-3xl bg-white border border-gray-100 shadow-md">
-                                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                    <MapPin className="w-5 h-5 text-gray-700" />
+                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-gray-300 shadow-md">
+                                <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0">
+                                    <MapPin className="w-5 h-5 text-white" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Địa chỉ giao hàng</p>
@@ -355,7 +354,7 @@ const OrderCard = ({ order }) => {
                         </div>
 
                         {/* Order Items - Simple Table Format */}
-                        <div className="rounded-3xl bg-white shadow-md overflow-hidden">
+                        <div className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-300">
                             <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-300">
                                 <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                                     <FileText className="w-4 h-4 text-gray-700" />
@@ -380,7 +379,7 @@ const OrderCard = ({ order }) => {
                                         <div className="sm:hidden space-y-1">
                                             <div className="flex justify-between items-start">
                                                 <p className="font-medium text-gray-900">{item.name}</p>
-                                                <p className="font-semibold text-primary">{formatCurrency(item.price * item.qty)}</p>
+                                                <p className="font-semibold text-red-600">{formatCurrency(item.price * item.qty)}</p>
                                             </div>
                                             <div className="flex gap-3 text-sm text-gray-500">
                                                 <span>{formatCurrency(item.price)} x {item.qty}</span>
@@ -435,7 +434,7 @@ const OrderCard = ({ order }) => {
 
                         {/* Notes if any */}
                         {order.customer_note && (
-                            <div className="p-3 rounded-3xl bg-amber-50 shadow-md border border-amber-200 flex items-start gap-2">
+                            <div className="p-3 rounded-2xl bg-amber-50 shadow-md border border-amber-200 flex items-start gap-2">
                                 <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
                                     <FileWarning className="w-4 h-4 text-amber-600" />
                                 </div>
@@ -487,7 +486,7 @@ const OrderCard = ({ order }) => {
                                     });
 
                                     const products = await Promise.all(productPromises);
-                                    
+
                                     // Add all items to cart
                                     products.forEach(product => {
                                         addToCart(product, product.quantity);
@@ -512,7 +511,7 @@ const OrderCard = ({ order }) => {
                             ) : (
                                 <>
                                     <RotateCcw className="w-5 h-5" />
-                                    <span>Đặt lại</span>
+                                    <span>Đặt lại đơn hàng</span>
                                 </>
                             )}
                         </button>
@@ -529,16 +528,15 @@ const OrderCard = ({ order }) => {
 const EmptyState = ({ searched, error }) => {
     if (error) {
         return (
-            <div className="text-center bg-white rounded-3xl shadow-md p-8 sm:p-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 mb-4 shadow-inner">
+            <div className="text-center bg-white rounded-2xl shadow-md p-8 sm:p-12">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 mb-4 shadow-inner">
                     <AlertCircle className="w-10 h-10 text-red-500" />
                 </div>
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Không tìm thấy đơn hàng</h2>
                 <p className="text-gray-600 max-w-md mx-auto mb-6">
                     {error}
                 </p>
-                <p className="text-sm text-gray-500">
-                    Bạn cần hỗ trợ? Hãy liên hệ hotline: <span className="font-semibold text-primary">0933 960 788</span>
+                <p className="text-md text-gray-500">
+                    Liên hệ hotline: <span className="font-semibold text-primary">0933 960 788</span>
                 </p>
             </div>
         );
@@ -563,7 +561,7 @@ const EmptyState = ({ searched, error }) => {
     // }
 
     // return (
-    //     <div className="text-center bg-white rounded-3xl shadow-md p-8 sm:p-12">
+    //     <div className="text-center bg-white rounded-2xl shadow-md p-8 sm:p-12">
     //         <div className="relative inline-block mb-6">
     //             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gray-100 flex items-center justify-center">
     //                 <FileText className="w-12 h-12 sm:w-14 sm:h-14 text-gray-300" />
@@ -579,7 +577,7 @@ const EmptyState = ({ searched, error }) => {
 };
 
 export default function OrderTrackingPage() {
-    const [phoneNumber, setPhoneNumber] = useState('');
+    const [searchInput, setSearchInput] = useState('');
     const [allOrders, setAllOrders] = useState([]);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -590,8 +588,8 @@ export default function OrderTrackingPage() {
 
     const handleSearch = async (e) => {
         e.preventDefault();
-        if (!phoneNumber.trim()) {
-            setError('Vui lòng nhập số điện thoại');
+        if (!searchInput.trim()) {
+            setError('Vui lòng nhập số điện thoại hoặc mã đơn hàng');
             return;
         }
 
@@ -604,18 +602,18 @@ export default function OrderTrackingPage() {
             const res = await fetch('/api/orders/lookup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phoneNumber: phoneNumber.trim() }),
+                body: JSON.stringify({ searchInput: searchInput.trim() }),
             });
             const data = await res.json();
             if (data.success) {
                 // Sort by order_time descending (newest first)
-                const sortedOrders = (data.orders || []).sort((a, b) => 
+                const sortedOrders = (data.orders || []).sort((a, b) =>
                     new Date(b.order_time) - new Date(a.order_time)
                 );
                 setAllOrders(sortedOrders);
                 setCurrentPage(1);
                 if (sortedOrders.length === 0) {
-                    setError('Không tìm thấy đơn hàng nào với số điện thoại này');
+                    setError('Không tìm thấy đơn hàng, vui lòng kiểm tra lại số điện thoại hoặc mã đơn hàng.');
                 }
             } else {
                 setError(data.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.');
@@ -629,7 +627,7 @@ export default function OrderTrackingPage() {
 
     // Pagination logic
     const totalPages = Math.ceil(allOrders.length / ordersPerPage);
-    
+
     // Update displayed orders when page or allOrders changes
     useEffect(() => {
         const startIndex = (currentPage - 1) * ordersPerPage;
@@ -641,7 +639,7 @@ export default function OrderTrackingPage() {
     return (
         <div className="min-h-screen">
             {/* Hero Section - Clean without emojis */}
-            <div className="relative overflow-hidden pt-20 sm:pt-24 pb-12 sm:pb-16">
+            <div className="relative overflow-hidden pt-28 sm:pt-28 pb-12 sm:pb-16">
                 {/* Gradient orbs only, no emojis */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-10 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
@@ -652,7 +650,7 @@ export default function OrderTrackingPage() {
                     <div className="max-w-3xl mx-auto text-center">
                         {/* Logo */}
                         <div className="relative inline-block mb-2 sm:mb-2">
-                            <div className="relative w-24 h-24 sm:w-48 sm:h-48">
+                            <div className="relative w-36 h-36 sm:w-48 sm:h-48">
                                 <Image
                                     src="/images/banner-logo/banhtamcodao-logo.png"
                                     alt="Bánh Tằm Cô Đào Logo"
@@ -665,12 +663,12 @@ export default function OrderTrackingPage() {
                         </div>
 
                         {/* Title */}
-                        <h1 className="text-2xl sm:text-4xl md:text-5xl font-lobster mb-2 sm:mb-2 text-gray-900">
+                        <h1 className="text-3xl sm:text-4xl md:text-5xl font-lobster mb-2 sm:mb-2 text-gray-900">
                             Tra Cứu Đơn Hàng
                         </h1>
-                        <p className="text-base sm:text-lg md:text-lg text-gray-500 max-w-2xl mx-auto">
-                            Nhập số điện thoại để xem lịch sử và trạng thái đơn hàng của bạn
-                        </p>
+                        {/* <p className="text-sm sm:text-lg md:text-lg text-gray-400 max-w-2xl mx-auto">
+                            Tìm lịch sử đơn hàng của bạn
+                        </p> */}
                     </div>
                 </div>
             </div>
@@ -679,22 +677,22 @@ export default function OrderTrackingPage() {
             <div className="max-w-[1200px] mx-auto px-4 -mt-6 relative z-20">
                 <div className="max-w-2xl mx-auto">
                     <form onSubmit={handleSearch}>
-                        <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-md">
+                        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-md">
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <div className="flex-1 relative">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-3xl bg-primary/10">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-2xl bg-gray-100 shadow-inner">
                                         <Phone className="w-4 h-4 text-primary" />
                                     </div>
                                     <input
-                                        type="tel"
-                                        value={phoneNumber}
+                                        type="text"
+                                        value={searchInput}
                                         onChange={(e) => {
-                                            setPhoneNumber(e.target.value);
+                                            setSearchInput(e.target.value);
                                             setError('');
                                         }}
                                         placeholder="Nhập số điện thoại hoặc mã đơn hàng..."
                                         required
-                                        className="w-full pl-14 pr-4 py-4 text-base border-2 border-gray-100 rounded-2xl focus:ring-0 focus:border-primary transition-all bg-gray-50 focus:bg-white"
+                                        className="w-full pl-14 pr-4 py-4 text-base border-2 border-gray-300 rounded-2xl focus:ring-0 focus:border-primary transition-all bg-gray-50 focus:bg-white"
                                     />
                                 </div>
                                 <button
@@ -717,7 +715,7 @@ export default function OrderTrackingPage() {
                             </div>
 
                             {error && !loading && searched && allOrders.length === 0 && (
-                                <div className="mt-4 p-3 rounded-2xl bg-red-50 border border-red-400 flex items-center gap-2">
+                                <div className="mt-4 p-3 rounded-2xl bg-red-50/50 border border-red-400 flex items-center gap-2">
                                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                                     <p className="text-sm text-red-700">{error}</p>
                                 </div>
@@ -741,8 +739,8 @@ export default function OrderTrackingPage() {
 
                     {!loading && searched && allOrders.length > 0 && (
                         <div className="space-y-4">
-                            <div className="text-center mb-6 sm:mb-8">
-                                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full mb-3">
+                            <div className="text-center mb-4 sm:mb-8">
+                                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-2xl mb-3">
                                     <CheckCircle2 className="w-5 h-5" />
                                     <span className="font-semibold">Tìm thấy {allOrders.length} đơn hàng</span>
                                 </div>
@@ -751,7 +749,7 @@ export default function OrderTrackingPage() {
                             {orders.map(order => (
                                 <OrderCard key={order.id} order={order} />
                             ))}
-                            
+
                             {/* Pagination */}
                             {totalPages > 1 && (
                                 <div className="flex items-center justify-center gap-2 mt-6">
@@ -767,11 +765,10 @@ export default function OrderTrackingPage() {
                                             <button
                                                 key={page}
                                                 onClick={() => setCurrentPage(page)}
-                                                className={`px-3 py-2 rounded-lg font-medium transition-all ${
-                                                    currentPage === page
-                                                        ? 'bg-primary text-white'
-                                                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                                                }`}
+                                                className={`px-3 py-2 rounded-lg font-medium transition-all ${currentPage === page
+                                                    ? 'bg-primary text-white'
+                                                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                    }`}
                                             >
                                                 {page}
                                             </button>

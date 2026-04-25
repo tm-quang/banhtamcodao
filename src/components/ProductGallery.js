@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, ZoomIn, Heart, Share2, Maximize2 } from 'lucide-react';
 
 /**
  * ProductGallery Component
@@ -10,16 +10,39 @@ import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
  * @param {Object} props
  * @param {Array} props.images - Array of image objects with id and image_url
  * @param {string} props.productName - Product name for alt text
+ * @param {Object} props.product - Product object for sharing
+ * @param {boolean} props.isWishlisted - Whether product is wishlisted
+ * @param {Function} props.onWishlistToggle - Callback for wishlist toggle
+ * @param {Function} props.onShare - Callback for share
  */
-export default function ProductGallery({ images = [], productName = 'Product' }) {
+export default function ProductGallery({
+    images = [],
+    productName = 'Product',
+    product = null,
+    isWishlisted = false,
+    onWishlistToggle = null,
+    onShare = null
+}) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [isZoomed, setIsZoomed] = useState(false);
 
+    // Disable body scroll when lightbox is open
+    useEffect(() => {
+        if (isLightboxOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isLightboxOpen]);
+
     if (!images || images.length === 0) {
         return (
-            <div className="aspect-square relative rounded-lg overflow-hidden border bg-gray-100 flex items-center justify-center">
-                <p className="text-gray-400">Không có ảnh</p>
+            <div className="aspect-square md:aspect-[4/3] relative rounded-2xl overflow-hidden border bg-gray-100 flex items-center justify-center">
+                <p className="text-gray-400 text-sm md:text-base">Không có ảnh</p>
             </div>
         );
     }
@@ -45,13 +68,32 @@ export default function ProductGallery({ images = [], productName = 'Product' })
         setIsZoomed(false);
     };
 
+    const handleZoom = (e) => {
+        e.stopPropagation();
+        setIsZoomed(!isZoomed);
+    };
+
+    const handleWishlistClick = (e) => {
+        e.stopPropagation();
+        if (onWishlistToggle) {
+            onWishlistToggle();
+        }
+    };
+
+    const handleShareClick = (e) => {
+        e.stopPropagation();
+        if (onShare) {
+            onShare();
+        }
+    };
+
     return (
         <>
             {/* Main Gallery */}
-            <div className="space-y-4">
+            <div className="space-y-4 md:space-y-4">
                 {/* Main Image */}
                 <div
-                    className="aspect-square relative rounded-lg overflow-hidden border bg-white group cursor-pointer"
+                    className="aspect-square md:aspect-[4/3] relative rounded-2xl overflow-hidden bg-white group cursor-pointer"
                     onClick={handleImageClick}
                 >
                     <Image
@@ -63,9 +105,36 @@ export default function ProductGallery({ images = [], productName = 'Product' })
                         priority={currentIndex === 0}
                     />
 
-                    {/* Zoom Indicator */}
-                    <div className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                        <ZoomIn size={20} />
+                    {/* Action Buttons - Show on hover */}
+                    <div className="absolute top-2 md:top-4 right-2 md:right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {onWishlistToggle && (
+                            <button
+                                onClick={handleWishlistClick}
+                                className={`p-2 md:p-2.5 rounded-2xl border-2 backdrop-blur-sm transition-all ${isWishlisted
+                                    ? 'border-red-500 bg-red-500/90 text-white'
+                                    : 'border-white/80 bg-white/80 text-gray-700 hover:bg-white'
+                                    }`}
+                                aria-label="Thêm vào yêu thích"
+                            >
+                                <Heart size={18} className="md:w-5 md:h-5" fill={isWishlisted ? 'currentColor' : 'none'} />
+                            </button>
+                        )}
+                        {onShare && (
+                            <button
+                                onClick={handleShareClick}
+                                className="p-2 md:p-2.5 rounded-2xl border-2 border-white/80 bg-white/80 text-gray-700 hover:bg-white backdrop-blur-sm transition-all"
+                                aria-label="Chia sẻ"
+                            >
+                                <Share2 size={18} className="md:w-5 md:h-5" />
+                            </button>
+                        )}
+                        <button
+                            onClick={handleImageClick}
+                            className="p-2 md:p-2.5 rounded-2xl border-2 border-white/80 bg-white/80 text-gray-700 hover:bg-white backdrop-blur-sm transition-all"
+                            aria-label="Phóng to"
+                        >
+                            <Maximize2 size={18} className="md:w-5 md:h-5" />
+                        </button>
                     </div>
 
                     {/* Navigation Arrows (only show if multiple images) */}
@@ -90,7 +159,7 @@ export default function ProductGallery({ images = [], productName = 'Product' })
 
                     {/* Image Counter */}
                     {images.length > 1 && (
-                        <div className="absolute bottom-4 right-4 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                        <div className="absolute bottom-2 md:bottom-4 right-2 md:right-4 bg-black/60 text-white px-2 md:px-3 py-1 rounded-full text-xs md:text-sm">
                             {currentIndex + 1} / {images.length}
                         </div>
                     )}
@@ -103,9 +172,9 @@ export default function ProductGallery({ images = [], productName = 'Product' })
                             <button
                                 key={image.id || index}
                                 onClick={() => handleThumbnailClick(index)}
-                                className={`flex-shrink-0 w-20 h-20 relative rounded-md overflow-hidden border-2 transition-all ${currentIndex === index
-                                        ? 'border-primary ring-2 ring-primary/30'
-                                        : 'border-gray-200 hover:border-gray-400'
+                                className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 relative rounded-xl md:rounded-2xl overflow-hidden border-2 transition-all ${currentIndex === index
+                                    ? 'border-primary ring-2 ring-primary/30'
+                                    : 'border-gray-200 hover:border-gray-400'
                                     }`}
                                 aria-label={`Xem ảnh ${index + 1}`}
                             >
@@ -128,14 +197,23 @@ export default function ProductGallery({ images = [], productName = 'Product' })
                     className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
                     onClick={closeLightbox}
                 >
-                    {/* Close Button */}
-                    <button
-                        onClick={closeLightbox}
-                        className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full transition-colors"
-                        aria-label="Đóng"
-                    >
-                        <X size={24} />
-                    </button>
+                    {/* Action Buttons - Top Right */}
+                    <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        <button
+                            onClick={handleZoom}
+                            className="p-3 rounded-3xl border-2 border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition-all"
+                            aria-label={isZoomed ? "Thu nhỏ" : "Phóng to"}
+                        >
+                            {isZoomed ? <X size={20} /> : <Maximize2 size={20} />}
+                        </button>
+                        <button
+                            onClick={closeLightbox}
+                            className="p-3 rounded-3xl border-2 border-white/20 bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition-colors"
+                            aria-label="Đóng"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
 
                     {/* Navigation Arrows */}
                     {images.length > 1 && (
@@ -163,7 +241,7 @@ export default function ProductGallery({ images = [], productName = 'Product' })
                             }`}
                         onClick={(e) => {
                             e.stopPropagation();
-                            setIsZoomed(!isZoomed);
+                            // Don't toggle zoom on image click, use button instead
                         }}
                     >
                         <Image

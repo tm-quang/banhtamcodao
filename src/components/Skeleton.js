@@ -18,7 +18,7 @@ const SkeletonBase = ({ className = "", children, variant = "rectangular" }) => 
   };
 
   return (
-    <div className={`${baseClasses} ${variantClasses[variant] || variantClasses.rectangular} ${className}`}>
+    <div className={`${baseClasses} ${variantClasses[variant] || variantClasses.rectangular} ${className}`} style={{ transform: 'scale(1)', transition: 'none' }}>
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200"></div>
       {/* Shimmer effect */}

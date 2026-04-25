@@ -1,155 +1,195 @@
 // src/components/Footer.js
-import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Phone, Mail, MapPin, Clock, Facebook, Instagram, Youtube, ArrowRight, Send, Globe, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-
-const footerLinks = [
-  {
-    heading: 'Khám phá',
-    links: [
-      { label: 'Về chúng tôi', href: '#' },
-      { label: 'Câu chuyện thương hiệu', href: '#' },
-    ],
-  },
-  {
-    heading: 'Thông tin khách hàng',
-    links: [
-      { label: 'Câu hỏi thường gặp', href: '#' },
-      { label: 'Chính sách giao hàng', href: '#' },
-      { label: 'Phương thức thanh toán', href: '#' },
-    ],
-  },
-  // {
-  //   heading: 'Kết nối',
-  //   links: [
-  //     { label: 'Tuyển dụng', href: '#' },
-  //     { label: 'Hợp tác & sự kiện', href: '#' },
-  //     { label: 'Blog ẩm thực', href: '#' },
-  //   ],
-  // },
-];
-
-const contactItems = [
-  { icon: MapPin, label: 'An Thới, Phú Quốc, Kiên Giang' },
-  { icon: Clock, label: '06:00 - 10:30 | Mỗi ngày' },
-  { icon: Phone, label: '0933 960 788' },
-  { icon: Mail, label: 'banhtamcodao@gmail.com' },
-];
-
-const socials = [
-  { icon: Facebook, href: '#', label: 'Facebook' },
-  { icon: Instagram, href: '#', label: 'Instagram' },
-  { icon: Youtube, href: '#', label: 'YouTube' },
-];
+import { motion } from 'framer-motion';
 
 const Footer = () => {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.success) {
+          setSettings(data.settings);
+        }
+      } catch (error) {
+        console.error('Failed to fetch footer settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const bgImageUrl = "https://res.cloudinary.com/dgoe8cra8/image/upload/v1759424775/tn7vyqy47q58kaoi2neg.jpg";
 
-  return (
-    <footer className="relative overflow-hidden text-light">
-      <Image
-        src={bgImageUrl}
-        alt="Footer background"
-        fill
-        className="absolute inset-0 h-full w-full object-cover"
-        priority
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/75 to-black/85" />
+  const siteName = settings?.general?.site_name || "Bánh Tằm Cô Đào";
+  const address = settings?.contact?.address || "Tổ 4, Khu phố 1, Đặc Khu Phú Quốc, An Giang";
+  const phone = settings?.contact?.phone || "0933 960 788";
+  const email = settings?.contact?.email || "banhtamcodao@gmail.com";
+  const openingHours = "5h30 - 10h30 | T2 - CN";
+  const facebook = settings?.social?.facebook || "#";
+  const instagram = settings?.social?.instagram || "#";
+  const tiktok = settings?.social?.tiktok || "#";
+  const logoUrl = settings?.general?.logo_url || "https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png";
 
-      <div className="relative mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-6 md:pb-6">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-          <div className="space-y-4 lg:max-w-sm">
-            <Link href="/" className="inline-flex items-center gap-3">
-              <Image
-                src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png"
-                alt="Bánh Tằm Cô Đào Logo"
-                width={220}
-                height={64}
-                priority
-              />
-            </Link>
-            <p className="text-base text-gray-300 sm:text-lg">
-              Những món ngon chuẩn vị miền Tây, mang đến trải nghiệm ấm áp như ở nhà.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 text-gray-300">
-              {socials.map(({ icon: IconSocial, href, label }) => (
+  return (
+    <footer className="relative bg-[#0a0a0a] text-white overflow-hidden border-t border-white/5">
+      {/* Background Decorative Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2"></div>
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-orange-900/10 rounded-full blur-[100px] translate-y-1/2"></div>
+        <Image
+          src={bgImageUrl}
+          alt="Footer texture"
+          fill
+          className="object-cover opacity-[0.03] grayscale"
+        />
+      </div>
+
+      <div className="relative mx-auto max-w-[1200px] px-4 pt-12 pb-8 sm:px-6 lg:px-8">
+        {/* Main Grid Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+
+          {/* Brand & Identity (4 Cols) */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-6">
+              <Link href="/" className="inline-block group transition-transform duration-500 hover:scale-[1.02]">
+                <img
+                  src={logoUrl}
+                  alt={siteName}
+                  className="h-15 md:h-18 w-auto drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                />
+              </Link>
+              <p className="text-gray-400 text-sm md:text-[15px] leading-relaxed max-w-md font-light italic">
+                &quot;{settings?.general?.site_description || "Chuẩn vị Miền Tây"}&quot;
+              </p>
+            </div>
+
+            {/* Premium Social Links */}
+            <div className="flex items-center gap-3">
+              {[
+                { icon: Facebook, href: facebook, color: 'hover:text-blue-500' },
+                { icon: Instagram, href: instagram, color: 'hover:text-pink-500' },
+                { icon: Globe, href: tiktok, color: 'hover:text-primary' }
+              ].map((social, idx) => (
                 <Link
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="group flex h-11 w-11 items-center justify-center rounded-full bg-white/10 backdrop-blur-sm transition-all duration-200 hover:bg-primary/90"
+                  key={idx}
+                  href={social.href}
+                  target="_blank"
+                  className={`group w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center transition-all duration-300 hover:bg-white/[0.08] hover:border-white/20 ${social.color}`}
                 >
-                  <IconSocial className="h-5 w-5 text-white transition-transform duration-200 group-hover:scale-110" />
+                  <social.icon size={18} className="transition-transform duration-300 group-hover:scale-110" />
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-white/5 p-4 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.8)] backdrop-blur-md sm:p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-primary/70 sm:text-sm">Nhận tin mới</p>
-                <h3 className="mt-2 text-xl font-semibold sm:text-2xl">Ưu đãi mỗi tuần</h3>
+          {/* Contact & Map (7 Cols) */}
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Quick Contact Cards */}
+            <div className="space-y-5">
+              <h4 className="text-[11px] uppercase tracking-[0.2em] text-primary font-bold">Liên hệ với chúng tôi</h4>
+              <div className="space-y-4">
+                <div className="group flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                    <Phone size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-gray-500 uppercase tracking-wider font-bold">Hotline đặt món</p>
+                    <Link href={`tel:${phone.replace(/\s/g, '')}`} className="text-md font-bold hover:text-primary transition-colors">{phone}</Link>
+                  </div>
+                </div>
+
+                <div className="group flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-gray-400 transition-colors group-hover:bg-white group-hover:text-black">
+                    <Clock size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-gray-500 uppercase tracking-wider font-bold">Giờ mở c</p>
+                    <p className="text-sm font-medium">{openingHours}</p>
+                  </div>
+                </div>
+
+                <div className="group flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center text-gray-400 transition-colors group-hover:bg-white group-hover:text-black">
+                    <MapPin size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] text-gray-500 uppercase tracking-wider font-bold">Địa chỉ</p>
+                    <p className="text-sm font-medium leading-tight">{address}</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <form className="mt-4 flex flex-col gap-3 sm:mt-4 sm:flex-row">
-              <input
-                type="email"
-                placeholder="Nhập email của bạn"
-                className="h-[60px] flex-1 rounded-xl border border-white/20 bg-white/15 px-4 text-base text-white placeholder:text-gray-300 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40 sm:!h-14"
-              />
-              <button
-                type="submit"
-                className="h-[50px] rounded-xl bg-primary px-6 text-xl font-semibold text-white shadow-[0_12px_30px_rgba(255,123,0,0.35)] transition-transform duration-200 hover:scale-[1.02] sm:h-14"
-              >
-                Đăng ký
-              </button>
-            </form>
-            <p className="mt-2 text-xs text-gray-300 sm:mt-3">
-              Khi đăng ký, bạn đã đồng ý với <Link href="#" className="text-primary">chính sách bảo mật</Link> của chúng tôi.
-            </p>
-          </div>
-        </div>
 
-        <div className="grid gap-8 border-t border-white/10 pt-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_repeat(3,1fr)] lg:gap-10 lg:pt-10">
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold text-white">Liên hệ</h4>
-            <ul className="space-y-3 text-gray-300">
-              {contactItems.map(({ icon: IconContact, label }) => (
-                <li key={label} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
-                    <IconContact className="h-4 w-4" strokeWidth={1.8} />
-                  </span>
-                  <span className="flex-1 text-sm sm:text-base leading-relaxed">{label}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {footerLinks.map(({ heading, links }) => (
-            <div key={heading} className="space-y-3 sm:space-y-4">
-              <h4 className="text-lg font-semibold text-white">{heading}</h4>
-              <ul className="space-y-3 text-gray-300">
-                {links.map(({ label, href }) => (
-                  <li key={label}>
-                    <Link href={href} className="transition-colors duration-200 hover:text-primary">
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+            {/* Integrated Map View */}
+            <div className="space-y-4">
+              <h4 className="text-[11px] uppercase tracking-[0.2em] text-gray-500 font-bold flex justify-between items-center">
+                Vị trí bản đồ
+                <Link href="https://maps.app.goo.gl/p12e1QCGrBVdpR1TA" target="_blank" className="text-primary hover:underline lowercase tracking-normal flex items-center gap-1">
+                  google maps <ArrowRight size={10} />
+                </Link>
+              </h4>
+              <div className="relative aspect-[16/9] md:aspect-square rounded-2xl overflow-hidden border border-white/5 shadow-2xl group">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1651.9437857602882!2d104.0132411408792!3d10.016312219051363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a797296fe8b0bf%3A0xb69bf20b76e4bd4d!2zQsOhbmggVOG6sW0gQ8O0IMSQw6Bv!5e0!3m2!1svi!2s!4v1777008611214!5m2!1svi!2s"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  className="absolute inset-0 contrast-[1.1] opacity-70 hover:opacity-100 transition-all duration-700"
+                />
+              </div>
             </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-2 border-t border-white/10 pt-5 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between sm:pt-6">
-          <p>© {new Date().getFullYear()} Bánh Tằm Cô Đào. Giữ trọn hương vị miền Tây.</p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="#" className="hover:text-primary">Điều khoản sử dụng</Link>
-            <Link href="#" className="hover:text-primary">Chính sách bảo mật</Link>
-            <Link href="#" className="hover:text-primary">Cookie</Link>
           </div>
         </div>
+
+        {/* Newsletter & Bottom Strip */}
+        <div className="mt-12 pt-8 border-t border-white/5">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            {/* Minimalist Newsletter */}
+            <div className="w-full lg:w-auto flex flex-col md:flex-row items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                  <Send size={14} />
+                </div>
+                <p className="text-sm font-bold tracking-tight">Đăng ký nhận ưu đãi độc quyền</p>
+              </div>
+              <form className="relative w-full md:w-80 group" onSubmit={(e) => e.preventDefault()}>
+                <input
+                  type="email"
+                  placeholder="Địa chỉ email của bạn..."
+                  className="w-full h-10 bg-white/[0.03] border border-white/10 rounded-full px-5 text-xs focus:outline-none focus:border-primary/50 transition-all placeholder:text-gray-600"
+                />
+                <button className="absolute right-1 top-1 h-8 px-4 bg-primary text-black text-[10px] font-black uppercase rounded-full hover:bg-orange-400 transition-colors">
+                  Gửi ngay
+                </button>
+              </form>
+            </div>
+
+            {/* Small Links */}
+            <div className="flex items-center gap-6 text-[10px] uppercase tracking-widest text-gray-500 font-bold">
+              <Link href="/privacy" className="hover:text-white transition-colors">Chính sách bảo mật</Link>
+              <Link href="/terms" className="hover:text-white transition-colors">Điều khoản</Link>
+              <div className="w-1 h-1 bg-white/20 rounded-full"></div>
+              <p className="text-gray-600">&copy; {new Date().getFullYear()} Bánh Tằm Cô Đào</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Decorative Branding */}
+      <div className="absolute -bottom-10 right-20 opacity-[0.04] pointer-events-none select-none">
+        <h2 className="text-[150px] font-lobster whitespace-nowrap">Bánh Tằm Cô Đào</h2>
       </div>
     </footer>
   );

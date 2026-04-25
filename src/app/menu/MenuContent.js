@@ -179,19 +179,19 @@ export default function MenuContent() {
             </div>
 
             <div className="max-w-[1200px] mx-auto px-4 mt-6">
-                <div className="text-center mb-8 md:mb-12">
+                <div className="text-center mb-2 md:mb-4">
                     <span className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold tracking-widest uppercase text-[#FF6F30] bg-[#FF6F30]/10 rounded-full">
                         <Star className="w-3 h-3 fill-current" />
                         GỢI Ý HÔM NAY
                         <Star className="w-3 h-3 fill-current" />
                     </span>
-                    <h1 className="mt-2 text-4xl md:text-5xl font-lobster text-[#222629]">
+                    <h1 className="mt-2 text-3xl md:text-4xl font-lobster text-[#222629]">
                         Thực đơn của chúng tôi
                     </h1>
                 </div>
 
                 {/* Category Slider */}
-                <div className="-mx-4 md:mx-0">
+                <div className="w-full md:mx-0">
                     <CategorySlider
                         categories={categoryNames}
                         activeCategory={activeCategory}

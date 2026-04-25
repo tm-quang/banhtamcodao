@@ -22,15 +22,37 @@ export default function PromotionBanner() {
     useEffect(() => {
         const fetchFlashSales = async () => {
             try {
-                const res = await fetch('/api/flash-sales/active');
+                const res = await fetch('/api/flash-sales/active', {
+                    cache: 'no-store' // Đảm bảo luôn fetch dữ liệu mới nhất
+                });
+                
+                // Kiểm tra response status
+                if (!res.ok) {
+                    console.warn('Flash sales API returned non-OK status:', res.status);
+                    setFlashSales([]);
+                    setLoading(false);
+                    return;
+                }
+
                 const data = await res.json();
-                if (data.success && data.flashSales?.length > 0) {
+                
+                console.log('Flash sales API response:', data); // Debug log
+                
+                // Xử lý cả trường hợp success: true/false và có/không có flashSales
+                if (data && Array.isArray(data.flashSales) && data.flashSales.length > 0) {
+                    console.log('Found flash sales:', data.flashSales.length); // Debug log
                     setFlashSales(data.flashSales);
+                } else {
+                    console.log('No flash sales found or empty array'); // Debug log
+                    setFlashSales([]);
                 }
             } catch (error) {
                 console.error('Failed to fetch flash sales:', error);
+                // Đặt mảng rỗng để component không bị lỗi
+                setFlashSales([]);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
 
         fetchFlashSales();
@@ -95,17 +117,26 @@ export default function PromotionBanner() {
     const goToPrev = () => setCurrentSlide((prev) => (prev - 1 + flashSales.length) % flashSales.length);
     const goToNext = () => setCurrentSlide((prev) => (prev + 1) % flashSales.length);
 
-    // Don't render if no flash sales or all expired
-    if (loading || flashSales.length === 0 || timeLeft.expired) {
-        return null;
+    // Don't render if loading, no flash sales, or all expired
+    if (loading) {
+        return null; // Đang tải, không hiển thị gì
     }
 
+    // Không có flash sale
+    if (flashSales.length === 0) {
+        return null; // Không có flash sale, không hiển thị
+    }
+
+    // Kiểm tra nếu flash sale hiện tại đã hết hạn
     const currentPromo = flashSales[currentSlide];
+    if (!currentPromo || timeLeft.expired) {
+        return null; // Flash sale đã hết hạn hoặc không tồn tại, không hiển thị
+    }
     const badgeColor = currentPromo?.badge_color || '#FFD93D';
     const isDarkBadge = !['#FFD93D', '#4ECDC4', '#1ABC9C'].includes(badgeColor);
 
     return (
-        <section className="py-8 md:py-12">
+        <section className="py-4 md:py-2">
             <div className="max-w-[1200px] mx-auto px-4">
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -114,7 +145,7 @@ export default function PromotionBanner() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.5 }}
-                        className="relative rounded-3xl overflow-hidden shadow-2xl"
+                        className="relative rounded-3xl overflow-hidden shadow-md"
                         style={{
                             background: `linear-gradient(135deg, ${badgeColor} 0%, ${badgeColor}dd 50%, ${badgeColor}aa 100%)`
                         }}
@@ -187,18 +218,16 @@ export default function PromotionBanner() {
                         </div>
 
                         {/* Main Content */}
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-6 md:p-10 lg:p-12 gap-6 md:gap-8">
+                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-start p-4 md:p-6 lg:p-8 gap-4 md:gap-6">
                             {/* Left Content */}
-                            <div className={`text-center md:text-left max-w-xl ${isDarkBadge ? 'text-white' : 'text-gray-900'}`}>
+                            <div className={`text-left max-w-2xl w-full ${isDarkBadge ? 'text-white' : 'text-gray-900'}`}>
                                 {/* Badge */}
                                 <motion.div
                                     initial={{ scale: 0, rotate: -10 }}
                                     animate={{ scale: 1, rotate: 0 }}
                                     transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                                    className={`inline-flex items-center gap-2 ${isDarkBadge ? 'bg-white/20 border-white/30' : 'bg-black/10 border-black/20'} backdrop-blur-md px-4 py-2 rounded-full text-sm font-bold mb-4 border-2 shadow-lg`}
                                 >
-                                    <Zap size={16} className={isDarkBadge ? 'text-yellow-300 fill-yellow-300' : 'text-yellow-600 fill-yellow-600'} />
-                                    <span>Ưu đãi giới hạn trong ngày</span>
+                                   
                                 </motion.div>
 
                                 {/* Title */}
@@ -208,9 +237,7 @@ export default function PromotionBanner() {
                                     transition={{ delay: 0.2 }}
                                     className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-lobster mb-3 leading-tight drop-shadow-lg"
                                 >
-                                    {currentPromo.name}
-                                    <br />
-                                    <span className={`inline-flex items-center gap-2 ${isDarkBadge ? 'text-yellow-300' : 'text-red-500'}`}>
+                                    <span className={`inline-flex items-center gap-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl ${isDarkBadge ? 'text-yellow-300' : 'text-red-600'}`}>
                                         Giảm Ngay {currentPromo.discount_value}{currentPromo.discount_type === 'percent' ? '%' : 'đ'}
                                     </span>
                                 </motion.h2>
@@ -221,7 +248,7 @@ export default function PromotionBanner() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: 0.3 }}
-                                        className={`${isDarkBadge ? 'text-white/90' : 'text-gray-700'} text-sm sm:text-base md:text-lg mb-6 leading-relaxed drop-shadow max-w-lg`}
+                                        className={`${isDarkBadge ? 'text-white/90' : 'text-gray-700'} text-sm sm:text-base md:text-lg mb-5 leading-relaxed drop-shadow max-w-lg`}
                                     >
                                         {currentPromo.description}
                                     </motion.p>
@@ -234,52 +261,47 @@ export default function PromotionBanner() {
                                     transition={{ delay: 0.4 }}
                                     className="mb-6"
                                 >
-                                    <div className="flex items-center justify-center md:justify-start gap-2 mb-3">
+                                    <div className="flex items-center justify-start gap-2 mb-3">
                                         <Timer size={18} className={isDarkBadge ? 'text-yellow-300' : 'text-red-500'} />
                                         <span className={`text-xs sm:text-sm font-semibold uppercase tracking-wider ${isDarkBadge ? 'text-white/90' : 'text-gray-800'}`}>
                                             Kết thúc sau
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-center md:justify-start gap-2 sm:gap-3">
+                                    <div className="flex items-center justify-start gap-1.5 sm:gap-2">
                                         {/* Days (if > 0) */}
                                         {timeLeft.days > 0 && (
                                             <>
-                                                <div className={`flex flex-col items-center ${isDarkBadge ? 'bg-white/15 border-white/25' : 'bg-black/10 border-black/15'} backdrop-blur-lg rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 min-w-[55px] sm:min-w-[70px] lg:min-w-[80px] border-2 shadow-xl`}>
-                                                    <span className={`text-xl sm:text-2xl lg:text-3xl font-bold tabular-nums ${isDarkBadge ? 'text-white' : 'text-gray-900'}`}>
+                                                <div className="flex flex-col items-center bg-red-500 rounded-lg sm:rounded-xl p-2 sm:p-3 min-w-[50px] sm:min-w-[65px] md:min-w-[75px] shadow-md">
+                                                    <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tabular-nums text-white">
                                                         {String(timeLeft.days).padStart(2, '0')}
                                                     </span>
-                                                    <span className={`text-[10px] sm:text-xs uppercase ${isDarkBadge ? 'opacity-80' : 'opacity-70'} font-semibold mt-0.5`}>Ngày</span>
+                                                    <span className="text-[10px] sm:text-xs uppercase opacity-90 font-semibold mt-0.5 text-white">Ngày</span>
                                                 </div>
-                                                <span className={`text-xl sm:text-2xl lg:text-3xl font-bold ${isDarkBadge ? 'opacity-60' : 'opacity-50'}`}>:</span>
+                                                <span className={`text-lg sm:text-xl md:text-2xl ${isDarkBadge ? 'text-white/60' : 'text-gray-600'}`}>:</span>
                                             </>
                                         )}
                                         {/* Hours */}
-                                        <div className={`flex flex-col items-center ${isDarkBadge ? 'bg-white/15 border-white/25' : 'bg-black/10 border-black/15'} backdrop-blur-lg rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 min-w-[55px] sm:min-w-[70px] lg:min-w-[80px] border-2 shadow-xl`}>
-                                            <span className={`text-xl sm:text-2xl lg:text-3xl font-bold tabular-nums ${isDarkBadge ? 'text-white' : 'text-gray-900'}`}>
+                                        <div className="flex flex-col items-center bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 min-w-[50px] sm:min-w-[65px] md:min-w-[75px] border border-gray-200 shadow-md">
+                                            <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tabular-nums text-gray-900">
                                                 {String(timeLeft.hours || 0).padStart(2, '0')}
                                             </span>
-                                            <span className={`text-[10px] sm:text-xs uppercase ${isDarkBadge ? 'opacity-80' : 'opacity-70'} font-semibold mt-0.5`}>Giờ</span>
+                                            <span className="text-[10px] sm:text-xs uppercase opacity-70 font-semibold mt-0.5 text-gray-700">Giờ</span>
                                         </div>
-                                        <span className={`text-xl sm:text-2xl lg:text-3xl font-bold ${isDarkBadge ? 'opacity-60' : 'opacity-50'}`}>:</span>
+                                        <span className={`text-lg sm:text-xl md:text-2xl ${isDarkBadge ? 'text-white/60' : 'text-gray-600'}`}>:</span>
                                         {/* Minutes */}
-                                        <div className={`flex flex-col items-center ${isDarkBadge ? 'bg-white/15 border-white/25' : 'bg-black/10 border-black/15'} backdrop-blur-lg rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 min-w-[55px] sm:min-w-[70px] lg:min-w-[80px] border-2 shadow-xl`}>
-                                            <span className={`text-xl sm:text-2xl lg:text-3xl font-bold tabular-nums ${isDarkBadge ? 'text-white' : 'text-gray-900'}`}>
+                                        <div className="flex flex-col items-center bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 min-w-[50px] sm:min-w-[65px] md:min-w-[75px] border border-gray-200 shadow-md">
+                                            <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tabular-nums text-gray-900">
                                                 {String(timeLeft.minutes || 0).padStart(2, '0')}
                                             </span>
-                                            <span className={`text-[10px] sm:text-xs uppercase ${isDarkBadge ? 'opacity-80' : 'opacity-70'} font-semibold mt-0.5`}>Phút</span>
+                                            <span className="text-[10px] sm:text-xs uppercase opacity-70 font-semibold mt-0.5 text-gray-700">Phút</span>
                                         </div>
-                                        <span className={`text-xl sm:text-2xl lg:text-3xl font-bold ${isDarkBadge ? 'opacity-60' : 'opacity-50'}`}>:</span>
+                                        <span className={`text-lg sm:text-xl md:text-2xl ${isDarkBadge ? 'text-white/60' : 'text-gray-600'}`}>:</span>
                                         {/* Seconds */}
-                                        <div className={`flex flex-col items-center ${isDarkBadge ? 'bg-white/15 border-white/25' : 'bg-black/10 border-black/15'} backdrop-blur-lg rounded-xl sm:rounded-2xl p-2 sm:p-3 lg:p-4 min-w-[55px] sm:min-w-[70px] lg:min-w-[80px] border-2 shadow-xl`}>
-                                            <motion.span
-                                                key={timeLeft.seconds}
-                                                initial={{ scale: 1.2, opacity: 0.5 }}
-                                                animate={{ scale: 1, opacity: 1 }}
-                                                className={`text-xl sm:text-2xl lg:text-3xl font-bold tabular-nums ${isDarkBadge ? 'text-white' : 'text-gray-900'}`}
-                                            >
+                                        <div className="flex flex-col items-center bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 min-w-[50px] sm:min-w-[65px] md:min-w-[75px] border border-gray-200 shadow-md">
+                                            <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold tabular-nums text-gray-900">
                                                 {String(timeLeft.seconds || 0).padStart(2, '0')}
-                                            </motion.span>
-                                            <span className={`text-[10px] sm:text-xs uppercase ${isDarkBadge ? 'opacity-80' : 'opacity-70'} font-semibold mt-0.5`}>Giây</span>
+                                            </span>
+                                            <span className="text-[10px] sm:text-xs uppercase opacity-70 font-semibold mt-0.5 text-gray-700">Giây</span>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -292,20 +314,20 @@ export default function PromotionBanner() {
                                 >
                                     <Link
                                         href={currentPromo.link_url || '/menu'}
-                                        className={`inline-flex items-center gap-2 sm:gap-3 ${isDarkBadge ? 'bg-white text-orange-600 hover:bg-yellow-50' : 'bg-gray-900 text-white hover:bg-gray-800'} font-bold py-3 sm:py-4 px-6 sm:px-10 rounded-full transition-all shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105 active:scale-95`}
+                                        className={`inline-flex items-center gap-2 ${isDarkBadge ? 'bg-white text-orange-600 hover:bg-yellow-50' : 'bg-gray-900 text-white hover:bg-gray-800'} font-bold py-3 sm:py-3.5 px-5 sm:px-7 rounded-3xl transition-all shadow-xl hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 active:scale-95`}
                                     >
-                                        <span className="text-sm sm:text-lg">Đặt Ngay</span>
-                                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                        <span className="text-base sm:text-lg">Đặt Ngay</span>
+                                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 </motion.div>
                             </div>
 
-                            {/* Right Image */}
+                            {/* Right Image - Hidden on smaller screens, shown on larger screens */}
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.8, rotate: 5 }}
                                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                                 transition={{ duration: 0.6 }}
-                                className="relative w-full md:w-1/2 max-w-xs sm:max-w-sm md:max-w-md"
+                                className="hidden lg:block relative w-1/3 max-w-md"
                             >
                                 <div className="aspect-square relative">
                                     {/* Glow Effect */}

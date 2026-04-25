@@ -3,20 +3,22 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Lock, Phone } from 'lucide-react';
+import { User, Mail, Lock, Phone, Users } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/context/ToastContext';
 
 export default function RegisterForm({ onSwitchToLogin }) {
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
-    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [gender, setGender] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const router = useRouter();
+    const { showToast } = useToast();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,7 +43,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fullName, phoneNumber, username, password, email }),
+                body: JSON.stringify({ fullName, phoneNumber, password, email, gender }),
             });
 
             if (!res.ok) {
@@ -53,20 +55,31 @@ export default function RegisterForm({ onSwitchToLogin }) {
             const data = await res.json();
 
             if (data.success) {
-                setSuccess('Đăng ký thành công! Chuyển đến trang đăng nhập...');
+                // Hiển thị toast thành công
+                showToast('Đăng ký thành công!', 'success');
+                
+                // Hiển thị toast đang chuyển trang
+                setTimeout(() => {
+                    showToast('Đang chuyển trang về đăng nhập...', 'info');
+                }, 500);
+                
+                // Chuyển trang sau 1.5 giây
                 setTimeout(() => {
                     if (onSwitchToLogin) {
                         onSwitchToLogin();
                     } else {
                         router.push('/login');
                     }
-                }, 2000);
+                }, 1500);
             } else {
                 setError(data.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.');
+                showToast(data.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.', 'error');
             }
         } catch (error) {
             console.error('Register error:', error);
-            setError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.');
+            const errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+            setError(errorMessage);
+            showToast(errorMessage, 'error');
         }
     };
 
@@ -87,7 +100,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                         onChange={(e) => setFullName(e.target.value)}
                         required
                         placeholder="Nhập họ tên"
-                        className="block w-full border border-gray-200 rounded-2xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
                     />
                 </div>
 
@@ -102,7 +115,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         required
                         placeholder="Nhập số điện thoại"
-                        className="block w-full border border-gray-200 rounded-2xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
                     />
                 </div>
 
@@ -116,22 +129,25 @@ export default function RegisterForm({ onSwitchToLogin }) {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Nhập email"
-                        className="block w-full border border-gray-200 rounded-2xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
                     />
                 </div>
 
-                {/* Tên đăng nhập */}
+                {/* Giới tính */}
                 <div className="relative">
                     <span className="absolute inset-y-0 left-0 flex items-center pl-4">
-                        <User className="h-5 w-5 text-gray-400" />
+                        <Users className="h-5 w-5 text-gray-400" />
                     </span>
-                    <input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Nhập tên đăng nhập"
-                        className="block w-full border border-gray-200 rounded-2xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
-                    />
+                    <select
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        required
+                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50 appearance-none"
+                    >
+                        <option value="">Chọn giới tính</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                    </select>
                 </div>
 
                 {/* Mật khẩu */}
@@ -145,7 +161,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         placeholder="Nhập mật khẩu"
-                        className="block w-full border border-gray-200 rounded-2xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
                     />
                 </div>
 
@@ -160,7 +176,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         placeholder="Nhập lại mật khẩu"
-                        className="block w-full border border-gray-200 rounded-2xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-gray-50/50"
                     />
                 </div>
 
@@ -191,7 +207,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                 <div>
                     <button
                         type="submit"
-                        className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-2xl hover:bg-primary/90 transition-all text-lg shadow-lg shadow-primary/20"
+                        className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-xl hover:bg-primary/90 transition-all text-lg shadow-lg shadow-primary/20"
                     >
                         Đăng ký
                     </button>

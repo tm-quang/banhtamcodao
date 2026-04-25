@@ -1,7 +1,7 @@
 // src/components/MobileBottomNav.js
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, SquareMenu, Handbag, FileText, User } from 'lucide-react';
@@ -9,9 +9,19 @@ import { useCart } from '@/context/CartContext';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const { cartItems, openMiniCart } = useCart();
+  const { cartItems, openMiniCart, isCartAnimating } = useCart();
   const [animatingTab, setAnimatingTab] = useState(null);
+  const [flashCartCount, setFlashCartCount] = useState(false);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  // Flash animation khi totalItems thay đổi
+  useEffect(() => {
+    if (totalItems > 0) {
+      setFlashCartCount(true);
+      const timer = setTimeout(() => setFlashCartCount(false), 700);
+      return () => clearTimeout(timer);
+    }
+  }, [totalItems]);
 
   const navItems = [
     { id: 'home', name: 'Trang chủ', href: '/', icon: Home },
@@ -62,12 +72,11 @@ export default function MobileBottomNav() {
                 className="relative flex flex-col items-center justify-center flex-1 h-full"
               >
                 <div
-                  className={`shadow-md relative flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white transition-transform duration-300 ${shouldAnimate ? 'animate-zoom-once' : ''
-                    }`}
+                  className={`shadow-md relative flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white transition-transform duration-300 ${shouldAnimate ? 'animate-zoom-once' : ''} ${isCartAnimating ? 'animate-cart-bounce' : ''}`}
                 >
                   <Icon size={28} strokeWidth={2.5} />
                   {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 border-2 border-white">
+                    <span className={`absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1 border border-white leading-none ${flashCartCount ? 'animate-cart-count-flash' : ''}`}>
                       {totalItems > 99 ? '99+' : totalItems}
                     </span>
                   )}

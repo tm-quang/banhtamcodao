@@ -2,25 +2,60 @@
 'use client';
 
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Truck, Store, Banknote, CreditCard, User, Phone, MapPin, Calendar, Clock, FileText, ShoppingCart, ArrowRight, CheckCircle2, Plus, X, Tag, Info, HelpCircle, Shield, Zap } from 'lucide-react';
+import { Truck, Store, Banknote, CreditCard, User, Phone, MapPin, Calendar, Clock, FileText, ShoppingCart, ArrowRight, CheckCircle2, Plus, X, Tag, Info, HelpCircle, Shield, Zap, Gift } from 'lucide-react';
 import { SkeletonCheckout } from '@/components/Skeleton';
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 };
 
+const TabButton = ({ isActive, onClick, children, icon: Icon }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className={`group flex items-center justify-center gap-2 w-full p-4 rounded-xl border-2 transition-all duration-300 ${isActive
+            ? 'border-primary bg-primary/5 text-primary shadow-sm'
+            : 'border-gray-200 bg-white text-gray-700 hover:border-primary/50'
+            }`}
+    >
+        {Icon && <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary'}`} />}
+        <span className="font-semibold">{children}</span>
+    </button>
+);
+
+const InputField = ({ label, icon: Icon, required, id, children, ...props }) => (
+    <div>
+        <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            {Icon && <Icon className="w-4 h-4 text-gray-400" />}
+            {label} {required && <span className="text-rose-500">*</span>}
+        </label>
+        {children || (
+            <input
+                id={id}
+                {...props}
+                className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white"
+            />
+        )}
+    </div>
+);
+
 export default function CheckoutClient() {
     const { cartItems, clearCartSilent } = useCart();
+    const { user } = useAuth();
     const router = useRouter();
 
     const [deliveryMethod, setDeliveryMethod] = useState('delivery');
     const [paymentMethod, setPaymentMethod] = useState('cod');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
+    const [phone, setPhone] = useState('');
+    const [name, setName] = useState('');
+    const [address, setAddress] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [isCartLoaded, setIsCartLoaded] = useState(false);
@@ -30,6 +65,7 @@ export default function CheckoutClient() {
     const [showDateTimeModal, setShowDateTimeModal] = useState(false);
     const [showShippingModal, setShowShippingModal] = useState(false);
     const [orderResult, setOrderResult] = useState(null); // { success: true/false, orderCode, total, paymentMethod }
+    const hasAutoFilledRef = useRef(false);
 
     useEffect(() => {
         const now = new Date();
@@ -40,6 +76,23 @@ export default function CheckoutClient() {
         setDate(dateString);
         setTime(timeString);
     }, []);
+
+    // Tự động điền thông tin khách hàng khi đã đăng nhập (chỉ chạy một lần)
+    useEffect(() => {
+        if (user && !hasAutoFilledRef.current) {
+            // Chỉ điền nếu field chưa có giá trị
+            if (user.phone_number) {
+                setPhone(prev => prev || user.phone_number);
+            }
+            if (user.full_name) {
+                setName(prev => prev || user.full_name);
+            }
+            if (user.shipping_address) {
+                setAddress(prev => prev || user.shipping_address);
+            }
+            hasAutoFilledRef.current = true;
+        }
+    }, [user]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -66,7 +119,9 @@ export default function CheckoutClient() {
     }, [cartItems.length, isCartLoaded, router, orderResult]);
 
     const subtotal = cartItems.reduce((total, item) => {
-        const price = item.discount_price ?? item.price;
+        // Bỏ qua sản phẩm tặng (is_free = true)
+        if (item.is_free) return total;
+        const price = item.discount_price ?? item.price ?? item.finalPrice ?? 0;
         return total + price * item.quantity;
     }, 0);
 
@@ -132,24 +187,20 @@ export default function CheckoutClient() {
             }, 100);
         };
 
-        const phoneInput = document.getElementById('phone');
-        const nameInput = document.getElementById('name');
-        const addressInput = document.getElementById('address');
-
         // Check phone
-        if (!phoneInput?.value?.trim()) {
+        if (!phone?.trim()) {
             focusAndScroll('phone', 'Vui lòng nhập số điện thoại');
             return;
         }
 
         // Check name
-        if (!nameInput?.value?.trim()) {
+        if (!name?.trim()) {
             focusAndScroll('name', 'Vui lòng nhập tên người nhận');
             return;
         }
 
         // Check address (only if delivery method is 'delivery')
-        if (deliveryMethod === 'delivery' && !addressInput?.value?.trim()) {
+        if (deliveryMethod === 'delivery' && !address?.trim()) {
             focusAndScroll('address', 'Vui lòng nhập địa chỉ nhận hàng');
             return;
         }
@@ -170,16 +221,17 @@ export default function CheckoutClient() {
 
         try {
             const formData = new FormData(e.target);
-            const phone_number = formData.get('phone');
-            const recipient_name = formData.get('name');
-            const delivery_address = formData.get('address') || '';
+            const phone_number = phone.trim();
+            const recipient_name = name.trim();
+            const delivery_address = deliveryMethod === 'delivery' ? address.trim() : '';
             const customer_note = formData.get('notes') || '';
 
             const items_list = cartItems.map(item => ({
                 id: item.id,
                 name: item.name,
-                price: item.discount_price ?? item.price,
-                qty: item.quantity
+                price: item.is_free ? 0 : (item.discount_price ?? item.price ?? item.finalPrice ?? 0),
+                qty: item.quantity,
+                is_free: item.is_free || false
             }));
 
             const finalDeliveryAddress = deliveryMethod === 'pickup'
@@ -240,7 +292,7 @@ export default function CheckoutClient() {
     if (orderResult) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center p-4">
-                <div className="relative bg-white rounded-3xl max-w-md w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)]">
+                <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)]">
                     {orderResult.success ? (
                         <div className="text-center">
                             {/* Success Icon */}
@@ -254,7 +306,7 @@ export default function CheckoutClient() {
 
                             {/* QR Code for Transfer Payment */}
                             {orderResult.paymentMethod === 'transfer' && (
-                                <div className="mb-6 p-4 bg-gray-50 rounded-2xl">
+                                <div className="mb-6 p-4 bg-gray-50 rounded-xl">
                                     <p className="text-sm font-semibold text-gray-700 mb-3">Quét mã QR để thanh toán</p>
                                     <div className="bg-white p-3 rounded-xl inline-block shadow-sm border border-gray-100">
                                         <img
@@ -275,7 +327,7 @@ export default function CheckoutClient() {
 
                             {/* COD Message */}
                             {orderResult.paymentMethod === 'cod' && (
-                                <div className="mb-6 p-4 bg-amber-50 rounded-2xl">
+                                <div className="mb-6 p-4 bg-amber-50 rounded-xl">
                                     <div className="flex items-center justify-center gap-2 text-amber-700">
                                         <Banknote className="w-5 h-5" />
                                         <p className="font-semibold">Thanh toán khi nhận hàng</p>
@@ -291,7 +343,7 @@ export default function CheckoutClient() {
                                 <button
                                     type="button"
                                     onClick={() => router.push(`/order-tracking?code=${orderResult.orderCode}`)}
-                                    className="w-full bg-primary text-white font-semibold py-3 rounded-2xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                                    className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                                 >
                                     <ArrowRight className="w-5 h-5" />
                                     Xem chi tiết đơn hàng
@@ -299,7 +351,7 @@ export default function CheckoutClient() {
                                 <button
                                     type="button"
                                     onClick={() => router.push('/')}
-                                    className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+                                    className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors"
                                 >
                                     Về trang chủ
                                 </button>
@@ -322,14 +374,14 @@ export default function CheckoutClient() {
                                         setOrderResult(null);
                                         router.push('/cart');
                                     }}
-                                    className="w-full bg-primary text-white font-semibold py-3 rounded-2xl hover:bg-primary/90 transition-colors"
+                                    className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
                                 >
                                     Thử lại
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => router.push('/')}
-                                    className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+                                    className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors"
                                 >
                                     Về trang chủ
                                 </button>
@@ -344,36 +396,6 @@ export default function CheckoutClient() {
     if (!isCartLoaded) {
         return <SkeletonCheckout />;
     }
-
-    const TabButton = ({ isActive, onClick, children, icon: Icon }) => (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`group flex items-center justify-center gap-2 w-full p-4 rounded-2xl border-2 transition-all duration-300 ${isActive
-                ? 'border-primary bg-primary/5 text-primary shadow-sm'
-                : 'border-gray-200 bg-white text-gray-700 hover:border-primary/50'
-                }`}
-        >
-            {Icon && <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-gray-400 group-hover:text-primary'}`} />}
-            <span className="font-semibold">{children}</span>
-        </button>
-    );
-
-    const InputField = ({ label, icon: Icon, required, id, children, ...props }) => (
-        <div>
-            <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                {Icon && <Icon className="w-4 h-4 text-gray-400" />}
-                {label} {required && <span className="text-rose-500">*</span>}
-            </label>
-            {children || (
-                <input
-                    id={id}
-                    {...props}
-                    className="block w-full border border-gray-200 rounded-2xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white"
-                />
-            )}
-        </div>
-    );
 
     return (
         <div className="max-w-[1200px] mx-auto">
@@ -392,8 +414,8 @@ export default function CheckoutClient() {
                         </div>
                         <div className="p-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <InputField label="Số điện thoại đặt hàng" icon={Phone} required id="phone" type="tel" name="phone" placeholder="Nhập số điện thoại" />
-                                <InputField label="Tên người nhận" icon={User} required id="name" type="text" name="name" placeholder="Nhập tên người nhận" />
+                                <InputField label="Số điện thoại đặt hàng" icon={Phone} required id="phone" type="tel" name="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Nhập số điện thoại" />
+                                <InputField label="Tên người nhận" icon={User} required id="name" type="text" name="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nhập tên người nhận" />
                             </div>
                         </div>
                     </section>
@@ -419,29 +441,29 @@ export default function CheckoutClient() {
                             </div>
 
                             {deliveryMethod === 'delivery' && (
-                                <InputField label="Địa chỉ nhận hàng" icon={MapPin} required id="address" type="text" name="address" placeholder="Nhập địa chỉ chi tiết" />
+                                <InputField label="Địa chỉ nhận hàng" icon={MapPin} required id="address" type="text" name="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Nhập địa chỉ chi tiết" />
                             )}
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
                                         <Calendar className="w-4 h-4 text-gray-400" />
-                                        Ngày nhận hàng <span className="text-rose-500">*</span>
-                                        <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-rose-100 transition-colors">
-                                            <HelpCircle className="w-4 h-4 text-rose-500" />
+                                        Ngày nhận hàng
+                                        <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                            <HelpCircle className="w-4 h-4 text-gray-500" />
                                         </button>
                                     </label>
-                                    <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className="block w-full border border-gray-200 rounded-2xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" />
+                                    <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" />
                                 </div>
                                 <div>
                                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
                                         <Clock className="w-4 h-4 text-gray-400" />
-                                        Thời gian nhận <span className="text-rose-500">*</span>
-                                        <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-rose-100 transition-colors">
-                                            <HelpCircle className="w-4 h-4 text-rose-500" />
+                                        Thời gian nhận
+                                        <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                            <HelpCircle className="w-4 h-4 text-gray-500" />
                                         </button>
                                     </label>
-                                    <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} required className="block w-full border border-gray-200 rounded-2xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" />
+                                    <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} required className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" />
                                 </div>
                             </div>
                         </div>
@@ -461,7 +483,7 @@ export default function CheckoutClient() {
                             <textarea
                                 name="notes"
                                 rows="3"
-                                className="block w-full border border-gray-200 rounded-2xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white resize-none"
+                                className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white resize-none"
                                 placeholder="Nhập ghi chú cho đơn hàng (tùy chọn)"
                             />
                         </div>
@@ -517,11 +539,19 @@ export default function CheckoutClient() {
                                             <Image src={item.image_url} alt={item.name} fill sizes="56px" className="object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-sm text-gray-900 line-clamp-1">{item.name}</p>
+                                            <div className="flex items-center gap-2 mb-0.5">
+                                                <p className="font-medium text-sm text-gray-900 line-clamp-1">{item.name}</p>
+                                                {item.is_free && (
+                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 px-1.5 py-0.5 rounded-full">
+                                                        <Gift size={10} />
+                                                        Tặng
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-gray-500">x{item.quantity}</p>
                                         </div>
-                                        <p className="font-bold text-primary text-sm flex-shrink-0">
-                                            {formatCurrency((item.discount_price ?? item.price) * item.quantity)}
+                                        <p className={`font-bold text-sm flex-shrink-0 ${item.is_free ? 'text-green-600' : 'text-primary'}`}>
+                                            {item.is_free ? '0đ' : formatCurrency((item.discount_price ?? item.price) * item.quantity)}
                                         </p>
                                     </div>
                                 ))}
@@ -617,7 +647,7 @@ export default function CheckoutClient() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-primary text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                                    className="w-full bg-primary text-white font-bold py-4 rounded-xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -652,7 +682,7 @@ export default function CheckoutClient() {
             {/* DateTime Modal */}
             {showDateTimeModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowDateTimeModal(false)}>
-                    <div className="relative bg-white rounded-3xl max-w-sm w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative bg-white rounded-2xl max-w-sm w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                                 <Info className="w-8 h-8 text-blue-500" />
@@ -664,7 +694,7 @@ export default function CheckoutClient() {
                             <button
                                 type="button"
                                 onClick={() => setShowDateTimeModal(false)}
-                                className="w-full bg-primary text-white font-semibold py-3 rounded-2xl hover:bg-primary/90 transition-colors"
+                                className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
                             >
                                 Đã hiểu
                             </button>
@@ -679,7 +709,7 @@ export default function CheckoutClient() {
             {/* Shipping Policy Modal */}
             {showShippingModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowShippingModal(false)}>
-                    <div className="relative bg-white rounded-3xl max-w-sm w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative bg-white rounded-2xl max-w-sm w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]" onClick={(e) => e.stopPropagation()}>
                         <div className="text-center">
                             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                                 <Truck className="w-8 h-8 text-primary" />
@@ -706,7 +736,7 @@ export default function CheckoutClient() {
                             <button
                                 type="button"
                                 onClick={() => setShowShippingModal(false)}
-                                className="w-full bg-primary text-white font-semibold py-3 rounded-2xl hover:bg-primary/90 transition-colors"
+                                className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
                             >
                                 Đã hiểu
                             </button>
@@ -721,7 +751,7 @@ export default function CheckoutClient() {
             {/* Order Result Modal */}
             {orderResult && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="relative bg-white rounded-3xl max-w-md w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]">
+                    <div className="relative bg-white rounded-2xl max-w-md w-full p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]">
                         {orderResult.success ? (
                             <div className="text-center">
                                 {/* Success Icon */}
@@ -735,11 +765,11 @@ export default function CheckoutClient() {
 
                                 {/* QR Code for Transfer Payment */}
                                 {orderResult.paymentMethod === 'transfer' && (
-                                    <div className="mb-6 p-4 bg-gray-50 rounded-2xl">
+                                    <div className="mb-6 p-4 bg-gray-50 rounded-xl">
                                         <p className="text-sm font-semibold text-gray-700 mb-3">Quét mã QR để thanh toán</p>
                                         <div className="bg-white p-3 rounded-xl inline-block shadow-sm border border-gray-100">
                                             <img
-                                                src={`https://img.vietqr.io/image/970415-107870460026-compact2.png?amount=${orderResult.total}&addInfo=${orderResult.orderCode}&accountName=LE%20THI%20NGOC%20DAO`}
+                                                src={`https://img.vietqr.io/image/970415-107870460026-compact.png?amount=${orderResult.total}&addInfo=${orderResult.orderCode}`}
                                                 alt="QR thanh toán"
                                                 className="w-48 h-48 mx-auto"
                                             />
@@ -756,7 +786,7 @@ export default function CheckoutClient() {
 
                                 {/* COD Message */}
                                 {orderResult.paymentMethod === 'cod' && (
-                                    <div className="mb-6 p-4 bg-amber-50 rounded-2xl">
+                                    <div className="mb-6 p-4 bg-amber-50 rounded-xl">
                                         <div className="flex items-center justify-center gap-2 text-amber-700">
                                             <Banknote className="w-5 h-5" />
                                             <p className="font-semibold">Thanh toán khi nhận hàng</p>
@@ -772,7 +802,7 @@ export default function CheckoutClient() {
                                     <button
                                         type="button"
                                         onClick={() => router.push(`/order-tracking?code=${orderResult.orderCode}`)}
-                                        className="w-full bg-primary text-white font-semibold py-3 rounded-2xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                                        className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                                     >
                                         <ArrowRight className="w-5 h-5" />
                                         Xem chi tiết đơn hàng
@@ -780,7 +810,7 @@ export default function CheckoutClient() {
                                     <button
                                         type="button"
                                         onClick={() => router.push('/menu')}
-                                        className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+                                        className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors"
                                     >
                                         Tiếp tục mua sắm
                                     </button>
@@ -800,14 +830,14 @@ export default function CheckoutClient() {
                                     <button
                                         type="button"
                                         onClick={() => setOrderResult(null)}
-                                        className="w-full bg-primary text-white font-semibold py-3 rounded-2xl hover:bg-primary/90 transition-colors"
+                                        className="w-full bg-primary text-white font-semibold py-3 rounded-xl hover:bg-primary/90 transition-colors"
                                     >
                                         Thử lại
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => router.push('/menu')}
-                                        className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-2xl hover:bg-gray-200 transition-colors"
+                                        className="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-colors"
                                     >
                                         Quay lại menu
                                     </button>

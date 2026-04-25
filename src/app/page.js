@@ -6,7 +6,6 @@ import { Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 import HeroSection from '@/components/HeroSection';
 import Features from '@/components/Features';
-import CallToAction from '@/components/CallToAction';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import AboutSection from '@/components/AboutSection';
 import Testimonials from '@/components/Testimonials';
@@ -199,9 +198,6 @@ export default async function HomePage() {
         <CategoryHighlights />
       </AnimateOnScroll>
 
-      {/* About Section */}
-      <AboutSection />
-
       {/* Section Món Nổi Bật (Slider) - Commented out for now */}
       {/* <section className="py-10 md:py-16" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>
         <div className="container mx-auto px-4">
@@ -218,7 +214,7 @@ export default async function HomePage() {
       </section> */}
 
       {/* Section Thực Đơn Mới */}
-      <section className="relative py-10 md:py-16 overflow-hidden" aria-label="Thực đơn">
+      <section className="relative py-6 md:py-16" aria-label="Thực đơn">
         <div className="max-w-[1200px] mx-auto px-4">
           <Suspense fallback={
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -254,7 +250,7 @@ export default async function HomePage() {
       <Testimonials />
 
       <AnimateOnScroll>
-        <CallToAction />
+        <AboutSection />
       </AnimateOnScroll>
     </>
   );

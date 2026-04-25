@@ -10,7 +10,8 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function PUT(request, { params }) {
     try {
-        const { id } = params;
+        const resolvedParams = await params;
+        const { id } = resolvedParams;
         const { status } = await request.json();
 
         if (!['approved', 'rejected', 'pending'].includes(status)) {
@@ -47,7 +48,8 @@ export async function PUT(request, { params }) {
  */
 export async function DELETE(request, { params }) {
     try {
-        const { id } = params;
+        const resolvedParams = await params;
+        const { id } = resolvedParams;
         
         const { data, error } = await supabaseAdmin
             .from('product_reviews')

@@ -4,7 +4,7 @@
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Trash2, Plus, Minus, ShoppingCart, ArrowRight, Truck, X, AlertTriangle, ShoppingBag, Sparkles, Shield, Zap, CheckCircle2 } from 'lucide-react';
+import { Trash2, Plus, Minus, Handbag, ArrowRight, Truck, X, AlertTriangle, ShoppingBag, Sparkles, Shield, Zap, CheckCircle2, Gift } from 'lucide-react';
 import { useState } from 'react';
 
 const formatCurrency = (amount) => {
@@ -17,7 +17,9 @@ export default function CartClient() {
     const [itemToDelete, setItemToDelete] = useState(null);
 
     const totalPrice = cartItems.reduce((total, item) => {
-        const price = item.discount_price ?? item.price;
+        // Bỏ qua sản phẩm tặng (is_free = true)
+        if (item.is_free) return total;
+        const price = item.discount_price ?? item.price ?? item.finalPrice ?? 0;
         return total + price * item.quantity;
     }, 0);
 
@@ -64,7 +66,7 @@ export default function CartClient() {
             <div className="max-w-lg mx-auto text-center py-16 md:py-24 px-4">
                 <div className="relative inline-block mb-8">
                     <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-orange-100 flex items-center justify-center mx-auto">
-                        <ShoppingCart className="w-16 h-16 text-primary/60" />
+                        <Handbag className="w-16 h-16 text-primary/60" />
                     </div>
                     <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                         <Sparkles className="w-6 h-6 text-gray-400" />
@@ -78,7 +80,7 @@ export default function CartClient() {
                 </p>
                 <Link
                     href="/menu"
-                    className="inline-flex items-center gap-3 bg-primary text-white font-semibold py-4 px-8 rounded-2xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300"
+                    className="inline-flex items-center gap-3 bg-primary text-white font-semibold py-4 px-8 rounded-xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300"
                 >
                     <ShoppingBag className="w-5 h-5" />
                     Khám phá thực đơn
@@ -96,7 +98,7 @@ export default function CartClient() {
                 <div className="px-5 md:px-6 py-5">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
-                            <ShoppingCart className="w-6 h-6 text-primary" />
+                            <Handbag className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-gray-900">Sản phẩm trong giỏ hàng</h2>
@@ -159,9 +161,17 @@ export default function CartClient() {
                                 {/* Product Details */}
                                 <div className="flex-1 min-w-0 flex flex-col justify-between">
                                     <div>
-                                        <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-2 mb-1">
-                                            {item.name}
-                                        </h3>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="font-semibold text-base sm:text-lg text-gray-900 line-clamp-2">
+                                                {item.name}
+                                            </h3>
+                                            {item.is_free && (
+                                                <span className="inline-flex items-center gap-1 text-xs font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 px-2 py-0.5 rounded-full shadow-sm">
+                                                    <Gift size={12} />
+                                                    Tặng kèm
+                                                </span>
+                                            )}
+                                        </div>
                                         {item.category_name && (
                                             <span className="inline-block text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                                                 {item.category_name}
@@ -171,37 +181,53 @@ export default function CartClient() {
 
                                     {/* Price and Quantity Controls */}
                                     <div className="flex items-end justify-between gap-3 mt-3">
-                                        {/* Quantity Selector */}
-                                        <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
-                                            <button
-                                                onClick={() => handleDecreaseQuantity(item.id, item.quantity)}
-                                                className="p-2.5 hover:bg-gray-200 transition-colors text-gray-600"
-                                                aria-label="Giảm số lượng"
-                                            >
-                                                <Minus size={16} />
-                                            </button>
-                                            <span className="w-10 text-center font-semibold text-gray-900">
-                                                {item.quantity}
-                                            </span>
-                                            <button
-                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                                className="p-2.5 hover:bg-gray-200 transition-colors text-gray-600"
-                                                aria-label="Tăng số lượng"
-                                            >
-                                                <Plus size={16} />
-                                            </button>
-                                        </div>
+                                        {/* Quantity Selector - Disable for free items */}
+                                        {item.is_free ? (
+                                            <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden opacity-60">
+                                                <span className="px-4 py-2.5 text-sm text-gray-500">
+                                                    Số lượng: {item.quantity}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
+                                                <button
+                                                    onClick={() => handleDecreaseQuantity(item.id, item.quantity)}
+                                                    className="p-2.5 hover:bg-gray-200 transition-colors text-gray-600"
+                                                    aria-label="Giảm số lượng"
+                                                >
+                                                    <Minus size={16} />
+                                                </button>
+                                                <span className="w-10 text-center font-semibold text-gray-900">
+                                                    {item.quantity}
+                                                </span>
+                                                <button
+                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                    className="p-2.5 hover:bg-gray-200 transition-colors text-gray-600"
+                                                    aria-label="Tăng số lượng"
+                                                >
+                                                    <Plus size={16} />
+                                                </button>
+                                            </div>
+                                        )}
 
                                         {/* Price and Delete */}
                                         <div className="flex items-center gap-3">
                                             <div className="text-right">
-                                                <p className="text-lg sm:text-xl font-bold text-primary">
-                                                    {formatCurrency((item.discount_price ?? item.price) * item.quantity)}
-                                                </p>
-                                                {item.discount_price && item.discount_price < item.price && (
-                                                    <p className="text-xs text-gray-400 line-through">
-                                                        {formatCurrency(item.price * item.quantity)}
+                                                {item.is_free ? (
+                                                    <p className="text-lg sm:text-xl font-bold text-green-600">
+                                                        0đ
                                                     </p>
+                                                ) : (
+                                                    <>
+                                                        <p className="text-lg sm:text-xl font-bold text-primary">
+                                                            {formatCurrency((item.discount_price ?? item.price) * item.quantity)}
+                                                        </p>
+                                                        {item.discount_price && item.discount_price < item.price && (
+                                                            <p className="text-xs text-gray-400 line-through">
+                                                                {formatCurrency(item.price * item.quantity)}
+                                                            </p>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                             <button
@@ -266,7 +292,7 @@ export default function CartClient() {
                         {/* Checkout Button */}
                         <Link
                             href="/checkout"
-                            className="flex items-center justify-center gap-2 w-full mt-4 bg-primary text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300"
+                            className="flex items-center justify-center gap-2 w-full mt-4 bg-primary text-white font-bold py-4 rounded-xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300"
                         >
                             Tiến hành thanh toán
                             <ArrowRight className="w-5 h-5" />
@@ -297,7 +323,7 @@ export default function CartClient() {
                     onClick={handleCancelDelete}
                 >
                     <div
-                        className="relative bg-white rounded-3xl max-w-sm w-full p-6 transform transition-all duration-300 scale-100 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]"
+                        className="relative bg-white rounded-2xl max-w-sm w-full p-6 transform transition-all duration-300 scale-100 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="text-center">
@@ -312,14 +338,14 @@ export default function CartClient() {
                                 <button
                                     type="button"
                                     onClick={handleCancelDelete}
-                                    className="flex-1 bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-2xl hover:bg-gray-200 transition-colors"
+                                    className="flex-1 bg-gray-100 text-gray-700 font-semibold py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleConfirmDelete}
-                                    className="flex-1 bg-rose-500 text-white font-semibold py-3 px-4 rounded-2xl hover:bg-rose-600 transition-colors"
+                                    className="flex-1 bg-rose-500 text-white font-semibold py-3 px-4 rounded-xl hover:bg-rose-600 transition-colors"
                                 >
                                     Xóa
                                 </button>

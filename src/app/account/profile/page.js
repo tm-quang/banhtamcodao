@@ -5,6 +5,7 @@
 'use client';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { format } from 'date-fns';
@@ -34,28 +35,56 @@ const FormInput = ({
             onChange={onChange}
             disabled={disabled}
             placeholder={placeholder}
-            className={`w-full rounded-2xl border px-4 py-3 text-[15px] transition shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary ${disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-200' : 'bg-white border-gray-200'
+            className={`w-full rounded-2xl border-2 px-4 py-3 text-[15px] transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:shadow-md ${disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed border-gray-300' : 'bg-white border-gray-300 hover:border-gray-400'
                 }`}
         />
         {helperText && <span className="mt-1.5 block text-[11px] text-gray-500">{helperText}</span>}
     </label>
 );
 
-// Membership badge component
+// Membership badge component - Premium Design
 const MembershipBadge = ({ level, totalSpent }) => {
     const badges = {
-        'Thành viên VIP': { icon: Crown, color: 'from-yellow-400 to-amber-500', text: 'text-amber-900' },
-        'Thành viên Vàng': { icon: Star, color: 'from-yellow-300 to-yellow-500', text: 'text-yellow-900' },
-        'Thành viên Bạc': { icon: Award, color: 'from-gray-300 to-gray-400', text: 'text-gray-700' },
-        'Thành viên thân thiết': { icon: ShieldCheck, color: 'from-blue-400 to-blue-600', text: 'text-white' },
+        'Khách hàng VIP': {
+            icon: Crown,
+            gradient: 'linear-gradient(135deg, #B9F2FF 0%, #1E9FD6 50%, #0077B6 100%)', // Diamond: Cyan to Deep Blue
+            text: 'text-white',
+            glow: '0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            shadow: '0 4px 15px rgba(0, 119, 182, 0.3), 0 2px 5px rgba(0, 0, 0, 0.2)',
+        },
+        'Khách hàng thân thiết': {
+            icon: Star,
+            gradient: 'linear-gradient(135deg, #F0F0F0 0%, #C0C0C0 50%, #8C8C8C 100%)', // Silver: Light to Dark Gray
+            text: 'text-gray-800',
+            glow: '0 0 15px rgba(192, 192, 192, 0.4)',
+            border: '1px solid rgba(255, 255, 255, 0.5)',
+            shadow: '0 4px 12px rgba(140, 140, 140, 0.3), 0 2px 5px rgba(0, 0, 0, 0.15)',
+        },
+        'Khách hàng mới': {
+            icon: Award,
+            gradient: 'linear-gradient(135deg, #E6A57E 0%, #CD7F32 50%, #8B4513 100%)', // Bronze: Light Copper to Dark Bronze
+            text: 'text-white',
+            glow: '0 0 15px rgba(205, 127, 50, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            shadow: '0 4px 12px rgba(139, 69, 19, 0.3), 0 2px 5px rgba(0, 0, 0, 0.15)',
+        },
     };
-    const config = badges[level] || badges['Thành viên thân thiết'];
+    const config = badges[level] || badges['Khách hàng mới'];
     const Icon = config.icon;
 
     return (
-        <div className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${config.color} px-4 py-1.5 text-sm font-semibold ${config.text} shadow-md`}>
-            <Icon size={16} />
-            {level}
+        <div 
+            className={`inline-flex items-center gap-2.5 rounded-full px-5 py-2 text-sm font-bold ${config.text} transition-all duration-300 hover:scale-105`}
+            style={{ 
+                background: config.gradient,
+                boxShadow: `${config.shadow}, ${config.glow}`,
+                border: config.border,
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)',
+            }}
+        >
+            <Icon size={18} strokeWidth={2.5} />
+            <span className="tracking-wide">{level}</span>
         </div>
     );
 };
@@ -66,11 +95,22 @@ const formatCurrency = (amount) => {
 };
 
 export default function ProfilePage() {
-    const { user, loading } = useAuth();
+    const { user, loading, refreshUser } = useAuth();
     const { showToast } = useToast();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({});
     const formRef = useRef(null);
+
+    // Auto-refresh user data every 30 seconds to sync with database
+    useEffect(() => {
+        if (!loading && user) {
+            const interval = setInterval(() => {
+                refreshUser();
+            }, 30000); // Refresh every 30 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [loading, user, refreshUser]);
 
     // Scroll to form when editing
     const handleStartEdit = () => {
@@ -144,12 +184,12 @@ export default function ProfilePage() {
     if (loading || !user) {
         return (
             <div className="space-y-6">
-                <div className="h-48 rounded-3xl bg-gray-200 shimmer" />
+                <div className="h-48 rounded-3xl bg-gray-200 shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map(i => <div key={i} className="h-28 rounded-2xl bg-gray-100 shimmer" />)}
+                    {[1, 2, 3, 4].map(i => <div key={i} className="h-28 rounded-2xl bg-gray-100 shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />)}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[1, 2].map(i => <div key={i} className="h-32 rounded-2xl bg-gray-100 shimmer" />)}
+                    {[1, 2].map(i => <div key={i} className="h-32 rounded-2xl bg-gray-100 shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />)}
                 </div>
             </div>
         );
@@ -159,7 +199,7 @@ export default function ProfilePage() {
     const initials = displayName
         ? displayName.split(' ').map((part) => part.charAt(0).toUpperCase()).slice(0, 2).join('')
         : 'BT';
-    const membershipLevel = user.membership_level || 'Thành viên thân thiết';
+    const membershipLevel = user.membership_level || 'Khách hàng mới';
 
     // Enhanced stats with icons and colors
     const stats = [
@@ -200,14 +240,14 @@ export default function ProfilePage() {
             value: formatCurrency(user.total_spent ?? 0),
             description: 'Tính trên các đơn giao thành công',
             icon: Wallet,
-            color: 'from-emerald-500 to-teal-600',
+            bgColor: '#2563eb', // teal-500 (trung bình của emerald-500 và teal-600)
         },
         {
             label: 'Điểm tích lũy',
             value: user.reward_points ?? 0,
             description: 'Đổi ưu đãi bất kỳ lúc nào',
             icon: Gift,
-            color: 'from-purple-500 to-indigo-600',
+            bgColor: '#16a34a', // indigo-500 (trung bình của purple-500 và indigo-600)
         },
     ];
 
@@ -237,20 +277,25 @@ export default function ProfilePage() {
 
     const accountInfo = [
         { label: 'Tên đăng nhập', value: user.username || 'Chưa thiết lập' },
-        { label: 'Loại tài khoản', value: user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng' },
+        { label: 'Nhóm tài khoản', value: user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng' },
         { label: 'Ngày tham gia', value: user.created_at ? format(new Date(user.created_at), 'dd/MM/yyyy') : 'N/A' },
     ];
 
     return (
         <div className="space-y-6 pb-24">
             {/* Hero Section - User Profile Card */}
-            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-orange-500 to-rose-500 text-white shadow-xl">
-                <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, #fff 0%, transparent 50%), radial-gradient(circle at 20% 80%, #fff 0%, transparent 40%)' }} />
+            <section className="relative overflow-hidden rounded-3xl text-white shadow-md" style={{ backgroundColor: '#FF6F30' }}>
                 <div className="relative p-6 sm:p-8">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-4">
-                            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 shadow-lg">
-                                <span className="text-3xl font-bold text-white">{initials}</span>
+                            <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden">
+                                <Image
+                                    src="/images/banner-logo/banhtamcodao-logo.png"
+                                    alt="Bánh Tằm Cô Đào Logo"
+                                    fill
+                                    className="object-contain p-2"
+                                    sizes="100px"
+                                />
                             </div>
                             <div>
                                 <p className="text-sm text-white/80 mb-1">Xin chào,</p>
@@ -277,27 +322,38 @@ export default function ProfilePage() {
             {/* Order Statistics */}
             <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map(({ label, value, icon: Icon, color, bgColor }) => (
-                    <div key={label} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className={`w-10 h-10 rounded-xl ${bgColor} flex items-center justify-center mb-3`}>
-                            <Icon size={20} className={color} />
+                    <div key={label} className="group relative rounded-2xl bg-white p-5 shadow-md border border-gray-200 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                        <div className={`w-12 h-12 rounded-xl ${bgColor} flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                            <Icon size={22} className={color} />
                         </div>
-                        <p className="text-2xl sm:text-3xl font-bold text-secondary">{value}</p>
-                        <p className="text-xs sm:text-sm text-gray-500 mt-1">{label}</p>
+                        <p className="text-2xl sm:text-3xl font-bold text-secondary group-hover:text-primary transition-colors">{value}</p>
+                        <p className="text-xs sm:text-sm font-medium text-gray-600 mt-1">{label}</p>
                     </div>
                 ))}
             </section>
 
             {/* Financial Stats */}
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {financialStats.map(({ label, value, description, icon: Icon, color }) => (
-                    <div key={label} className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${color} p-5 text-white shadow-lg`}>
-                        <div className="absolute top-0 right-0 opacity-20">
-                            <Icon size={80} strokeWidth={1} />
+                {financialStats.map(({ label, value, description, icon: Icon, bgColor }) => (
+                    <div key={label} className="group relative overflow-hidden rounded-2xl p-6 text-white shadow-md border border-white/20 hover:shadow-md transition-all duration-300 hover:-translate-y-1" style={{ backgroundColor: bgColor }}>
+                        {/* Background pattern */}
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-white blur-3xl"></div>
+                            <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white blur-2xl"></div>
                         </div>
-                        <div className="relative">
-                            <p className="text-sm text-white/80 mb-1">{label}</p>
-                            <p className="text-2xl sm:text-3xl font-bold">{value}</p>
-                            <p className="text-xs text-white/70 mt-2">{description}</p>
+                        {/* Icon background */}
+                        <div className="absolute top-0 right-0 opacity-25 group-hover:opacity-30 transition-opacity">
+                            <Icon size={100} strokeWidth={1} />
+                        </div>
+                        {/* Content */}
+                        <div className="relative z-10">
+                            <p className="text-sm font-semibold text-white/90 mb-2 uppercase tracking-wide">{label}</p>
+                            <p className="text-3xl sm:text-4xl font-bold mb-2 drop-shadow-lg">{value}</p>
+                            <p className="text-xs text-white/80 font-medium">{description}</p>
+                        </div>
+                        {/* Shine effect on hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent transform -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
                         </div>
                     </div>
                 ))}
@@ -311,16 +367,16 @@ export default function ProfilePage() {
                         <Link
                             key={label}
                             href={href}
-                            className="group flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:shadow-md hover:border-primary/20"
+                            className="group flex items-center gap-4 rounded-2xl bg-white p-5 shadow-md border border-gray-200 hover:shadow-md transition-all duration-300 hover:-translate-y-1"
                         >
-                            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconBg} text-white shadow-md group-hover:scale-110 transition-transform`}>
+                            <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${iconBg} text-white shadow-md group-hover:scale-110 transition-transform duration-300`}>
                                 <Icon size={24} />
                             </div>
                             <div className="flex-1">
-                                <p className="font-semibold text-secondary group-hover:text-primary transition-colors">{label}</p>
-                                <p className="text-sm text-gray-500">{description}</p>
+                                <p className="font-bold text-secondary group-hover:text-primary transition-colors">{label}</p>
+                                <p className="text-sm text-gray-600 font-medium">{description}</p>
                             </div>
-                            <ChevronRight size={20} className="text-gray-300 group-hover:text-primary transition-colors" />
+                            <ChevronRight size={20} className="text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                         </Link>
                     ))}
                 </div>
@@ -328,7 +384,7 @@ export default function ProfilePage() {
 
             {/* Contact Information Form */}
             <form onSubmit={handleSave} className="space-y-6">
-                <section ref={formRef} className="rounded-2xl border border-gray-100 bg-white shadow-sm scroll-mt-24">
+                <section ref={formRef} className="rounded-2xl bg-white shadow-md border border-gray-200 scroll-mt-24">
                     <div className="flex flex-col gap-5 p-5 sm:p-6">
                         <div className="flex items-center justify-between">
                             <div>
@@ -404,14 +460,14 @@ export default function ProfilePage() {
                 </section>
 
                 {/* Account Information */}
-                <section className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <section className="rounded-2xl bg-white shadow-md border border-gray-200">
                     <div className="p-5 sm:p-6">
                         <h3 className="text-lg font-semibold text-secondary mb-4">Thông tin tài khoản</h3>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                             {accountInfo.map((item) => (
-                                <div key={item.label} className="rounded-xl bg-gray-50 p-4">
-                                    <span className="block text-xs uppercase tracking-wide text-gray-500 mb-1">{item.label}</span>
-                                    <span className="block font-semibold text-secondary">{item.value}</span>
+                                <div key={item.label} className="rounded-xl border-2 border-gray-200 bg-white p-4 shadow-md hover:shadow-lg hover:border-primary/30 transition-all">
+                                    <span className="block text-xs uppercase tracking-wide text-gray-600 mb-2 font-semibold">{item.label}</span>
+                                    <span className="block font-bold text-secondary text-lg">{item.value}</span>
                                 </div>
                             ))}
                         </div>
@@ -420,7 +476,7 @@ export default function ProfilePage() {
 
                 {/* Password Change (visible only when editing) */}
                 {isEditing && (
-                    <section className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                    <section className="rounded-2xl bg-white shadow-md border border-gray-200">
                         <div className="p-5 sm:p-6 space-y-4">
                             <div>
                                 <h3 className="text-lg font-semibold text-secondary">Đổi mật khẩu</h3>
@@ -450,7 +506,7 @@ export default function ProfilePage() {
 
                 {/* Action Buttons */}
                 <div className="sticky bottom-20 sm:bottom-4 z-10">
-                    <div className="rounded-2xl border border-gray-100 bg-white/95 backdrop-blur p-4 shadow-lg sm:bg-transparent sm:border-0 sm:p-0 sm:shadow-none">
+                    <div className="rounded-2xl bg-white/95 backdrop-blur p-4 shadow-md sm:bg-transparent sm:p-0 sm:shadow-none">
                         {isEditing ? (
                             <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
                                 <button
@@ -462,7 +518,7 @@ export default function ProfilePage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="w-full sm:w-auto rounded-2xl bg-primary px-6 py-3 font-semibold text-white transition hover:bg-orange-600 shadow-lg shadow-primary/20"
+                                    className="w-full sm:w-auto rounded-2xl bg-primary px-6 py-3 font-semibold text-white transition hover:bg-orange-600 shadow-md shadow-primary/20"
                                 >
                                     Lưu thay đổi
                                 </button>

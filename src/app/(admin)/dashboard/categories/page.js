@@ -10,17 +10,11 @@ import {
     DialogContentText, DialogActions, Tooltip, alpha, InputAdornment
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { PlusCircle, Edit, Trash2, FolderTree, Layers, Search, Tag, Link2, X } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, FolderTree, Layers, Search, Tag, Link2, X, Package, CheckCircle, XCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import CategoryModal from '@/components/admin/CategoryModal';
+import ClientNoSSR from '@/components/ClientNoSSR';
 
-// Compact Stats Badge
-const StatBadge = ({ label, value, color }) => (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${color}`}>
-        <span className="text-sm font-bold">{value}</span>
-        <span className="text-xs opacity-80">{label}</span>
-    </div>
-);
 
 // Confirmation Dialog
 const ConfirmationDialog = ({ open, onClose, onConfirm, title, description }) => (
@@ -146,7 +140,7 @@ export default function CategoriesPage() {
             headerAlign: 'center',
             align: 'center',
             renderCell: (params) => (
-                <span className="text-xs font-semibold text-purple-600">#{params.value}</span>
+                <span className="text-xs font-semibold text-blue-600">#{params.value}</span>
             )
         },
         {
@@ -155,12 +149,12 @@ export default function CategoriesPage() {
             flex: 1,
             minWidth: 180,
             renderCell: (params) => (
-                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-                    <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', color: 'text.primary' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', py: 0.5 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', color: 'text.primary', lineHeight: 1.3 }}>
                         {params.value}
                     </Typography>
                     {params.row.parent_id && (
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', mt: 0.5 }}>
                             ↳ {getParentName(params.row.parent_id)}
                         </Typography>
                     )}
@@ -180,10 +174,11 @@ export default function CategoriesPage() {
                     variant="outlined"
                     sx={{
                         fontWeight: 500,
-                        fontSize: '0.75rem',
+                        fontSize: '0.8rem',
                         fontFamily: 'monospace',
                         borderColor: alpha('#3b82f6', 0.3),
                         color: '#3b82f6',
+                        bgcolor: alpha('#3b82f6', 0.05),
                     }}
                 />
             )
@@ -200,10 +195,10 @@ export default function CategoriesPage() {
                         label="Con"
                         size="small"
                         sx={{
-                            bgcolor: alpha('#f59e0b', 0.1),
-                            color: '#d97706',
-                            fontWeight: 600,
-                            fontSize: '0.7rem',
+                            bgcolor: alpha('#f59e0b', 1),
+                            color: '#FFFFFF',
+                            fontWeight: 500,
+                            fontSize: '0.9rem',
                         }}
                     />
                 ) : (
@@ -211,10 +206,10 @@ export default function CategoriesPage() {
                         label="Gốc"
                         size="small"
                         sx={{
-                            bgcolor: alpha('#10b981', 0.1),
-                            color: '#059669',
-                            fontWeight: 600,
-                            fontSize: '0.7rem',
+                            bgcolor: alpha('#16a34a', 1),
+                            color: '#FFFFFF',
+                            fontWeight: 500,
+                            fontSize: '0.9rem',
                         }}
                     />
                 )
@@ -222,72 +217,164 @@ export default function CategoriesPage() {
         },
         {
             field: 'actions',
-            headerName: '',
-            width: 90,
+            headerName: 'Thao tác',
+            width: 150,
+            minWidth: 140,
             headerAlign: 'center',
             align: 'center',
             sortable: false,
             renderCell: (params) => (
-                <Stack direction="row" spacing={0.5}>
-                    <Tooltip title="Sửa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => { setEditingCategory(params.row); setIsModalOpen(true); }}
-                            sx={{
-                                color: '#8b5cf6',
-                                '&:hover': { bgcolor: alpha('#8b5cf6', 0.1) }
-                            }}
-                        >
-                            <Edit size={16} />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Xóa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => setDeletingCategory(params.row)}
-                            sx={{
-                                color: '#ef4444',
-                                '&:hover': { bgcolor: alpha('#ef4444', 0.1) }
-                            }}
-                        >
-                            <Trash2 size={16} />
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Stack direction="row" spacing={0.5}>
+                        <Tooltip title="Sửa" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => { setEditingCategory(params.row); setIsModalOpen(true); }}
+                                sx={{ 
+                                    color: '#f97316', 
+                                    '&:hover': { bgcolor: alpha('#f97316', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Edit size={20} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => setDeletingCategory(params.row)}
+                                sx={{ 
+                                    color: '#EF4444', 
+                                    '&:hover': { bgcolor: alpha('#EF4444', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Trash2 size={20} />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                </Box>
             )
         }
     ];
 
     return (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <ClientNoSSR>
+            <Box 
+                sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                suppressHydrationWarning={true}
+            >
             {/* Compact Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-bold text-gray-900">QUẢN LÝ DANH MỤC MÓN ĂN</h1>
+                    <h1 className="text-xl font-bold text-gray-900">Quản lý danh mục</h1>
                     <span className="text-sm text-gray-500">({stats.total} danh mục)</span>
                 </div>
-                <Button
-                    variant="contained"
-                    startIcon={<PlusCircle size={18} />}
-                    onClick={() => { setEditingCategory(null); setIsModalOpen(true); }}
-                    sx={{
-                        bgcolor: '#8b5cf6',
-                        fontWeight: 600,
-                        borderRadius: 2,
-                        px: 2.5,
-                        py: 1,
-                        textTransform: 'none',
-                        boxShadow: '0 2px 8px rgba(139, 92, 246, 0.3)',
-                        '&:hover': {
-                            bgcolor: '#7c3aed',
-                        }
-                    }}
-                >
-                    Thêm danh mục
-                </Button>
             </div>
 
-            {/* Compact Filter & Stats Row */}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {/* Tổng danh mục */}
+                <Box sx={{ 
+                    p: 2,
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <FolderTree 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <FolderTree size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.total}</p>
+                        <p className="text-sm opacity-90">Tổng danh mục</p>
+                    </div>
+                </Box>
+                {/* Danh mục gốc */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Layers 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Layers size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.parent}</p>
+                        <p className="text-sm opacity-90">Danh mục gốc</p>
+                    </div>
+                </Box>
+                {/* Danh mục con */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Tag 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Tag size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.child}</p>
+                        <p className="text-sm opacity-90">Danh mục con</p>
+                    </div>
+                </Box>
+            </div>
+
+            {/* Filter & Actions Row */}
             <Paper
                 elevation={0}
                 sx={{
@@ -299,16 +386,7 @@ export default function CategoriesPage() {
                     borderColor: 'divider',
                 }}
             >
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Stats Badges */}
-                    <div className="flex items-center gap-2 mr-2">
-                        <StatBadge label="Tổng" value={stats.total} color="bg-purple-100 text-purple-700" />
-                        <StatBadge label="Gốc" value={stats.parent} color="bg-green-100 text-green-700" />
-                        <StatBadge label="Con" value={stats.child} color="bg-amber-100 text-amber-700" />
-                    </div>
-
-                    <div className="h-6 w-px bg-gray-300 hidden md:block" />
-
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     {/* Search */}
                     <TextField
                         variant="outlined"
@@ -324,7 +402,8 @@ export default function CategoriesPage() {
                             ),
                         }}
                         sx={{
-                            width: 220,
+                            flex: 1,
+                            minWidth: 220,
                             '& .MuiOutlinedInput-root': {
                                 bgcolor: 'white',
                                 borderRadius: 1.5,
@@ -347,6 +426,30 @@ export default function CategoriesPage() {
                             Xóa lọc
                         </Button>
                     )}
+
+                    {/* Add Button */}
+                    <Button
+                        variant="contained"
+                        startIcon={<PlusCircle size={18} />}
+                        onClick={() => { setEditingCategory(null); setIsModalOpen(true); }}
+                        sx={{
+                            bgcolor: '#2563eb',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            px: 2.5,
+                            py: 1,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 6px -1px rgba(139, 92, 246, 0.3)',
+                            '&:hover': {
+                                bgcolor: '#1d4ed8',
+                                boxShadow: '0 10px 15px -3px rgba(139, 92, 246, 0.4)',
+                                transform: 'translateY(-1px)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                        }}
+                    >
+                        + Thêm danh mục
+                    </Button>
                 </div>
             </Paper>
 
@@ -355,10 +458,12 @@ export default function CategoriesPage() {
                 elevation={0}
                 sx={{
                     flex: 1,
-                    minHeight: 0,
+                    minHeight: 600,
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: 'divider',
+                    bgcolor: 'white',
+                    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                     overflow: 'hidden',
                     '& .MuiDataGrid-root': {
                         border: 'none',
@@ -375,7 +480,7 @@ export default function CategoriesPage() {
                     },
                     '& .MuiDataGrid-row': {
                         '&:hover': {
-                            bgcolor: alpha('#8b5cf6', 0.04),
+                            bgcolor: alpha('#2563eb', 0.04),
                         }
                     },
                     '& .MuiDataGrid-cell': {
@@ -390,9 +495,9 @@ export default function CategoriesPage() {
                     rows={filteredCategories}
                     columns={columns}
                     loading={loading}
-                    rowHeight={56}
+                    rowHeight={68}
                     disableRowSelectionOnClick
-                    pageSizeOptions={[10, 25, 50]}
+                    pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: { paginationModel: { pageSize: 25 } },
                         sorting: { sortModel: [{ field: 'id', sort: 'asc' }] },
@@ -436,6 +541,7 @@ export default function CategoriesPage() {
                 title="Xác nhận xóa danh mục"
                 description={`Bạn có chắc chắn muốn xóa danh mục "${deletingCategory?.name}" không?`}
             />
-        </Box>
+            </Box>
+        </ClientNoSSR>
     );
 }

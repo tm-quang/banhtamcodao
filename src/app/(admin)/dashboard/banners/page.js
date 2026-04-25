@@ -5,15 +5,8 @@ import {
     IconButton, alpha, Chip, Tooltip, Card, CardMedia, CardContent, CardActions,
     Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
-import { Trash2, PlusCircle, Image, Link as LinkIcon, Clock, X, Edit2, Save } from 'lucide-react';
+import { Trash2, PlusCircle, Image, Link as LinkIcon, Clock, X, Edit2, Save, PictureInPicture, CheckCircle, XCircle, Settings, Upload } from 'lucide-react';
 
-// Stats Badge Component
-const StatBadge = ({ label, value, color }) => (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${color}`}>
-        <span className="text-sm font-bold">{value}</span>
-        <span className="text-xs opacity-80">{label}</span>
-    </div>
-);
 
 export default function BannersPage() {
     const [banners, setBanners] = useState([]);
@@ -30,8 +23,47 @@ export default function BannersPage() {
         show_once: true
     });
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingBanner, setEditingBanner] = useState(null);
+
+    const handleImageUpload = async (file) => {
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('Vui lòng chọn file ảnh hợp lệ');
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Kích thước ảnh không được vượt quá 5MB');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await res.json();
+            if (data.success && data.url) {
+                setForm({ ...form, image_url: data.url });
+            } else {
+                alert('Upload ảnh thất bại: ' + (data.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Có lỗi xảy ra khi upload ảnh');
+        }
+        setUploading(false);
+    };
 
     const fetchBanners = async () => {
         try {
@@ -95,31 +127,119 @@ export default function BannersPage() {
     };
 
     return (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            suppressHydrationWarning={true}
+        >
             {/* Compact Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
                     <h1 className="text-xl font-bold text-gray-900">Quản lý Banner</h1>
                     <span className="text-sm text-gray-500">({stats.total} banner)</span>
                 </div>
-                <Button
-                    variant="contained"
-                    startIcon={<PlusCircle size={18} />}
-                    onClick={() => setShowAddForm(true)}
-                    sx={{
-                        bgcolor: '#3b82f6',
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 600,
-                        px: 2.5,
-                        '&:hover': { bgcolor: '#2563eb' }
-                    }}
-                >
-                    Thêm banner
-                </Button>
             </div>
 
-            {/* Stats Row */}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {/* Tổng banner */}
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <PictureInPicture
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
+                    />
+                    <div className="relative z-10">
+                        <PictureInPicture size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.total}</p>
+                        <p className="text-sm opacity-90">Tổng banner</p>
+                    </div>
+                </Box>
+                {/* Đang hiển thị */}
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <CheckCircle
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
+                    />
+                    <div className="relative z-10">
+                        <CheckCircle size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.active}</p>
+                        <p className="text-sm opacity-90">Đang hiển thị</p>
+                    </div>
+                </Box>
+                {/* Popup */}
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Image
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
+                    />
+                    <div className="relative z-10">
+                        <Image size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.popup}</p>
+                        <p className="text-sm opacity-90">Banner popup</p>
+                    </div>
+                </Box>
+            </div>
+
+            {/* Filter & Actions Row */}
             <Paper
                 elevation={0}
                 sx={{
@@ -131,10 +251,30 @@ export default function BannersPage() {
                     borderColor: 'divider',
                 }}
             >
-                <div className="flex flex-wrap items-center gap-3">
-                    <StatBadge label="Tổng" value={stats.total} color="bg-blue-100 text-blue-700" />
-                    <StatBadge label="Đang hiển thị" value={stats.active} color="bg-green-100 text-green-700" />
-                    <StatBadge label="Popup" value={stats.popup} color="bg-purple-100 text-purple-700" />
+                <div className="flex flex-wrap items-center justify-end gap-3">
+                    {/* Add Button */}
+                    <Button
+                        variant="contained"
+                        startIcon={<PlusCircle size={18} />}
+                        onClick={() => setShowAddForm(true)}
+                        sx={{
+                            bgcolor: '#3b82f6',
+                            fontWeight: 600,
+                            borderRadius: 2,
+                            px: 2.5,
+                            py: 1,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)',
+                            '&:hover': {
+                                bgcolor: '#2563eb',
+                                boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.4)',
+                                transform: 'translateY(-1px)',
+                            },
+                            transition: 'all 0.2s ease-in-out',
+                        }}
+                    >
+                        + Thêm banner
+                    </Button>
                 </div>
             </Paper>
 
@@ -179,8 +319,8 @@ export default function BannersPage() {
                                         label={banner.position}
                                         size="small"
                                         sx={{
-                                            bgcolor: banner.position === 'popup' ? alpha('#8b5cf6', 0.1) : alpha('#3b82f6', 0.1),
-                                            color: banner.position === 'popup' ? '#7c3aed' : '#2563eb',
+                                            bgcolor: banner.position === 'popup' ? alpha('#2563eb', 0.1) : alpha('#3b82f6', 0.1),
+                                            color: banner.position === 'popup' ? '#1d4ed8' : '#2563eb',
                                             fontWeight: 600,
                                             fontSize: '0.7rem',
                                         }}
@@ -241,20 +381,30 @@ export default function BannersPage() {
                                 <div>
                                     <Tooltip title="Sửa" arrow>
                                         <IconButton
-                                            size="small"
+                                            size="medium"
                                             onClick={() => setEditingBanner(banner)}
-                                            sx={{ color: '#3b82f6' }}
+                                            sx={{
+                                                color: '#f97316',
+                                                '&:hover': { bgcolor: alpha('#f97316', 0.1) },
+                                                width: 40,
+                                                height: 40,
+                                            }}
                                         >
-                                            <Edit2 size={16} />
+                                            <Edit2 size={20} />
                                         </IconButton>
                                     </Tooltip>
                                     <Tooltip title="Xóa" arrow>
                                         <IconButton
-                                            size="small"
+                                            size="medium"
                                             onClick={() => deleteBanner(banner.id)}
-                                            sx={{ color: '#ef4444' }}
+                                            sx={{
+                                                color: '#EF4444',
+                                                '&:hover': { bgcolor: alpha('#EF4444', 0.1) },
+                                                width: 40,
+                                                height: 40,
+                                            }}
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 size={20} />
                                         </IconButton>
                                     </Tooltip>
                                 </div>
@@ -289,9 +439,14 @@ export default function BannersPage() {
             <Dialog
                 open={showAddForm}
                 onClose={() => setShowAddForm(false)}
-                maxWidth="sm"
+                maxWidth="md"
                 fullWidth
-                PaperProps={{ sx: { borderRadius: 3 } }}
+                PaperProps={{
+                    sx: {
+                        borderRadius: 3,
+                        overflow: 'hidden'
+                    }
+                }}
             >
                 <DialogTitle sx={{
                     background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
@@ -299,92 +454,323 @@ export default function BannersPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
+                    p: 2.5,
                 }}>
-                    <span className="font-bold">Thêm Banner Mới</span>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <PlusCircle size={24} />
+                        <span className="font-bold text-lg">Thêm Banner Mới</span>
+                    </Box>
                     <IconButton onClick={() => setShowAddForm(false)} sx={{ color: 'white' }}>
                         <X size={20} />
                     </IconButton>
                 </DialogTitle>
-                <DialogContent sx={{ p: 3, pt: 3 }}>
-                    <Grid container spacing={2}>
+                <DialogContent sx={{ p: 3 }}>
+                    <Grid container spacing={3}>
+                        {/* Section 1: Thông tin cơ bản */}
                         <Grid item xs={12}>
-                            <TextField
-                                label="Tiêu đề"
-                                value={form.title}
-                                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                fullWidth
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="URL Ảnh"
-                                value={form.image_url}
-                                onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                                fullWidth
-                                size="small"
-                                required
-                                placeholder="https://example.com/image.jpg"
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                label="Link khi click"
-                                value={form.link_url}
-                                onChange={(e) => setForm({ ...form, link_url: e.target.value })}
-                                fullWidth
-                                size="small"
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                label="Vị trí"
-                                value={form.position}
-                                onChange={(e) => setForm({ ...form, position: e.target.value })}
-                                fullWidth
-                                size="small"
-                                select
-                                SelectProps={{ native: true }}
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    borderRadius: 2,
+                                    bgcolor: '#f8fafc',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                }}
                             >
-                                <option value="popup">Popup</option>
-                                <option value="home">Trang chủ</option>
-                                <option value="menu">Menu</option>
-                            </TextField>
+                                <Typography variant="subtitle2" sx={{ mb: 2.5, fontWeight: 600, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Image size={18} />
+                                    Thông tin cơ bản
+                                </Typography>
+                                <Grid container spacing={2.5}>
+                                    {/* Tiêu đề và Link khi click - nằm ngang */}
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            label="Tiêu đề"
+                                            value={form.title}
+                                            onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                            fullWidth
+                                            placeholder="VD: Banner khuyến mãi mùa hè"
+                                            helperText="Tiêu đề hiển thị cho banner (tùy chọn)"
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 2,
+                                                }
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            label="Link khi click"
+                                            value={form.link_url}
+                                            onChange={(e) => setForm({ ...form, link_url: e.target.value })}
+                                            fullWidth
+                                            placeholder="https://example.com/promotion"
+                                            helperText="Đường dẫn khi người dùng click vào banner (tùy chọn)"
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 2,
+                                                }
+                                            }}
+                                        />
+                                    </Grid>
+                                    
+                                    {/* Ảnh Banner - Upload và URL nằm ngang */}
+                                    <Grid item xs={12}>
+                                        <Typography variant="body2" fontWeight={600} sx={{ mb: 1.5 }}>
+                                            Ảnh Banner <span style={{ color: '#ef4444' }}>*</span>
+                                        </Typography>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={6}>
+                                                <input
+                                                    accept="image/*"
+                                                    style={{ display: 'none' }}
+                                                    id="banner-image-upload"
+                                                    type="file"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) handleImageUpload(file);
+                                                    }}
+                                                />
+                                                <label htmlFor="banner-image-upload" style={{ width: '100%', display: 'block' }}>
+                                                    <Button
+                                                        component="span"
+                                                        variant="outlined"
+                                                        fullWidth
+                                                        disabled={uploading}
+                                                        startIcon={uploading ? <Clock size={18} /> : <Upload size={18} />}
+                                                        sx={{
+                                                            height: 56,
+                                                            borderRadius: 2,
+                                                            borderStyle: 'dashed',
+                                                            borderWidth: 2,
+                                                            textTransform: 'none',
+                                                            fontWeight: 600,
+                                                            '&:hover': {
+                                                                borderStyle: 'dashed',
+                                                                borderWidth: 2,
+                                                                bgcolor: alpha('#3b82f6', 0.05),
+                                                            }
+                                                        }}
+                                                    >
+                                                        {uploading ? 'Đang tải lên...' : 'Tải ảnh lên'}
+                                                    </Button>
+                                                </label>
+                                                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                                                    Chọn file ảnh từ máy tính (max 5MB)
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <TextField
+                                                    label="URL Ảnh"
+                                                    value={form.image_url}
+                                                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                                                    fullWidth
+                                                    placeholder="https://example.com/banner.jpg"
+                                                    helperText="Hoặc nhập đường dẫn URL trực tiếp"
+                                                    disabled={uploading}
+                                                    error={!form.image_url && !uploading}
+                                                    required
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            borderRadius: 2,
+                                                        }
+                                                    }}
+                                                />
+                                            </Grid>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Paper>
                         </Grid>
-                        <Grid item xs={6}>
-                            <TextField
-                                label="Thời gian hiển thị (giây)"
-                                type="number"
-                                value={form.display_seconds}
-                                onChange={(e) => setForm({ ...form, display_seconds: Number(e.target.value) })}
-                                fullWidth
-                                size="small"
-                            />
+
+                        {/* Section 2: Cài đặt hiển thị */}
+                        <Grid item xs={12}>
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    borderRadius: 2,
+                                    bgcolor: '#f8fafc',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                }}
+                            >
+                                <Typography variant="subtitle2" sx={{ mb: 2.5, fontWeight: 600, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Settings size={18} />
+                                    Cài đặt hiển thị
+                                </Typography>
+                                <Grid container spacing={2.5}>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            label="Vị trí hiển thị"
+                                            value={form.position}
+                                            onChange={(e) => setForm({ ...form, position: e.target.value })}
+                                            fullWidth
+                                            select
+                                            SelectProps={{ native: true }}
+                                            helperText="Chọn vị trí hiển thị banner"
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 2,
+                                                }
+                                            }}
+                                        >
+                                            <option value="popup">Popup</option>
+                                            <option value="home">Trang chủ</option>
+                                            <option value="menu">Menu</option>
+                                        </TextField>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <TextField
+                                            label="Thời gian hiển thị (giây)"
+                                            type="number"
+                                            value={form.display_seconds}
+                                            onChange={(e) => setForm({ ...form, display_seconds: Number(e.target.value) })}
+                                            fullWidth
+                                            inputProps={{ min: 1, max: 60 }}
+                                            helperText="Thời gian tự động đóng (1-60 giây)"
+                                            sx={{
+                                                '& .MuiOutlinedInput-root': {
+                                                    borderRadius: 2,
+                                                }
+                                            }}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Paper>
                         </Grid>
-                        <Grid item xs={6}>
-                            <FormControlLabel
-                                control={<Switch checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />}
-                                label="Kích hoạt"
-                            />
+
+                        {/* Section 3: Tùy chọn */}
+                        <Grid item xs={12}>
+                            <Paper
+                                elevation={0}
+                                sx={{
+                                    p: 2.5,
+                                    borderRadius: 2,
+                                    bgcolor: '#f8fafc',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                }}
+                            >
+                                <Typography variant="subtitle2" sx={{ mb: 2.5, fontWeight: 600, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <CheckCircle size={18} />
+                                    Tùy chọn
+                                </Typography>
+                                <Grid container spacing={2.5}>
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={form.active}
+                                                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                                                    color="primary"
+                                                />
+                                            }
+                                            label={
+                                                <Box>
+                                                    <Typography variant="body2" fontWeight={600}>Kích hoạt</Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        Hiển thị banner ngay lập tức
+                                                    </Typography>
+                                                </Box>
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={form.show_once}
+                                                    onChange={(e) => setForm({ ...form, show_once: e.target.checked })}
+                                                    color="primary"
+                                                />
+                                            }
+                                            label={
+                                                <Box>
+                                                    <Typography variant="body2" fontWeight={600}>Chỉ hiện 1 lần</Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        Chỉ hiển thị 1 lần cho mỗi người dùng
+                                                    </Typography>
+                                                </Box>
+                                            }
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Paper>
                         </Grid>
-                        <Grid item xs={6}>
-                            <FormControlLabel
-                                control={<Switch checked={form.show_once} onChange={(e) => setForm({ ...form, show_once: e.target.checked })} />}
-                                label="Chỉ hiện 1 lần"
-                            />
-                        </Grid>
+
+                        {/* Section 4: Preview */}
+                        {form.image_url && (
+                            <Grid item xs={12}>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        p: 2.5,
+                                        borderRadius: 2,
+                                        border: '2px dashed',
+                                        borderColor: alpha('#3b82f6', 0.3),
+                                        bgcolor: alpha('#3b82f6', 0.02),
+                                    }}
+                                >
+                                    <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: '#3b82f6', display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <PictureInPicture size={18} />
+                                        Xem trước Banner
+                                    </Typography>
+                                    <Box
+                                        component="img"
+                                        src={form.image_url}
+                                        alt="Preview"
+                                        sx={{
+                                            width: '100%',
+                                            maxHeight: 200,
+                                            objectFit: 'contain',
+                                            borderRadius: 2,
+                                            bgcolor: '#f8fafc',
+                                        }}
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                        }}
+                                    />
+                                </Paper>
+                            </Grid>
+                        )}
                     </Grid>
                 </DialogContent>
-                <DialogActions sx={{ p: 2.5, borderTop: '1px solid', borderColor: 'divider' }}>
-                    <Button onClick={() => setShowAddForm(false)} variant="outlined" sx={{ borderRadius: 2 }}>
+                <DialogActions sx={{
+                    p: 2.5,
+                    borderTop: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: '#f8fafc',
+                    gap: 1.5
+                }}>
+                    <Button
+                        onClick={() => setShowAddForm(false)}
+                        variant="outlined"
+                        sx={{
+                            borderRadius: 2,
+                            px: 3,
+                            textTransform: 'none',
+                            fontWeight: 600
+                        }}
+                    >
                         Hủy
                     </Button>
                     <Button
                         onClick={createBanner}
                         variant="contained"
                         disabled={loading || !form.image_url}
-                        startIcon={<Save size={16} />}
-                        sx={{ borderRadius: 2, bgcolor: '#3b82f6' }}
+                        startIcon={<Save size={18} />}
+                        sx={{
+                            borderRadius: 2,
+                            bgcolor: '#3b82f6',
+                            px: 3,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                            '&:hover': {
+                                bgcolor: '#2563eb'
+                            }
+                        }}
                     >
                         {loading ? 'Đang lưu...' : 'Thêm banner'}
                     </Button>
@@ -400,7 +786,7 @@ export default function BannersPage() {
                 PaperProps={{ sx: { borderRadius: 3 } }}
             >
                 <DialogTitle sx={{
-                    background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
@@ -475,7 +861,7 @@ export default function BannersPage() {
                                 }}
                                 variant="contained"
                                 startIcon={<Save size={16} />}
-                                sx={{ borderRadius: 2, bgcolor: '#8b5cf6', '&:hover': { bgcolor: '#7c3aed' } }}
+                                sx={{ borderRadius: 2, bgcolor: '#2563eb', '&:hover': { bgcolor: '#1d4ed8' } }}
                             >
                                 Cập nhật
                             </Button>

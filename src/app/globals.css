@@ -80,6 +80,9 @@ body {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite ease-in-out;
+    transform: scale(1) !important;
+    transition: none !important;
+    will-change: background-position;
   }
 
   @keyframes fadeInUp {
@@ -299,8 +302,15 @@ body {
 .category-swiper .swiper-wrapper {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   margin: 0 auto !important;
+}
+
+/* Center align on desktop and large screens */
+@media (min-width: 768px) {
+  .category-swiper .swiper-wrapper {
+    justify-content: center !important;
+  }
 }
 
 .category-swiper .swiper-slide {
@@ -310,9 +320,9 @@ body {
 
 /* Ensure first and last slides are fully visible on mobile */
 @media (max-width: 767px) {
-  .category-swiper {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+  .category-swiper .swiper-wrapper {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
 
@@ -610,5 +620,18 @@ body {
   50% {
     transform: scale(1.5);
     opacity: 0;
+  }
+}
+
+/* Simple skeleton pulse - chỉ thay đổi opacity, không có scale/zoom */
+@keyframes skeleton-pulse {
+
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 0.4;
   }
 }

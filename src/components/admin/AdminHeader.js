@@ -5,7 +5,7 @@ import { useState } from 'react';
 import {
     Search, Bell, User, ChevronDown, Menu as MenuIcon, X, Settings, LogOut,
     LayoutGrid, Package, FolderTree, Users, ShoppingCart, BarChart3,
-    FileText, Ticket, PictureInPicture, FileEdit, HelpCircle, ExternalLink, Star
+    FileText, Ticket, PictureInPicture, FileEdit, HelpCircle, ExternalLink, Star, UserCog
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -27,6 +27,7 @@ const menuItems = [
     },
     {
         title: 'CÀI ĐẶT', items: [
+            { href: '/admin/customer-groups', icon: UserCog, label: 'Nhóm khách hàng' },
             { href: '/admin/content', icon: FileEdit, label: 'Nội dung' },
             { href: '/admin/banners', icon: PictureInPicture, label: 'Banner' },
             { href: '/admin/settings', icon: Settings, label: 'Cài đặt' },

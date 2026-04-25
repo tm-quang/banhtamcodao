@@ -3,16 +3,17 @@
  * @file src/app/product/[slug]/page.js
  */
 import Image from 'next/image';
-import { ChevronRight, Share2 } from 'lucide-react';
+import { ChevronRight, Share2, Home } from 'lucide-react';
 import Link from 'next/link';
 import ProductDetailClient from '@/components/ProductDetailClient';
 import ReviewSection from '@/components/ReviewSection';
 import RelatedProducts from '@/components/RelatedProducts';
-import ProductGallery from '@/components/ProductGallery';
+import ProductGalleryWrapper from '@/components/ProductGalleryWrapper';
 import ProductBadges from '@/components/ProductBadges';
 import NutritionalInfo from '@/components/NutritionalInfo';
 import ProductTabs from '@/components/ProductTabs';
 import { StaticStarRating } from '@/components/StarRating';
+import ProductQuickActions from '@/components/ProductQuickActions';
 
 async function getProductDetail(slug) {
   const res = await fetch(`http://localhost:3300/api/products/${slug}`, { cache: 'no-store' });
@@ -95,44 +96,63 @@ export default async function ProductDetailPage({ params }) {
     : null;
 
   return (
-    <div className="pt-24 md:pt-24 pb-16">
-      <div className="max-w-[1200px] mx-auto px-4">
-        {/* Breadcrumb */}
-        <nav className="mb-6">
-          <ol className="flex text-gray-500 text-sm items-center flex-wrap">
-            <li><Link href="/" className="hover:text-primary">Trang chủ</Link></li>
-            <li><ChevronRight size={16} className="mx-1" /></li>
-            <li><Link href="/menu" className="hover:text-primary">Thực đơn</Link></li>
-            <li><ChevronRight size={16} className="mx-1" /></li>
-            <li className="font-medium text-secondary truncate">{product.name}</li>
+    <div className="pt-20 md:pt-24 pb-8 md:pb-16">
+      <div className="max-w-[1200px] mx-auto px-4 md:px-4">
+        {/* Breadcrumb - Đồng bộ với cart/checkout */}
+        <nav className="mb-4 md:mb-6">
+          <ol className="flex items-center gap-2 text-sm flex-wrap">
+            <li>
+              <Link
+                href="/"
+                className="flex items-center gap-1 text-gray-500 hover:text-primary transition-colors"
+              >
+                <Home size={14} />
+                <span>Trang chủ</span>
+              </Link>
+            </li>
+            <li><ChevronRight size={14} className="text-gray-400" /></li>
+            <li>
+              <Link href="/menu" className="text-gray-500 hover:text-primary transition-colors">
+                Thực đơn
+              </Link>
+            </li>
+            <li><ChevronRight size={14} className="text-gray-400" /></li>
+            <li className="font-medium text-primary truncate max-w-[200px] md:max-w-none">{product.name}</li>
           </ol>
         </nav>
 
         {/* Product Main Section */}
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-12">
+        <div className="bg-white p-4 sm:p-4 md:p-6 rounded-2xl shadow-md mb-6 md:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
             {/* Product Gallery */}
             <div className="relative">
               <ProductBadges badges={badges} discountPercent={discountPercent} />
-              <ProductGallery images={galleryImages} productName={product.name} />
+              <ProductGalleryWrapper
+                images={galleryImages}
+                productName={product.name}
+                product={product}
+              />
             </div>
 
             {/* Product Info */}
-            <div className="flex flex-col">
-              <h1 className="text-3xl md:text-4xl font-medium text-secondary mb-4">{product.name}</h1>
+            <div className="flex flex-col mt-4 md:mt-0">
+              <div className="flex items-start justify-between gap-3 mb-3 md:mb-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium text-secondary flex-1">{product.name}</h1>
+                <ProductQuickActions product={product} />
+              </div>
 
               {/* Rating */}
-              <div className="flex items-center gap-2 mb-4">
-                <StaticStarRating rating={averageRating} size={20} />
-                <a href="#reviews" className="text-sm text-gray-500 hover:underline">({totalReviews} đánh giá)</a>
+              <div className="flex items-center gap-2 mb-3 md:mb-4">
+                <StaticStarRating rating={averageRating} size={18} className="md:w-5 md:h-5" />
+                <a href="#reviews" className="text-xs sm:text-sm text-gray-500 hover:underline">({totalReviews} đánh giá)</a>
               </div>
 
               {/* Price */}
-              <div className="mb-6">
-                <p className="text-3xl md:text-4xl font-medium text-primary">
+              <div className="mb-4 md:mb-6">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-medium text-primary">
                   {formatCurrency(product.discount_price ?? product.price)}
                   {product.discount_price && (
-                    <span className="text-xl md:text-xl text-gray-500 line-through ml-4">
+                    <span className="text-lg sm:text-xl md:text-xl text-gray-500 line-through ml-2 md:ml-4">
                       {formatCurrency(product.price)}
                     </span>
                   )}
@@ -141,8 +161,8 @@ export default async function ProductDetailPage({ params }) {
 
               {/* Short Description */}
               {product.description && (
-                <div className="mb-6 pb-6 border-b">
-                  <p className="text-gray-600 leading-relaxed line-clamp-3">
+                <div className="mb-4 md:mb-6 pb-4 md:pb-6 border-b">
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed line-clamp-3">
                     {product.description}
                   </p>
                 </div>
@@ -158,14 +178,14 @@ export default async function ProductDetailPage({ params }) {
         <ProductTabs />
 
         {/* Product Description Section */}
-        <div id="product-description" className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
-          <div className="border-b pb-4 mb-4">
-            <h2 className="text-xl md:text-2xl font-medium text-secondary">
+        <div id="product-description" className="bg-white p-4 sm:p-4 md:p-6 rounded-2xl shadow-md mb-6 md:mb-8">
+          <div className="border-b pb-3 md:pb-4 mb-3 md:mb-4">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-secondary">
               Thông tin chi tiết
             </h2>
             <div className="w-24 h-0.5 bg-primary mt-2"></div>
           </div>
-          <p className="text-gray-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
             {product.description || "Chưa có mô tả chi tiết cho sản phẩm này."}
           </p>
         </div>
@@ -178,7 +198,7 @@ export default async function ProductDetailPage({ params }) {
         )}
 
         {/* Reviews Section */}
-        <div id="reviews" className="bg-white p-4 sm:p-6 rounded-lg shadow-md mb-8">
+        <div id="reviews" className="bg-white p-4 sm:p-4 md:p-6 rounded-2xl shadow-md mb-6 md:mb-8">
           <ReviewSection productId={product.id} reviews={reviews} />
         </div>
 

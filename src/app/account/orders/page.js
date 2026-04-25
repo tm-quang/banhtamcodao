@@ -4,7 +4,7 @@
  */
 'use client';
 import { useAuth } from '@/context/AuthContext';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import OrderCard from '@/components/OrderCard';
 
 const STATUS_PRIORITY = ['Chờ xác nhận', 'Đang vận chuyển', 'Đã xác nhận', 'Hoàn thành', 'Đã hủy'];
@@ -22,25 +22,44 @@ export default function OrdersPage() {
     const [loading, setLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState('all');
 
-    useEffect(() => {
-        if (user?.phone_number) {
-            const fetchOrders = async () => {
-                const res = await fetch('/api/orders/lookup', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phoneNumber: user.phone_number }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                    setOrders(data.orders);
-                }
-                setLoading(false);
-            };
-            fetchOrders();
-        } else {
+    const fetchOrders = useCallback(async () => {
+        if (!user?.phone_number) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/orders/lookup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber: user.phone_number }),
+                cache: 'no-store' // Always fetch fresh data
+            });
+            const data = await res.json();
+            if (data.success) {
+                setOrders(data.orders || []);
+            }
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        } finally {
             setLoading(false);
         }
-    }, [user]);
+    }, [user?.phone_number]);
+
+    useEffect(() => {
+        fetchOrders();
+    }, [fetchOrders]);
+
+    // Auto-refresh orders every 30 seconds to sync with database
+    useEffect(() => {
+        if (!loading && user?.phone_number) {
+            const interval = setInterval(() => {
+                fetchOrders();
+            }, 30000); // Refresh every 30 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [loading, user?.phone_number, fetchOrders]);
 
     const sortedOrders = useMemo(() => {
         if (!orders?.length) return [];
@@ -78,16 +97,16 @@ export default function OrdersPage() {
 
     if (loading) {
         return (
-            <div className="animate-pulse space-y-4">
-                <div className="h-6 w-40 rounded bg-slate-200" />
+            <div className="space-y-4" style={{ transform: 'none', animation: 'none' }}>
+                <div className="h-6 w-40 rounded bg-slate-200 shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     {Array.from({ length: 3 }).map((_, idx) => (
-                        <div key={idx} className="h-28 rounded-2xl bg-slate-100" />
+                        <div key={idx} className="h-28 rounded-2xl bg-slate-100 shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
                     ))}
                 </div>
                 <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, idx) => (
-                        <div key={idx} className="h-24 rounded-2xl bg-slate-100" />
+                        <div key={idx} className="h-24 rounded-2xl bg-slate-100 shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
                     ))}
                 </div>
             </div>
@@ -104,7 +123,7 @@ export default function OrdersPage() {
             {orders.length > 0 ? (
                 <>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md">
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Tổng chi tiêu</p>
                             <p className="mt-2 text-2xl font-bold text-slate-900">
                                 {new Intl.NumberFormat('vi-VN', {
@@ -114,12 +133,12 @@ export default function OrdersPage() {
                             </p>
                             <p className="mt-1 text-xs text-slate-500">Tính từ trước tới nay</p>
                         </div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md">
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Số đơn hàng</p>
                             <p className="mt-2 text-2xl font-bold text-slate-900">{orders.length}</p>
                             <p className="mt-1 text-xs text-slate-500">Bao gồm mọi trạng thái</p>
                         </div>
-                        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md">
                             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Đơn gần nhất</p>
                             <p className="mt-2 text-sm font-semibold text-slate-900">
                                 {lastOrder?.order_code || 'Chưa có'}
@@ -164,14 +183,14 @@ export default function OrdersPage() {
                         {filteredOrders.length > 0 ? (
                             filteredOrders.map((order) => <OrderCard key={order.id} order={order} />)
                         ) : (
-                            <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+                            <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-6 shadow-md text-center text-sm text-slate-500">
                                 Chưa có đơn hàng nào trong trạng thái này.
                             </div>
                         )}
                     </div>
                 </>
             ) : (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center">
+                <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-8 shadow-md text-center">
                     <p className="text-lg font-semibold text-slate-700">Bạn chưa có đơn hàng nào</p>
                     <p className="mt-2 text-sm text-slate-500">
                         Các đơn hàng sẽ xuất hiện tại đây khi bạn đặt món trên Bánh Tằm Cô Đào.

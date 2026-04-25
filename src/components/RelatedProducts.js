@@ -8,11 +8,11 @@ import 'swiper/css/navigation';
 
 export default function RelatedProducts({ products }) {
     if (!products || products.length === 0) return null;
-    
+
     return (
-        <div className="py-8 md:py-12">
-            <h2 className="text-3xl md:text-4xl font-lobster text-secondary text-center mb-6 md:mb-8">
-                Các món gợi ý
+        <div className="py-4 md:py-6">
+            <h2 className="text-3xl md:text-4xl font-lobster text-secondary text-center mb-8 md:mb-8">
+                Món ngon gợi ý
             </h2>
             <Swiper
                 modules={[Navigation]}

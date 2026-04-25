@@ -29,17 +29,17 @@ export default function NutritionalInfo({ nutritionalInfo }) {
     } = nutritionalInfo;
 
     return (
-        <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
+        <div className="border-2 border-gray-200 rounded-2xl overflow-hidden mb-6 md:mb-8">
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between p-3 md:p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
             >
-                <h3 className="text-lg font-semibold text-secondary">Thông tin dinh dưỡng</h3>
-                {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                <h3 className="text-base md:text-lg font-semibold text-secondary">Thông tin dinh dưỡng</h3>
+                {isExpanded ? <ChevronUp size={18} className="md:w-5 md:h-5" /> : <ChevronDown size={18} className="md:w-5 md:h-5" />}
             </button>
 
             {isExpanded && (
-                <div className="p-4 space-y-4">
+                <div className="p-3 md:p-4 space-y-3 md:space-y-4">
                     {/* Serving Size */}
                     {serving_size && (
                         <div className="pb-3 border-b">
@@ -104,7 +104,7 @@ export default function NutritionalInfo({ nutritionalInfo }) {
                                 {allergens.map((allergen, index) => (
                                     <span
                                         key={index}
-                                        className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium"
+                                        className="px-2.5 md:px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs md:text-sm font-medium"
                                     >
                                         {allergen}
                                     </span>

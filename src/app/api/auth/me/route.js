@@ -10,7 +10,7 @@ import { cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
 /**
- * Helper để tạo Supabase client với session từ cookies
+ * Helper để tạo Supabase client với session từ cookies và refresh nếu cần
  */
 async function createSupabaseClient() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -39,7 +39,7 @@ async function createSupabaseClient() {
         });
     }
 
-    return supabase;
+    return { supabase, accessToken, refreshToken, cookieStore };
 }
 
 /**
@@ -47,12 +47,44 @@ async function createSupabaseClient() {
  */
 export async function GET(request) {
     try {
-        const supabase = await createSupabaseClient();
+        const { supabase, accessToken, refreshToken, cookieStore } = await createSupabaseClient();
 
         /**
          * Lấy user từ Supabase Auth session
          */
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        let { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+        // Nếu access token hết hạn, thử refresh
+        if ((authError || !authUser) && refreshToken) {
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession({
+                refresh_token: refreshToken
+            });
+
+            if (!refreshError && session) {
+                // Cập nhật cookies với session mới
+                cookieStore.set('sb-access-token', session.access_token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30,
+                    path: '/',
+                });
+                cookieStore.set('sb-refresh-token', session.refresh_token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30,
+                    path: '/',
+                });
+
+                // Lấy user lại sau khi refresh
+                const { data: { user: refreshedUser }, error: refreshedError } = await supabase.auth.getUser();
+                if (!refreshedError && refreshedUser) {
+                    authUser = refreshedUser;
+                    authError = null;
+                }
+            }
+        }
 
         if (authError || !authUser) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
@@ -89,39 +121,79 @@ export async function GET(request) {
             pending_orders: 0
         };
 
-        // Tìm đơn hàng theo phone_number vì orders lưu customer_phone
+        // Tìm đơn hàng theo phone_number hoặc recipient_phone
         if (customers.phone_number) {
-            const { data: orders, error: ordersError } = await supabaseAdmin
-                .from('orders')
-                .select('id, status, total_amount')
-                .eq('customer_phone', customers.phone_number);
+            try {
+                const phoneNumber = customers.phone_number.trim();
+                
+                // Tìm đơn hàng theo phone_number
+                const { data: ordersByPhone, error: error1 } = await supabaseAdmin
+                    .from('orders')
+                    .select('id, status, total_amount')
+                    .eq('phone_number', phoneNumber);
+                if (error1) console.error('Error fetching orders by phone_number:', error1);
 
-            if (!ordersError && orders) {
-                orderStats.total_orders = orders.length;
-                orders.forEach(order => {
-                    const status = order.status?.toLowerCase();
-                    if (status === 'delivered' || status === 'completed' || status === 'giao thành công') {
-                        orderStats.successful_orders++;
-                        orderStats.total_spent += order.total_amount || 0;
-                    } else if (status === 'cancelled' || status === 'đã hủy') {
-                        orderStats.cancelled_orders++;
-                    } else if (status === 'pending' || status === 'processing' || status === 'chờ xác nhận' || status === 'đang xử lý') {
-                        orderStats.pending_orders++;
-                    }
-                });
+                // Merge và loại bỏ duplicate bằng id
+                const allOrders = [];
+                const orderIds = new Set();
+                
+                if (ordersByPhone) {
+                    ordersByPhone.forEach(order => {
+                        if (!orderIds.has(order.id)) {
+                            orderIds.add(order.id);
+                            allOrders.push(order);
+                        }
+                    });
+                }
+
+                if (allOrders.length > 0) {
+                    orderStats.total_orders = allOrders.length;
+                    allOrders.forEach(order => {
+                        const status = order.status;
+                        const amount = parseFloat(order.total_amount) || 0;
+                        
+                        // Status trong DB là tiếng Việt: 'Hoàn thành', 'Đã giao', 'Đã hủy', 'Chờ xác nhận', 'Đang vận chuyển'
+                        if (status === 'Hoàn thành' || status === 'Đã giao') {
+                            orderStats.successful_orders++;
+                            orderStats.total_spent += amount;
+                        } else if (status === 'Đã hủy') {
+                            orderStats.cancelled_orders++;
+                        } else if (status === 'Chờ xác nhận' || status === 'Đang vận chuyển' || status === 'Đã xác nhận') {
+                            orderStats.pending_orders++;
+                        }
+                    });
+                    
+                    console.log(`Order stats for ${phoneNumber}:`, {
+                        total: orderStats.total_orders,
+                        successful: orderStats.successful_orders,
+                        cancelled: orderStats.cancelled_orders,
+                        pending: orderStats.pending_orders,
+                        total_spent: orderStats.total_spent
+                    });
+                } else {
+                    console.log(`No orders found for phone number: ${phoneNumber}`);
+                }
+            } catch (error) {
+                console.error('Exception while fetching order stats:', error);
             }
+        } else {
+            console.log('No phone number for customer:', customers.id);
         }
 
         /**
-         * Xác định membership level dựa trên tổng chi tiêu
+         * Xác định membership level dựa trên điểm tích lũy (reward_points)
+         * - Khách hàng VIP: >= 1500 điểm
+         * - Khách hàng thân thiết: >= 500 điểm
+         * - Khách hàng mới: < 500 điểm (mặc định)
+         * 
+         * Logic tích điểm: Mỗi 1000đ = 1 điểm (chỉ đơn hàng hoàn thành mới được cộng điểm)
          */
-        let membershipLevel = 'Thành viên thân thiết';
-        if (orderStats.total_spent >= 5000000) {
-            membershipLevel = 'Thành viên VIP';
-        } else if (orderStats.total_spent >= 2000000) {
-            membershipLevel = 'Thành viên Vàng';
-        } else if (orderStats.total_spent >= 500000) {
-            membershipLevel = 'Thành viên Bạc';
+        const rewardPoints = customers.reward_points || 0;
+        let membershipLevel = 'Khách hàng mới';
+        if (rewardPoints >= 1500) {
+            membershipLevel = 'Khách hàng VIP';
+        } else if (rewardPoints >= 500) {
+            membershipLevel = 'Khách hàng thân thiết';
         }
 
         /**
@@ -181,12 +253,44 @@ export async function GET(request) {
  */
 export async function PUT(request) {
     try {
-        const supabase = await createSupabaseClient();
+        const { supabase, refreshToken, cookieStore } = await createSupabaseClient();
 
         /**
          * Lấy user từ Supabase Auth session
          */
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        let { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+        // Nếu access token hết hạn, thử refresh
+        if ((authError || !authUser) && refreshToken) {
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession({
+                refresh_token: refreshToken
+            });
+
+            if (!refreshError && session) {
+                // Cập nhật cookies với session mới
+                cookieStore.set('sb-access-token', session.access_token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30,
+                    path: '/',
+                });
+                cookieStore.set('sb-refresh-token', session.refresh_token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30,
+                    path: '/',
+                });
+
+                // Lấy user lại sau khi refresh
+                const { data: { user: refreshedUser }, error: refreshedError } = await supabase.auth.getUser();
+                if (!refreshedError && refreshedUser) {
+                    authUser = refreshedUser;
+                    authError = null;
+                }
+            }
+        }
 
         if (authError || !authUser) {
             return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });

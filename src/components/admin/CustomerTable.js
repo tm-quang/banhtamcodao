@@ -4,21 +4,15 @@ import React, { useState, useMemo } from 'react';
 import {
     Box, Button, Paper, Typography, Chip, IconButton, TextField,
     Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
-    Tooltip, alpha, InputAdornment, Stack, Avatar
+    Tooltip, alpha, InputAdornment, Stack, Avatar, MenuItem
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { Edit, Trash2, Eye, Search, Users, UserCheck, UserX, Phone, X } from 'lucide-react';
+import { Edit, Trash2, Eye, Search, Users, UserCheck, UserX, Phone, X, UserPlus, TrendingUp, DollarSign, Award, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import CustomerModal from './CustomerModal';
+import CustomerDetailModal from './CustomerDetailModal';
 
-// Compact Stats Badge
-const StatBadge = ({ label, value, color }) => (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${color}`}>
-        <span className="text-sm font-bold">{value}</span>
-        <span className="text-xs opacity-80">{label}</span>
-    </div>
-);
 
 const formatCurrency = (amount) => {
     if (amount === null || amount === undefined) return '0đ';
@@ -66,27 +60,45 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, customerName }) => (
 export default function CustomerTable({ customers }) {
     const router = useRouter();
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [timeRange, setTimeRange] = useState('month');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
     const [deletingCustomer, setDeletingCustomer] = useState(null);
+    const [viewingCustomerId, setViewingCustomerId] = useState(null);
+    const [isUpdatingMembership, setIsUpdatingMembership] = useState(false);
 
     // Stats
-    const stats = useMemo(() => ({
-        total: customers.length,
-        active: customers.filter(c => c.status === 'active').length,
-        inactive: customers.filter(c => c.status === 'inactive').length,
-    }), [customers]);
+    const stats = useMemo(() => {
+        const total = customers.length;
+        const active = customers.filter(c => c.status === 'active').length;
+        const inactive = customers.filter(c => c.status === 'inactive').length;
+        const totalOrders = customers.reduce((sum, c) => sum + (c.total_orders || 0), 0);
+        const totalSpent = customers.reduce((sum, c) => sum + (c.total_spent || 0), 0);
+        
+        return {
+            total,
+            active,
+            inactive,
+            totalOrders,
+            totalSpent,
+        };
+    }, [customers]);
 
     // Filtered customers
     const filteredCustomers = useMemo(() => {
         const search = searchTerm.toLowerCase();
         return customers.filter(customer => {
-            return !search ||
+            const searchMatch = !search ||
                 customer.full_name?.toLowerCase().includes(search) ||
                 customer.email?.toLowerCase().includes(search) ||
                 customer.phone_number?.includes(search);
+            const statusMatch = !statusFilter || customer.status === statusFilter;
+            return searchMatch && statusMatch;
         });
-    }, [customers, searchTerm]);
+    }, [customers, searchTerm, statusFilter]);
+
+    const hasFilters = searchTerm || statusFilter;
 
     const handleSave = async (customerData) => {
         const isEditMode = Boolean(customerData.id);
@@ -119,22 +131,52 @@ export default function CustomerTable({ customers }) {
         }
     };
 
+    const handleUpdateMembershipLevels = async () => {
+        if (!confirm('Bạn có chắc muốn cập nhật lại nhóm khách hàng cho tất cả khách hàng dựa trên điểm tích lũy?')) {
+            return;
+        }
+
+        setIsUpdatingMembership(true);
+        try {
+            const res = await fetch('/api/admin/customers/update-membership-levels', {
+                method: 'POST',
+            });
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                alert(`Đã cập nhật nhóm khách hàng cho ${data.updated_count || 0} khách hàng thành công!`);
+                router.refresh();
+            } else {
+                alert('Cập nhật thất bại: ' + (data.message || 'Lỗi không xác định'));
+            }
+        } catch (error) {
+            console.error('Error updating membership levels:', error);
+            alert('Có lỗi xảy ra khi cập nhật nhóm khách hàng');
+        } finally {
+            setIsUpdatingMembership(false);
+        }
+    };
+
     const columns = [
         {
             field: 'id',
             headerName: 'ID',
-            width: 60,
+            width: 70,
+            minWidth: 70,
             headerAlign: 'center',
             align: 'center',
             renderCell: (params) => (
-                <span className="text-xs font-semibold text-cyan-600">#{params.value}</span>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <span className="text-sm font-bold text-blue-600">#{params.value}</span>
+                </Box>
             )
         },
         {
             field: 'full_name',
             headerName: 'Khách hàng',
+            width: 280,
+            minWidth: 250,
             flex: 1,
-            minWidth: 200,
             renderCell: (params) => (
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ height: '100%' }}>
                     <Avatar
@@ -166,144 +208,517 @@ export default function CustomerTable({ customers }) {
         {
             field: 'phone_number',
             headerName: 'SĐT',
-            width: 120,
-            renderCell: (params) => params.value ? (
-                <Chip
-                    icon={<Phone size={12} />}
-                    label={params.value}
-                    size="small"
-                    variant="outlined"
-                    component="a"
-                    href={`tel:${params.value}`}
-                    clickable
-                    sx={{
-                        fontSize: '0.75rem',
-                        borderColor: alpha('#10b981', 0.3),
-                        color: '#059669',
-                    }}
-                />
-            ) : <span className="text-gray-400 text-xs">—</span>
+            width: 140,
+            minWidth: 130,
+            align: 'left',
+            headerAlign: 'left',
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                    {params.value ? (
+                        <Chip
+                            icon={<Phone size={12} />}
+                            label={params.value}
+                            size="small"
+                            variant="outlined"
+                            component="a"
+                            href={`tel:${params.value}`}
+                            clickable
+                            sx={{
+                                fontSize: '0.75rem',
+                                borderColor: alpha('#10b981', 0.3),
+                                color: '#059669',
+                            }}
+                        />
+                    ) : <span className="text-gray-400 text-xs">—</span>}
+                </Box>
+            )
         },
+        {
+            field: 'membership_level',
+            headerName: 'Nhóm khách hàng',
+            width: 180,
+            minWidth: 140,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => {
+                const getMembershipColor = (level) => {
+                    if (!level) {
+                        return {
+                            bgcolor: alpha('#6b7280', 0.1),
+                            color: '#6b7280',
+                            borderColor: alpha('#6b7280', 0.2),
+                        };
+                    }
+                    
+                    const levelLower = level.toLowerCase();
+                    
+                    // Khách hàng mới - Xám
+                    if (levelLower.includes('mới') || levelLower.includes('new')) {
+                        return {
+                            bgcolor: alpha('#9ca3af', 0.15),
+                            color: '#4b5563',
+                            borderColor: alpha('#9ca3af', 0.4),
+                        };
+                    }
+                    // Khách hàng thân thiết - Xanh dương
+                    else if (levelLower.includes('thân thiết') || levelLower.includes('loyal') || levelLower.includes('regular')) {
+                        return {
+                            bgcolor: alpha('#2563eb', 0.15),
+                            color: '#1d4ed8',
+                            borderColor: alpha('#2563eb', 0.4),
+                        };
+                    }
+                    // Khách hàng VIP - Vàng/Cam
+                    else if (levelLower.includes('vip') || levelLower.includes('premium')) {
+                        return {
+                            bgcolor: alpha('#f59e0b', 0.15),
+                            color: '#d97706',
+                            borderColor: alpha('#f59e0b', 0.4),
+                        };
+                    }
+                    // Diamond/Kim cương - Tím
+                    else if (levelLower.includes('diamond') || levelLower.includes('kim cương')) {
+                        return {
+                            bgcolor: alpha('#8b5cf6', 0.15),
+                            color: '#7c3aed',
+                            borderColor: alpha('#8b5cf6', 0.4),
+                        };
+                    }
+                    // Mặc định - Xanh lá
+                    else {
+                        return {
+                            bgcolor: alpha('#10b981', 0.15),
+                            color: '#059669',
+                            borderColor: alpha('#10b981', 0.4),
+                        };
+                    }
+                };
+
+                const colors = getMembershipColor(params.value);
+
+                return (
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                        {params.value ? (
+                            <Chip
+                                label={params.value}
+                                size="small"
+                                sx={{
+                                    ...colors,
+                                    fontWeight: 600,
+                                    fontSize: '0.8rem',
+                                    height: '28px',
+                                    px: 1.5,
+                                    borderRadius: '10px',
+                                    border: '1px solid',
+                                }}
+                            />
+                        ) : (
+                            <Chip
+                                label="Chưa có nhóm"
+                                size="small"
+                                sx={{
+                                    bgcolor: alpha('#6b7280', 0.1),
+                                    color: '#6b7280',
+                                    fontWeight: 500,
+                                    fontSize: '0.8rem',
+                                    height: '28px',
+                                    px: 1.5,
+                                    borderRadius: '8px',
+                                    border: '1px solid',
+                                    borderColor: alpha('#6b7280', 0.2),
+                                }}
+                            />
+                        )}
+                    </Box>
+                );
+            }
+        },
+        {
+            field: 'reward_points',
+            headerName: 'Điểm tích lũy',
+            width: 120,
+            minWidth: 120,
+            headerAlign: 'center',
+            align: 'center',
+            renderCell: (params) => (
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Chip
+                        icon={<Award size={14} style={{ color: '#d97706' }} />}
+                        label={new Intl.NumberFormat('vi-VN').format(params.value || 0)}
+                        size="small"
+                        sx={{
+                            bgcolor: alpha('#f59e0b', 0.1),
+                            color: '#DC2626',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            height: '28px',
+                            px: 1.5,
+                            borderRadius: '8px',
+                            border: '1px solid',
+                            borderColor: alpha('#f59e0b', 0.3),
+                        }}
+                    />
+                </Box>
+            )
+        },
+
         {
             field: 'total_orders',
             headerName: 'Đơn hàng',
-            width: 90,
+            width: 100,
+            minWidth: 90,
             align: 'center',
             headerAlign: 'center',
             renderCell: (params) => (
-                <span className="text-sm font-semibold text-gray-700">{params.value || 0}</span>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <span className="text-sm font-semibold text-gray-700">{params.value || 0}</span>
+                </Box>
             )
         },
         {
             field: 'total_spent',
             headerName: 'Tổng chi tiêu',
-            width: 130,
+            width: 100,
+            minWidth: 100,
+            align: 'right',
+            headerAlign: 'right',
             renderCell: (params) => (
-                <span className="text-sm font-semibold text-amber-600">
-                    {formatCurrency(params.value)}
-                </span>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                    <span className="text-sm font-bold text-red-600">
+                        {formatCurrency(params.value)}
+                    </span>
+                </Box>
             )
         },
         {
             field: 'role',
             headerName: 'Vai trò',
-            width: 90,
+            width: 130,
+            minWidth: 120,
             headerAlign: 'center',
             align: 'center',
             renderCell: (params) => (
-                <Chip
-                    label={params.value === 'admin' ? 'Admin' : 'KH'}
-                    size="small"
-                    sx={{
-                        bgcolor: params.value === 'admin' ? alpha('#8b5cf6', 0.1) : alpha('#6b7280', 0.1),
-                        color: params.value === 'admin' ? '#7c3aed' : '#4b5563',
-                        fontWeight: 600,
-                        fontSize: '0.7rem',
-                    }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Chip
+                        label={params.value === 'admin' ? 'Admin' : 'Khách hàng'}
+                        size="small"
+                        sx={{
+                            bgcolor: params.value === 'admin' ? '#2563eb' : '#6b7280',
+                            color: '#FFFFFF',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            height: '32px',
+                            px: 1.5,
+                            borderRadius: '10px',
+                        }}
+                    />
+                </Box>
             )
         },
         {
             field: 'status',
-            headerName: 'TT',
-            width: 80,
+            headerName: 'Trạng thái',
+            width: 130,
+            minWidth: 120,
             headerAlign: 'center',
             align: 'center',
             renderCell: (params) => (
-                <Chip
-                    label={params.value === 'active' ? '✓' : '✗'}
-                    size="small"
-                    sx={{
-                        bgcolor: params.value === 'active' ? alpha('#10b981', 0.1) : alpha('#ef4444', 0.1),
-                        color: params.value === 'active' ? '#059669' : '#dc2626',
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        minWidth: 28,
-                    }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Chip
+                        label={params.value === 'active' ? 'Hoạt động' : 'Tạm khóa'}
+                        size="small"
+                        sx={{
+                            bgcolor: params.value === 'active' ? '#16a34a' : '#6b7280',
+                            color: '#FFFFFF',
+                            fontWeight: 700,
+                            fontSize: '0.85rem',
+                            height: '32px',
+                            px: 1.5,
+                            borderRadius: '10px',
+                        }}
+                    />
+                </Box>
             )
         },
         {
             field: 'created_at',
             headerName: 'Tham gia',
-            width: 100,
+            width: 120,
+            minWidth: 110,
+            align: 'center',
+            headerAlign: 'center',
             renderCell: (params) => (
-                <span className="text-xs text-gray-500">
-                    {params.value ? format(new Date(params.value), 'dd/MM/yy') : '—'}
-                </span>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <span className="text-xs text-gray-600">
+                        {params.value ? format(new Date(params.value), 'dd/MM/yy') : '—'}
+                    </span>
+                </Box>
             )
         },
         {
             field: 'actions',
-            headerName: '',
-            width: 100,
+            headerName: 'Thao tác',
+            width: 150,
+            minWidth: 140,
             align: 'center',
+            headerAlign: 'center',
             sortable: false,
             renderCell: (params) => (
-                <Stack direction="row" spacing={0.5}>
-                    <Tooltip title="Xem" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => router.push(`/dashboard/customers/${params.row.id}`)}
-                            sx={{ color: '#06b6d4', '&:hover': { bgcolor: alpha('#06b6d4', 0.1) } }}
-                        >
-                            <Eye size={16} />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Sửa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => { setEditingCustomer(params.row); setIsModalOpen(true); }}
-                            sx={{ color: '#3b82f6', '&:hover': { bgcolor: alpha('#3b82f6', 0.1) } }}
-                        >
-                            <Edit size={16} />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Xóa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => setDeletingCustomer(params.row)}
-                            sx={{ color: '#ef4444', '&:hover': { bgcolor: alpha('#ef4444', 0.1) } }}
-                        >
-                            <Trash2 size={16} />
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Stack direction="row" spacing={0.5}>
+                        <Tooltip title="Xem" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => setViewingCustomerId(params.row.id)}
+                                sx={{ 
+                                    color: '#06b6d4', 
+                                    '&:hover': { bgcolor: alpha('#06b6d4', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Eye size={20} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Sửa" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => { setEditingCustomer(params.row); setIsModalOpen(true); }}
+                                sx={{ 
+                                    color: '#f97316', 
+                                    '&:hover': { bgcolor: alpha('#f97316', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Edit size={20} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Xóa" arrow>
+                            <IconButton
+                                size="medium"
+                                onClick={() => setDeletingCustomer(params.row)}
+                                sx={{ 
+                                    color: '#EF4444', 
+                                    '&:hover': { bgcolor: alpha('#EF4444', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
+                            >
+                                <Trash2 size={20} />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                </Box>
             )
         },
     ];
 
     return (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box 
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+        >
             {/* Compact Header */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-bold text-gray-900">Thông tin khách hàng</h1>
-                    <span className="text-sm text-gray-500">({stats.total} khách)</span>
-                </div>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827' }}>
+                        Thông tin khách hàng
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#6B7280' }}>
+                        ({stats.total} khách)
+                    </Typography>
+                </Box>
+                <Button
+                    variant="outlined"
+                    startIcon={<RefreshCw size={18} className={isUpdatingMembership ? 'animate-spin' : ''} />}
+                    onClick={handleUpdateMembershipLevels}
+                    disabled={isUpdatingMembership}
+                    sx={{
+                        borderRadius: 2,
+                        px: 2.5,
+                        py: 1,
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        borderColor: '#2563eb',
+                        color: '#2563eb',
+                        '&:hover': {
+                            borderColor: '#1d4ed8',
+                            bgcolor: alpha('#2563eb', 0.05),
+                        },
+                        '&:disabled': {
+                            opacity: 0.6,
+                        }
+                    }}
+                >
+                    {isUpdatingMembership ? 'Đang cập nhật...' : 'Cập nhật nhóm KH'}
+                </Button>
+            </Box>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+                {/* Tổng khách hàng */}
+                <Box sx={{ 
+                    p: 2,
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Users 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Users size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.total}</p>
+                        <p className="text-sm opacity-90">Tổng khách hàng</p>
+                    </div>
+                </Box>
+                {/* Active */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <UserCheck 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <UserCheck size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.active}</p>
+                        <p className="text-sm opacity-90">Hoạt động</p>
+                    </div>
+                </Box>
+                {/* Inactive */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <UserX 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <UserX size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.inactive}</p>
+                        <p className="text-sm opacity-90">Tạm khóa</p>
+                    </div>
+                </Box>
+                {/* Tổng đơn hàng */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <TrendingUp 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <TrendingUp size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.totalOrders}</p>
+                        <p className="text-sm opacity-90">Tổng đơn hàng</p>
+                    </div>
+                </Box>
+                {/* Tổng chi tiêu */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <DollarSign 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <DollarSign size={32} className="opacity-90 mb-3" />
+                        <p className="text-2xl font-bold mb-1">{formatCurrency(stats.totalSpent)}</p>
+                        <p className="text-sm opacity-90">Tổng chi tiêu</p>
+                    </div>
+                </Box>
             </div>
 
-            {/* Compact Filter & Stats Row */}
+            {/* Filter & Stats Row */}
             <Paper
                 elevation={0}
                 sx={{
@@ -316,12 +731,28 @@ export default function CustomerTable({ customers }) {
                 }}
             >
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Stats Badges */}
-                    <div className="flex items-center gap-2 mr-2">
-                        <StatBadge label="Tổng" value={stats.total} color="bg-cyan-100 text-cyan-700" />
-                        <StatBadge label="Active" value={stats.active} color="bg-green-100 text-green-700" />
-                        <StatBadge label="Inactive" value={stats.inactive} color="bg-gray-100 text-gray-700" />
-                    </div>
+                    {/* Time Range Filter */}
+                    <TextField
+                        select
+                        variant="outlined"
+                        size="small"
+                        value={timeRange}
+                        onChange={(e) => setTimeRange(e.target.value)}
+                        sx={{
+                            width: 140,
+                            '& .MuiOutlinedInput-root': {
+                                bgcolor: 'white',
+                                borderRadius: 1.5,
+                                fontSize: '0.8rem',
+                            }
+                        }}
+                    >
+                        <MenuItem value="day">Hôm nay</MenuItem>
+                        <MenuItem value="week">Tuần này</MenuItem>
+                        <MenuItem value="month">Tháng này</MenuItem>
+                        <MenuItem value="quarter">Quý này</MenuItem>
+                        <MenuItem value="year">Năm này</MenuItem>
+                    </TextField>
 
                     <div className="h-6 w-px bg-gray-300 hidden md:block" />
 
@@ -340,7 +771,7 @@ export default function CustomerTable({ customers }) {
                             ),
                         }}
                         sx={{
-                            width: 220,
+                            width: 180,
                             '& .MuiOutlinedInput-root': {
                                 bgcolor: 'white',
                                 borderRadius: 1.5,
@@ -349,16 +780,38 @@ export default function CustomerTable({ customers }) {
                         }}
                     />
 
-                    {searchTerm && (
+                    {/* Status Filter */}
+                    <TextField
+                        select
+                        variant="outlined"
+                        size="small"
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        SelectProps={{
+                            displayEmpty: true,
+                        }}
+                        sx={{
+                            width: 140,
+                            '& .MuiOutlinedInput-root': {
+                                bgcolor: 'white',
+                                borderRadius: 1.5,
+                                fontSize: '0.8rem',
+                            }
+                        }}
+                    >
+                        <MenuItem value="">
+                            <em>Tất cả Trạng thái</em>
+                        </MenuItem>
+                        <MenuItem value="active">Hoạt động</MenuItem>
+                        <MenuItem value="inactive">Tạm khóa</MenuItem>
+                    </TextField>
+
+                    {hasFilters && (
                         <Button
                             size="small"
                             startIcon={<X size={14} />}
-                            onClick={() => setSearchTerm('')}
-                            sx={{
-                                color: 'text.secondary',
-                                textTransform: 'none',
-                                fontSize: '0.8rem',
-                            }}
+                            onClick={() => { setSearchTerm(''); setStatusFilter(''); }}
+                            sx={{ color: 'text.secondary', textTransform: 'none', fontSize: '0.8rem' }}
                         >
                             Xóa lọc
                         </Button>
@@ -371,7 +824,7 @@ export default function CustomerTable({ customers }) {
                 elevation={0}
                 sx={{
                     flex: 1,
-                    minHeight: 0,
+                    minHeight: '600px',
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: 'divider',
@@ -407,9 +860,9 @@ export default function CustomerTable({ customers }) {
                     columns={columns}
                     rowHeight={68}
                     disableRowSelectionOnClick
-                    pageSizeOptions={[10, 25, 50]}
+                    pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
-                        pagination: { paginationModel: { pageSize: 25 } },
+                        pagination: { paginationModel: { pageSize: 50 } },
                         sorting: { sortModel: [{ field: 'id', sort: 'desc' }] },
                     }}
                     localeText={{
@@ -448,6 +901,17 @@ export default function CustomerTable({ customers }) {
                 onClose={() => setDeletingCustomer(null)}
                 onConfirm={handleDelete}
                 customerName={deletingCustomer?.full_name}
+            />
+
+            {/* Customer Detail Modal */}
+            <CustomerDetailModal
+                open={Boolean(viewingCustomerId)}
+                onClose={() => setViewingCustomerId(null)}
+                customerId={viewingCustomerId}
+                onCustomerUpdated={() => {
+                    // Refresh page or refetch data
+                    window.location.reload();
+                }}
             />
         </Box>
     );

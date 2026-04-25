@@ -8,7 +8,7 @@ import { CheckCircle, Heart } from 'lucide-react';
  */
 export default function AboutSection() {
     return (
-        <section className="relative py-10 md:py-16 overflow-hidden" aria-label="Giới thiệu">
+        <section className="relative py-6 md:py-16 overflow-hidden" aria-label="Giới thiệu">
             <div className="max-w-[1200px] mx-auto px-4">
                 <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
                     {/* Image Column */}

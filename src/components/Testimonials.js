@@ -28,6 +28,38 @@ const reviews = [
         content: "Giao hàng nhanh, đóng gói cẩn thận. Đồ ăn vẫn còn nóng hổi khi nhận được. Giá cả rất hợp lý cho chất lượng như thế này.",
         rating: 4,
         avatar: "M"
+    },
+    {
+        id: 4,
+        name: "Phạm Văn Đức",
+        role: "Khách hàng thường xuyên",
+        content: "Đã ăn ở đây nhiều lần rồi, chất lượng luôn ổn định. Bánh tằm nóng giòn, nước cốt dừa đậm đà. Nhân viên phục vụ rất chuyên nghiệp và thân thiện.",
+        rating: 5,
+        avatar: "Đ"
+    },
+    {
+        id: 5,
+        name: "Hoàng Thị Lan",
+        role: "Food Blogger",
+        content: "Món ăn ở đây thực sự đáng giá. Bánh tằm tươi ngon, gia vị vừa miệng. Đặc biệt là phần nước cốt dừa rất đặc biệt, không giống nơi khác. Đáng để thử!",
+        rating: 5,
+        avatar: "L"
+    },
+    {
+        id: 6,
+        name: "Nguyễn Văn An",
+        role: "Khách hàng",
+        content: "Lần đầu thử bánh tằm ở đây và rất ấn tượng. Món ăn ngon, giá cả phải chăng. Sẽ quay lại và giới thiệu cho bạn bè. Cảm ơn quán rất nhiều!",
+        rating: 5,
+        avatar: "A"
+    },
+    {
+        id: 7,
+        name: "Trần Thị Hương",
+        role: "Thực khách",
+        content: "Bánh tằm ở đây làm tôi nhớ về quê nhà. Hương vị chân chất, đậm đà. Phục vụ nhanh chóng, không gian sạch sẽ. Chắc chắn sẽ quay lại nhiều lần nữa.",
+        rating: 5,
+        avatar: "H"
     }
 ];
 
@@ -54,7 +86,7 @@ export default function Testimonials() {
     };
 
     return (
-        <section className="py-10 md:py-16 relative overflow-hidden" aria-label="Đánh giá khách hàng">
+        <section className="py-6 md:py-16 relative overflow-hidden" aria-label="Đánh giá khách hàng">
             {/* Background decoration */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-5 pointer-events-none">
                 <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl"></div>
@@ -62,7 +94,7 @@ export default function Testimonials() {
             </div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-8 md:mb-12">
+                <div className="text-center mb-8 md:mb-8">
                     <span className="text-secondary font-bold tracking-wider uppercase text-xs md:text-sm">Ý kiến khách hàng</span>
                     <h2 className="text-3xl md:text-4xl font-lobster text-gray-800 mt-2">Khách hàng nói gì về chúng tôi?</h2>
                 </div>
@@ -112,14 +144,14 @@ export default function Testimonials() {
                             className="absolute top-1/2 -left-3 md:-left-12 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:scale-110 transition-all duration-300 group"
                             aria-label="Previous review"
                         >
-                            <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
+                            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                         <button
                             onClick={nextReview}
                             className="absolute top-1/2 -right-3 md:-right-12 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:scale-110 transition-all duration-300 group"
                             aria-label="Next review"
                         >
-                            <ChevronRight className="w-4 h-4 md:w-6 md:h-6 group-hover:translate-x-0.5 transition-transform" />
+                            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-0.5 transition-transform" />
                         </button>
                     </div>
 

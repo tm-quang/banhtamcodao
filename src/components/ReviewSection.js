@@ -94,7 +94,7 @@ export default function ReviewSection({ productId, reviews }) {
 
     return (
         <div>
-            <div className="border-b pb-4 mb-6">
+            <div className="border-b pb-6 mb-6">
                 <h2 className="text-2xl font-medium text-secondary">Đánh giá của khách hàng</h2>
                 <div className="w-24 h-0.5 bg-primary mt-2"></div>
             </div>
@@ -132,9 +132,9 @@ export default function ReviewSection({ productId, reviews }) {
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => { setFilterRating(0); setCurrentPage(1); }}
-                                className={`px-4 py-2 rounded-lg border-2 transition-all ${filterRating === 0
-                                        ? 'border-primary bg-primary text-white'
-                                        : 'border-gray-200 hover:border-gray-300'
+                                className={`px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border-2 transition-all text-xs md:text-sm ${filterRating === 0
+                                    ? 'border-primary bg-primary text-white'
+                                    : 'border-gray-200 hover:border-gray-300'
                                     }`}
                             >
                                 Tất cả
@@ -143,12 +143,12 @@ export default function ReviewSection({ productId, reviews }) {
                                 <button
                                     key={stars}
                                     onClick={() => { setFilterRating(stars); setCurrentPage(1); }}
-                                    className={`px-4 py-2 rounded-lg border-2 transition-all flex items-center gap-1 ${filterRating === stars
-                                            ? 'border-primary bg-primary text-white'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                    className={`px-3 md:px-4 py-1.5 md:py-2 rounded-2xl border-2 transition-all flex items-center gap-1 text-xs md:text-sm ${filterRating === stars
+                                        ? 'border-primary bg-primary text-white'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
-                                    {stars} <Star size={14} fill={filterRating === stars ? 'white' : '#fbbf24'} className={filterRating === stars ? 'text-white' : 'text-yellow-400'} />
+                                    {stars} <Star size={12} className={`md:w-3.5 md:h-3.5 ${filterRating === stars ? 'text-white' : 'text-yellow-400'}`} fill={filterRating === stars ? 'white' : '#fbbf24'} />
                                 </button>
                             ))}
                         </div>
@@ -163,7 +163,7 @@ export default function ReviewSection({ productId, reviews }) {
                         <select
                             value={sortBy}
                             onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none"
+                            className="w-full px-3 md:px-4 py-1.5 md:py-2 border-2 border-gray-200 rounded-2xl focus:border-primary focus:ring-2 focus:ring-primary/30 outline-none text-sm md:text-base"
                         >
                             <option value="newest">Mới nhất</option>
                             <option value="helpful">Hữu ích nhất</option>
@@ -177,9 +177,9 @@ export default function ReviewSection({ productId, reviews }) {
             {/* Reviews Grid */}
             {filteredAndSortedReviews.length > 0 ? (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-4 md:gap-y-6">
                         {currentReviews.map((review) => (
-                            <div key={review.id} className="border-2 border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-all">
+                            <div key={review.id} className="border-2 border-gray-100 rounded-2xl p-3 md:p-4 hover:border-gray-200 transition-all">
                                 <div className="flex justify-between items-start mb-2">
                                     <div className="flex items-center gap-2">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-orange-600 flex items-center justify-center text-white font-bold">
@@ -211,9 +211,9 @@ export default function ReviewSection({ productId, reviews }) {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex justify-center mt-8 space-x-2">
+                        <div className="flex justify-center mt-6 md:mt-8 space-x-2">
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-                                <button key={number} onClick={() => paginate(number)} className={`px-4 py-2 rounded-md text-sm font-medium ${currentPage === number ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+                                <button key={number} onClick={() => paginate(number)} className={`px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm font-medium ${currentPage === number ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
                                     {number}
                                 </button>
                             ))}
@@ -229,16 +229,16 @@ export default function ReviewSection({ productId, reviews }) {
             <hr className="my-8" />
 
             {/* Review Form */}
-            <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="text-xl font-semibold text-secondary mb-4">Viết đánh giá của bạn</h3>
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="bg-gray-50 p-4 md:p-6 rounded-2xl">
+                <h3 className="text-lg md:text-xl font-semibold text-secondary mb-3 md:mb-4">Viết đánh giá của bạn</h3>
+                <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
                     <div>
-                        <p className="text-sm font-medium text-gray-700 mb-1">Đánh giá của bạn:</p>
+                        <p className="text-xs md:text-sm font-medium text-gray-700 mb-1">Đánh giá của bạn:</p>
                         <InteractiveStarRating rating={rating} setRating={setRating} />
                     </div>
-                    <input type="text" placeholder="Tên của bạn *" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required className="w-full border border-gray-300 rounded-md p-3 focus:ring-primary focus:border-primary" />
-                    <textarea placeholder="Chia sẻ cảm nhận của bạn *" value={comment} onChange={(e) => setComment(e.target.value)} rows="4" required className="w-full border border-gray-300 rounded-md p-3 focus:ring-primary focus:border-primary"></textarea>
-                    <button type="submit" className="bg-primary text-white font-bold py-3 px-6 rounded-md hover:bg-orange-600 transition-colors">Gửi đánh giá</button>
+                    <input type="text" placeholder="Tên của bạn *" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required className="w-full border border-gray-300 rounded-xl p-2.5 md:p-3 focus:ring-primary focus:border-primary text-sm md:text-base" />
+                    <textarea placeholder="Chia sẻ cảm nhận của bạn *" value={comment} onChange={(e) => setComment(e.target.value)} rows="4" required className="w-full border border-gray-300 rounded-xl p-2.5 md:p-3 focus:ring-primary focus:border-primary text-sm md:text-base resize-none"></textarea>
+                    <button type="submit" className="bg-primary text-white font-bold py-2.5 md:py-3 px-4 md:px-6 rounded-xl hover:bg-orange-600 transition-colors text-sm md:text-base w-full sm:w-auto">Gửi đánh giá</button>
                 </form>
             </div>
         </div>

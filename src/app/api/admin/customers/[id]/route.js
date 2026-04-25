@@ -10,7 +10,7 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function GET(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         
         // Lưu ý: Không join accounts vì accounts.id là BIGINT, không match với customers.account_id (UUID)
         const { data: customers, error } = await supabaseAdmin
@@ -26,13 +26,37 @@ export async function GET(request, { params }) {
             }, { status: 404 });
         }
 
-        // Lấy username và role từ user_metadata hoặc để null
-        // Có thể query riêng từ accounts nếu cần (nhưng cần cách link khác)
+        // Lấy role từ customers table (nếu có), nếu không thì mặc định là 'customer'
+        // Lấy status từ accounts table nếu có account_id
+        let role = customers.role || 'customer';
+        let status = 'active';
+        let username = null;
+
+        // Nếu có account_id, thử lấy thông tin từ accounts table
+        if (customers.account_id) {
+            try {
+                const { data: account, error: accountError } = await supabaseAdmin
+                    .from('accounts')
+                    .select('role, status, username')
+                    .eq('id', customers.account_id)
+                    .maybeSingle();
+
+                if (!accountError && account) {
+                    role = account.role || role;
+                    status = account.status || status;
+                    username = account.username || null;
+                }
+            } catch (error) {
+                console.warn('Error fetching account info:', error);
+                // Tiếp tục với giá trị mặc định
+            }
+        }
+
         const customer = {
             ...customers,
-            username: null, // Có thể lấy từ user_metadata nếu cần
-            role: 'customer', // Default role
-            status: 'active' // Default status
+            username: username,
+            role: role,
+            status: status
         };
 
         return NextResponse.json({ success: true, customer });
@@ -47,8 +71,9 @@ export async function GET(request, { params }) {
  */
 export async function PUT(request, { params }) {
     try {
-        const { id: customerId } = params;
-        const { full_name, phone_number, email, role, status } = await request.json();
+        const { id: customerId } = await params;
+        const body = await request.json();
+        const { full_name, phone_number, email, role, status, gender } = body;
 
         /**
          * Lấy account_id từ customer_id
@@ -71,34 +96,69 @@ export async function PUT(request, { params }) {
         /**
          * Cập nhật bảng customers
          */
+        const updateData = {
+            full_name,
+            phone_number: phone_number || null,
+            email: email || null
+        };
+
+        // Thêm gender nếu được cung cấp
+        if (gender !== undefined) {
+            updateData.gender = gender || null;
+        }
+
         const { error: updateCustomerError } = await supabaseAdmin
             .from('customers')
-            .update({
-                full_name,
-                phone_number: phone_number || null,
-                email: email || null
-            })
+            .update(updateData)
             .eq('id', customerId);
 
-        if (updateCustomerError) throw updateCustomerError;
+        if (updateCustomerError) {
+            console.error('Error updating customers table:', updateCustomerError);
+            // Nếu lỗi do column không tồn tại (gender), thử update lại không có gender
+            if (updateCustomerError.message && updateCustomerError.message.includes('gender')) {
+                delete updateData.gender;
+                const { error: retryError } = await supabaseAdmin
+                    .from('customers')
+                    .update(updateData)
+                    .eq('id', customerId);
+                
+                if (retryError) {
+                    throw retryError;
+                }
+            } else {
+                throw updateCustomerError;
+            }
+        }
 
         /**
-         * Cập nhật bảng accounts
+         * Cập nhật bảng accounts (chỉ nếu có account_id và role/status được cung cấp)
          */
-        const { error: updateAccountError } = await supabaseAdmin
-            .from('accounts')
-            .update({
-                role,
-                status
-            })
-            .eq('id', accountId);
+        if (accountId && (role !== undefined || status !== undefined)) {
+            const accountUpdateData = {};
+            if (role !== undefined) accountUpdateData.role = role;
+            if (status !== undefined) accountUpdateData.status = status;
 
-        if (updateAccountError) throw updateAccountError;
+            // Kiểm tra xem accounts table có tồn tại không
+            const { error: updateAccountError } = await supabaseAdmin
+                .from('accounts')
+                .update(accountUpdateData)
+                .eq('id', accountId);
+
+            // Nếu lỗi là do table không tồn tại hoặc không có quyền, chỉ log warning
+            if (updateAccountError) {
+                console.warn('Warning: Could not update accounts table:', updateAccountError.message);
+                // Không throw error vì có thể accounts table không tồn tại hoặc không cần thiết
+            }
+        }
 
         return NextResponse.json({ success: true, message: 'Cập nhật thành công!' });
     } catch (error) {
         console.error('API Error - PUT /api/admin/customers/[id]:', error);
-        return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
+        return NextResponse.json({ 
+            success: false, 
+            message: error.message || 'Lỗi Server',
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        }, { status: 500 });
     }
 }
 
@@ -107,7 +167,7 @@ export async function PUT(request, { params }) {
  */
 export async function DELETE(request, { params }) {
     try {
-        const { id: customerId } = params;
+        const { id: customerId } = await params;
 
         /**
          * Lấy account_id từ customer

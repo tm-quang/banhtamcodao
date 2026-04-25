@@ -24,7 +24,7 @@ const slugify = (str) => {
 
 const initialProductState = {
     name: '', slug: '', description: '', image_url: '', price: '',
-    discount_price: '', category_id: '', status: 'active', is_special: false
+    discount_price: '', category_id: '', status: 'active', is_special: false, inventory: ''
 };
 
 // Section Header Component
@@ -53,7 +53,8 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
                 setProduct({
                     ...initialProductState,
                     ...productToEdit,
-                    is_special: Boolean(productToEdit.is_special)
+                    is_special: Boolean(productToEdit.is_special),
+                    inventory: productToEdit.inventory !== null && productToEdit.inventory !== undefined ? productToEdit.inventory.toString() : ''
                 });
                 setImagePreview(productToEdit.image_url || '');
             } else {
@@ -138,10 +139,17 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
         const apiUrl = isEditMode ? `/api/admin/products/${productToEdit.id}` : '/api/admin/products';
         const method = isEditMode ? 'PUT' : 'POST';
 
+        // Prepare data for submission
+        const submitData = {
+            ...product,
+            is_special: product.is_special ? 1 : 0,
+            inventory: product.inventory && product.inventory !== '' ? parseInt(product.inventory, 10) : null
+        };
+
         const res = await fetch(apiUrl, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...product, is_special: product.is_special ? 1 : 0 }),
+            body: JSON.stringify(submitData),
         });
 
         if (res.ok) {
@@ -168,6 +176,9 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
                 sx: {
                     borderRadius: 3,
                     overflow: 'hidden',
+                    maxHeight: '90vh',
+                    display: 'flex',
+                    flexDirection: 'column',
                 }
             }}
         >
@@ -199,7 +210,13 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
             </DialogTitle>
 
             <form onSubmit={handleSubmit}>
-                <DialogContent sx={{ p: 0 }}>
+                <DialogContent sx={{ 
+                    p: 0,
+                    flex: '1 1 auto',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    minHeight: 0,
+                }}>
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
                         {/* Left Column - Main Info */}
                         <div className="lg:col-span-3 p-5 space-y-5">
@@ -256,10 +273,10 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
                                 </div>
                             </div>
 
-                            {/* Price Section */}
+                            {/* Price & Inventory Section */}
                             <div>
-                                <SectionHeader icon={DollarSign} title="Giá bán" color="#10b981" />
-                                <div className="grid grid-cols-2 gap-3">
+                                <SectionHeader icon={DollarSign} title="Giá bán & Tồn kho" color="#10b981" />
+                                <div className="grid grid-cols-3 gap-3">
                                     <TextField
                                         name="price"
                                         label="Giá gốc"
@@ -296,24 +313,47 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
                                             }
                                         }}
                                     />
+                                    <TextField
+                                        name="inventory"
+                                        label="Tồn kho"
+                                        type="number"
+                                        value={product.inventory || ''}
+                                        onChange={handleInputChange}
+                                        fullWidth
+                                        size="small"
+                                        placeholder="Để trống nếu không quản lý"
+                                        InputProps={{
+                                            endAdornment: <span className="text-gray-400 text-sm">sản phẩm</span>
+                                        }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: 2,
+                                            }
+                                        }}
+                                    />
                                 </div>
-                                {product.discount_price && product.price && (
-                                    <div className="mt-2 flex items-center gap-2">
-                                        <Chip
-                                            label={`Giảm ${Math.round((1 - product.discount_price / product.price) * 100)}%`}
-                                            size="small"
-                                            sx={{ bgcolor: alpha('#ef4444', 0.1), color: '#ef4444', fontWeight: 600 }}
-                                        />
-                                        <span className="text-sm text-gray-500">
-                                            Tiết kiệm {formatPrice(product.price - product.discount_price)}đ
-                                        </span>
-                                    </div>
-                                )}
+                                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                    {product.discount_price && product.price && (
+                                        <>
+                                            <Chip
+                                                label={`Giảm ${Math.round((1 - product.discount_price / product.price) * 100)}%`}
+                                                size="small"
+                                                sx={{ bgcolor: alpha('#ef4444', 0.1), color: '#ef4444', fontWeight: 600 }}
+                                            />
+                                            <span className="text-sm text-gray-500">
+                                                Tiết kiệm {formatPrice(product.price - product.discount_price)}đ
+                                            </span>
+                                        </>
+                                    )}
+                                    <span className="text-xs text-gray-400 ml-auto">
+                                        💡 Tồn kho chỉ dành cho sản phẩm đóng chai/lon
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Category & Status */}
                             <div>
-                                <SectionHeader icon={Tag} title="Phân loại" color="#8b5cf6" />
+                                <SectionHeader icon={Tag} title="Phân loại" color="#2563eb" />
                                 <div className="grid grid-cols-2 gap-3">
                                     <TextField
                                         name="category_id"
@@ -523,7 +563,11 @@ export default function ProductModal({ open, onClose, categories, productToEdit 
                     borderTop: '1px solid',
                     borderColor: 'divider',
                     bgcolor: '#fafafa',
-                    gap: 1.5
+                    gap: 1.5,
+                    flexShrink: 0,
+                    position: 'sticky',
+                    bottom: 0,
+                    zIndex: 1
                 }}>
                     <Button
                         onClick={onClose}

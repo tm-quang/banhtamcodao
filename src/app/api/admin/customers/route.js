@@ -23,9 +23,20 @@ export async function GET() {
                 phone_number,
                 email,
                 role,
+                membership_level,
+                reward_points,
                 created_at
             `)
             .order('created_at', { ascending: false });
+        
+        // Debug: Log để kiểm tra dữ liệu
+        if (customers && customers.length > 0) {
+            console.log('Sample customer from DB:', {
+                id: customers[0].id,
+                membership_level: customers[0].membership_level,
+                full_name: customers[0].full_name
+            });
+        }
 
         if (customersError) throw customersError;
 
@@ -65,6 +76,8 @@ export async function GET() {
                 email: c.email,
                 username: null, // Có thể lấy từ user_metadata nếu cần
                 role: c.role || 'customer', // Lấy từ customers table
+                membership_level: c.membership_level || null,
+                reward_points: c.reward_points || 0,
                 status: 'active', // Default status
                 created_at: c.created_at,
                 total_orders: stats.total_orders,

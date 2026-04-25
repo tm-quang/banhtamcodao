@@ -4,7 +4,7 @@
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X } from 'lucide-react';
+import { X, Gift } from 'lucide-react';
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
@@ -14,12 +14,14 @@ export default function QuickCart({ onClose }) {
     const { cartItems, removeFromCart } = useCart();
 
     const subtotal = cartItems.reduce((total, item) => {
-        const price = item.discount_price ?? item.price;
+        // Bỏ qua sản phẩm tặng (is_free = true)
+        if (item.is_free) return total;
+        const price = item.discount_price ?? item.price ?? item.finalPrice ?? 0;
         return total + price * item.quantity;
     }, 0);
 
     return (
-        <div className="absolute top-full right-0 w-80 bg-white rounded-lg shadow-xl border z-50 text-secondary animate-slideInRight" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute top-full right-0 w-80 bg-white rounded-2xl shadow-xl border z-50 text-secondary animate-slideInRight" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 border-b">
                 <h3 className="font-bold text-lg">Giỏ hàng của bạn</h3>
             </div>
@@ -30,8 +32,18 @@ export default function QuickCart({ onClose }) {
                             <div key={item.id} className="flex gap-4">
                                 <Image src={item.image_url} alt={item.name} width={64} height={64} className="rounded-md object-cover"/>
                                 <div className="flex-grow">
-                                    <p className="font-semibold text-sm">{item.name}</p>
-                                    <p className="text-xs text-gray-500">{item.quantity} x {formatCurrency(item.discount_price ?? item.price)}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-semibold text-sm">{item.name}</p>
+                                        {item.is_free && (
+                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 px-1.5 py-0.5 rounded-full">
+                                                <Gift size={10} />
+                                                Tặng
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                        {item.quantity} x {item.is_free ? '0đ' : formatCurrency(item.discount_price ?? item.price)}
+                                    </p>
                                 </div>
                                 <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-red-500">
                                     <X size={16} />
@@ -45,10 +57,10 @@ export default function QuickCart({ onClose }) {
                             <span>{formatCurrency(subtotal)}</span>
                         </div>
                         <div className="flex gap-2">
-                             <Link href="/cart" onClick={onClose} className="w-1/2 text-center bg-white border border-gray-300 text-secondary font-bold py-2 px-4 rounded-2xl hover:bg-gray-100 transition-colors">
+                             <Link href="/cart" onClick={onClose} className="w-1/2 text-center bg-white border border-gray-300 text-secondary font-bold py-2 px-4 rounded-xl hover:bg-gray-100 transition-colors">
                                 Xem giỏ hàng
                             </Link>
-                            <Link href="/checkout" onClick={onClose} className="w-1/2 text-center bg-primary text-light font-bold py-2 px-4 rounded-2xl hover:bg-orange-600 transition-colors">
+                            <Link href="/checkout" onClick={onClose} className="w-1/2 text-center bg-primary text-light font-bold py-2 px-4 rounded-xl hover:bg-orange-600 transition-colors">
                                 Thanh toán
                             </Link>
                         </div>

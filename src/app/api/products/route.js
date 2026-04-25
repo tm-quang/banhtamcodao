@@ -31,11 +31,11 @@ export async function GET(request) {
     const priceRange = searchParams.get('priceRange');
 
     /** Xây dựng query Supabase
-     * select('*, categories(name)') để lấy tên danh mục
+     * select('*, categories(name, slug)') để lấy tên và slug danh mục
      */
     let query = supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*, categories(name, slug)')
       .eq('status', 'active');
 
     /** Thêm điều kiện tìm kiếm */
@@ -86,7 +86,9 @@ export async function GET(request) {
       slug: item.slug || 'san-pham',
       price: parseFloat(item.price) || 0,
       discount_price: item.discount_price ? parseFloat(item.discount_price) : null,
+      category_id: item.category_id,
       category_name: item.categories?.name || 'Danh mục', // Lấy từ join
+      category_slug: item.categories?.slug || '', // Lấy slug từ join
       image_url: item.image_url || 'https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png',
       is_special: !!item.is_special,
       description: item.description || 'Mô tả sản phẩm',

@@ -3,17 +3,36 @@
  * @file src/app/account/rewards/page.js
  */
 'use client';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Diamond, Bell, Gift, TrendingUp, History as HistoryIcon } from 'lucide-react';
 
 export default function RewardsPage() {
-    const { user } = useAuth();
+    const { user, loading, refreshUser } = useAuth();
 
-    const tier = user?.membership_level || 'Thành viên thân thiết';
+    // Auto-refresh user data every 30 seconds to sync with database
+    useEffect(() => {
+        if (!loading && user) {
+            const interval = setInterval(() => {
+                refreshUser();
+            }, 30000); // Refresh every 30 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [loading, user, refreshUser]);
+
+    const tier = user?.membership_level || 'Khách hàng mới';
     const currentPoints = user?.reward_points || 0;
-    const nextTierTarget = 5000;
-    const progress = Math.min(100, Math.round((currentPoints / nextTierTarget) * 100));
+    
+    // Xác định mốc điểm tiếp theo dựa trên hạng hiện tại
+    let nextTierTarget = 500; // Mốc để lên Khách hàng thân thiết
+    if (tier === 'Khách hàng thân thiết') {
+        nextTierTarget = 1500; // Mốc để lên Khách hàng VIP
+    } else if (tier === 'Khách hàng VIP') {
+        nextTierTarget = 1500; // Đã đạt hạng cao nhất
+    }
+    
+    const progress = nextTierTarget > 0 ? Math.min(100, Math.round((currentPoints / nextTierTarget) * 100)) : 100;
 
     const benefitCards = useMemo(
         () => [
@@ -40,7 +59,7 @@ export default function RewardsPage() {
 
     return (
         <div className="space-y-6">
-            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-6 text-white shadow-lg">
+            <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 p-6 text-white shadow-md border border-white/20">
                 <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(255,255,255,0.6) 0%, transparent 50%)' }} />
                 <div className="relative flex flex-col gap-6">
                     <div className="flex items-start justify-between gap-4">
@@ -54,7 +73,11 @@ export default function RewardsPage() {
                         <div className="flex flex-col items-end text-right">
                             <span className="text-xs uppercase tracking-widest text-white/70">Điểm hiện tại</span>
                             <span className="text-4xl font-bold">{currentPoints}</span>
-                            <span className="text-xs text-white/60">Đạt {nextTierTarget} điểm để lên hạng tiếp theo</span>
+                            {tier !== 'Khách hàng VIP' ? (
+                                <span className="text-xs text-white/60">Đạt {nextTierTarget} điểm để lên hạng tiếp theo</span>
+                            ) : (
+                                <span className="text-xs text-white/60">Đã đạt hạng cao nhất</span>
+                            )}
                         </div>
                     </div>
 
@@ -74,7 +97,7 @@ export default function RewardsPage() {
             </section>
 
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Điểm đã đổi</p>
                         <HistoryIcon size={16} className="text-slate-400" />
@@ -82,7 +105,7 @@ export default function RewardsPage() {
                     <p className="mt-2 text-2xl font-bold text-slate-900">{user.redeemed_points || 0}</p>
                     <p className="mt-1 text-xs text-slate-500">Trong 12 tháng gần nhất</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Đơn được giảm giá</p>
                         <Gift size={16} className="text-slate-400" />
@@ -90,7 +113,7 @@ export default function RewardsPage() {
                     <p className="mt-2 text-2xl font-bold text-slate-900">{user.discounted_orders || 0}</p>
                     <p className="mt-1 text-xs text-slate-500">Tổng số đơn đã dùng ưu đãi</p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-md">
                     <div className="flex items-center justify-between">
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Điểm dự kiến</p>
                         <TrendingUp size={16} className="text-slate-400" />
@@ -100,8 +123,8 @@ export default function RewardsPage() {
                 </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-100 bg-white shadow-sm">
-                <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
+            <section className="rounded-2xl border border-gray-200 bg-white shadow-md">
+                <div className="flex items-center gap-2 border-b border-gray-200 px-5 py-4">
                     <Bell className="text-slate-500" />
                     <h3 className="text-lg font-semibold text-slate-900">Ưu đãi dành riêng cho bạn</h3>
                 </div>
@@ -109,9 +132,9 @@ export default function RewardsPage() {
                     {benefitCards.map((benefit) => (
                         <div
                             key={benefit.title}
-                            className={`rounded-2xl border p-4 text-sm shadow-sm transition ${benefit.available
-                                    ? 'border-slate-200 bg-white hover:border-slate-300'
-                                    : 'border-dashed border-slate-200 bg-slate-50 text-slate-400'
+                            className={`rounded-2xl border p-4 text-sm shadow-md transition ${benefit.available
+                                    ? 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-lg'
+                                    : 'border-dashed border-gray-200 bg-slate-50 text-slate-400'
                                 }`}
                         >
                             <p className="text-base font-semibold text-slate-900">{benefit.title}</p>
@@ -131,7 +154,7 @@ export default function RewardsPage() {
                 </div>
             </section>
 
-            <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-md">
                 <h3 className="text-lg font-semibold text-slate-900">Cách tích điểm nhanh hơn</h3>
                 <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
                     <li>Đặt món trực tiếp qua website sẽ cộng điểm ngay sau khi đơn hoàn tất.</li>

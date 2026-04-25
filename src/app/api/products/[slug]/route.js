@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
     /** Fetch product by slug */
     const { data: product, error: productError } = await supabase
       .from('products')
-      .select('*, categories(name)')
+      .select('*, categories(name, slug)')
       .eq('slug', slug)
       .maybeSingle();
 
@@ -29,10 +29,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ success: false, message: 'Sản phẩm không tồn tại.' }, { status: 404 });
     }
 
-    // Flatten category name
+    // Flatten category name and slug
     const productData = {
       ...product,
+      category_id: product.category_id,
       category_name: product.categories?.name,
+      category_slug: product.categories?.slug || '',
       price: parseFloat(product.price),
       discount_price: product.discount_price ? parseFloat(product.discount_price) : null,
     };

@@ -70,7 +70,7 @@ export default function PromotionModal({ open, onClose, onSave, promotionToEdit 
             {/* Gradient Header */}
             <Box sx={{
                 background: isEditMode
-                    ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+                    ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
                     : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: 'white',
                 p: 2.5,
@@ -104,7 +104,7 @@ export default function PromotionModal({ open, onClose, onSave, promotionToEdit 
 
             <DialogContent sx={{ p: 3 }}>
                 {/* Basic Info Section */}
-                <SectionHeader icon={Ticket} title="Thông tin cơ bản" color="#8b5cf6" />
+                <SectionHeader icon={Ticket} title="Thông tin cơ bản" color="#2563eb" />
                 <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                         <TextField
@@ -261,8 +261,8 @@ export default function PromotionModal({ open, onClose, onSave, promotionToEdit 
                         textTransform: 'none',
                         px: 3,
                         fontWeight: 600,
-                        bgcolor: isEditMode ? '#8b5cf6' : '#10b981',
-                        '&:hover': { bgcolor: isEditMode ? '#7c3aed' : '#059669' }
+                        bgcolor: isEditMode ? '#2563eb' : '#10b981',
+                        '&:hover': { bgcolor: isEditMode ? '#1d4ed8' : '#059669' }
                     }}
                 >
                     {isSubmitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật' : 'Thêm mới')}

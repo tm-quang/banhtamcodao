@@ -4,7 +4,7 @@
  */
 export const dynamic = 'force-dynamic';
 
-import Sidebar from "@/components/admin/Sidebar";
+import SidebarSwitcher from "@/components/SidebarSwitcher";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -21,8 +21,9 @@ export default async function AdminLayout({ children }) {
         const cookieStore = await cookies();
 
         const accessToken = cookieStore.get('sb-access-token')?.value;
+        const refreshToken = cookieStore.get('sb-refresh-token')?.value;
 
-        if (!accessToken) {
+        if (!accessToken && !refreshToken) {
             redirect('/login?next=/admin');
         }
 
@@ -35,13 +36,53 @@ export default async function AdminLayout({ children }) {
                 persistSession: false
             },
             global: {
-                headers: {
+                headers: accessToken ? {
                     Authorization: `Bearer ${accessToken}`
-                }
+                } : {}
             }
         });
 
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        // Set session nếu có cả access token và refresh token
+        if (accessToken && refreshToken) {
+            await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken
+            });
+        }
+
+        let { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        // Nếu access token hết hạn, thử refresh
+        if ((authError || !user) && refreshToken) {
+            const { data: { session }, error: refreshError } = await supabase.auth.refreshSession({
+                refresh_token: refreshToken
+            });
+
+            if (!refreshError && session) {
+                // Cập nhật cookies với session mới
+                cookieStore.set('sb-access-token', session.access_token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30,
+                    path: '/',
+                });
+                cookieStore.set('sb-refresh-token', session.refresh_token, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 60 * 60 * 24 * 30,
+                    path: '/',
+                });
+
+                // Lấy user lại sau khi refresh
+                const { data: { user: refreshedUser }, error: refreshedError } = await supabase.auth.getUser();
+                if (!refreshedError && refreshedUser) {
+                    user = refreshedUser;
+                    authError = null;
+                }
+            }
+        }
 
         if (authError || !user) {
             redirect('/login?next=/admin');
@@ -72,11 +113,11 @@ export default async function AdminLayout({ children }) {
         <div className="flex h-screen overflow-hidden bg-gray-50">
             {/* Sidebar - Fixed on left, hidden on mobile */}
             <div className="fixed left-0 top-0 h-screen z-40 hidden md:block">
-                <Sidebar />
+                <SidebarSwitcher />
             </div>
 
             {/* Main area - no margin on mobile, ml-72 on md+ */}
-            <div className="flex-1 flex flex-col min-w-0 ml-0 md:ml-72">
+            <div className="flex-1 flex flex-col min-w-0 ml-0 md:ml-52 mb-4">
                 {/* Header - Sticky at top */}
                 <div className="sticky top-0 z-30 bg-white shadow-sm">
                     <AdminHeader />

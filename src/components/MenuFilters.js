@@ -41,20 +41,20 @@ export default function MenuFilters({ onFiltersChange, className = '' }) {
         {hasActiveFilters && (
           <span className="w-2 h-2 bg-primary rounded-full"></span>
         )}
-        <ChevronDown 
-          size={16} 
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          size={16}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-50 pointer-events-auto" 
+          <div
+            className="fixed inset-0 z-50 pointer-events-auto"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Filters Panel */}
           <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4 pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">

@@ -10,7 +10,7 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function GET(request, { params }) {
     try {
-        const { id: customerId } = params;
+        const { id: customerId } = await params;
 
         /**
          * Lấy số điện thoại của khách hàng

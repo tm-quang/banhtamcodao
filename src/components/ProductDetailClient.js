@@ -3,14 +3,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useCart } from '@/context/CartContext';
-import { Heart, ShoppingCart, Share2 } from 'lucide-react';
+import { Handbag, ShoppingCart } from 'lucide-react';
 import ProductOptions from './ProductOptions';
 import { useToast } from '@/context/ToastContext';
 
 export default function ProductDetailClient({ product, options = [] }) {
   const [quantity, setQuantity] = useState(1);
   const [isSticky, setIsSticky] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState({
     size: null,
     toppings: [],
@@ -54,37 +53,6 @@ export default function ProductDetailClient({ product, options = [] }) {
     addToCart(cartItem, quantity);
   };
 
-  const handleWishlistToggle = () => {
-    setIsWishlisted(!isWishlisted);
-    showToast(
-      isWishlisted ? 'Đã xóa khỏi danh sách yêu thích' : 'Đã thêm vào danh sách yêu thích',
-      'success'
-    );
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product.name,
-          text: `Xem ${product.name} tại Bánh Tằm Cô Đào`,
-          url: window.location.href,
-        });
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          copyToClipboard();
-        }
-      }
-    } else {
-      copyToClipboard();
-    }
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href);
-    showToast('Đã sao chép link sản phẩm!', 'success');
-  };
-
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
   };
@@ -100,40 +68,26 @@ export default function ProductDetailClient({ product, options = [] }) {
         onOptionsChange={handleOptionsChange}
       />
 
-      {/* Price Display */}
-      <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-gray-600">Giá sản phẩm:</span>
-          <span className="font-medium">{formatCurrency(basePrice)}</span>
-        </div>
-        {selectedOptions.additionalPrice > 0 && (
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-600">Phụ thu:</span>
-            <span className="font-medium text-primary">+{formatCurrency(selectedOptions.additionalPrice)}</span>
-          </div>
-        )}
-        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-          <span className="text-lg font-semibold text-secondary">Tổng cộng:</span>
-          <span className="text-2xl font-bold text-primary">{formatCurrency(selectedOptions.totalPrice)}</span>
-        </div>
-      </div>
-
       {/* Action Buttons */}
-      <div className="flex items-center gap-3 mt-6">
-        {/* Quantity Selector */}
-        <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
+      <div className="flex items-center gap-2 md:gap-3 mt-4 md:mt-6">
+        {/* Quantity Selector - Redesigned */}
+        <div className="flex items-center bg-white border-2 border-gray-300 rounded-2xl overflow-hidden flex-shrink-0 h-12 md:h-14">
           <button
             onClick={handleDecrease}
-            className="px-4 py-3 text-lg font-semibold hover:bg-gray-100 transition-colors"
+            className="w-10 md:w-12 h-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-primary transition-colors font-semibold text-lg md:text-xl"
+            aria-label="Giảm số lượng"
           >
-            -
+            −
           </button>
-          <span className="w-14 h-12 text-center border-l-2 border-r-2 border-gray-300 flex items-center justify-center font-medium text-lg">
-            {quantity}
-          </span>
+          <div className="w-12 md:w-14 h-full flex items-center justify-center border-l border-r border-gray-300 bg-gray-50">
+            <span className="font-semibold text-base md:text-lg text-secondary">
+              {quantity}
+            </span>
+          </div>
           <button
             onClick={handleIncrease}
-            className="px-4 py-3 text-lg font-semibold hover:bg-gray-100 transition-colors"
+            className="w-10 md:w-12 h-full flex items-center justify-center text-gray-600 hover:bg-gray-100 hover:text-primary transition-colors font-semibold text-lg md:text-xl"
+            aria-label="Tăng số lượng"
           >
             +
           </button>
@@ -142,47 +96,27 @@ export default function ProductDetailClient({ product, options = [] }) {
         {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
-          className="flex-grow bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors shadow-lg flex items-center justify-center gap-2"
+          className="flex-grow h-12 md:h-14 bg-primary text-white font-bold px-3 md:px-6 rounded-2xl hover:bg-orange-600 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
         >
-          <ShoppingCart size={20} />
-          Thêm vào giỏ hàng
-        </button>
-
-        {/* Wishlist Button */}
-        <button
-          onClick={handleWishlistToggle}
-          className={`p-3 rounded-lg border-2 transition-all ${isWishlisted
-            ? 'border-red-500 bg-red-50 text-red-500'
-            : 'border-gray-300 hover:border-red-300 text-gray-600'
-            }`}
-          aria-label="Thêm vào yêu thích"
-        >
-          <Heart size={24} fill={isWishlisted ? 'currentColor' : 'none'} />
-        </button>
-
-        {/* Share Button */}
-        <button
-          onClick={handleShare}
-          className="p-3 rounded-lg border-2 border-gray-300 hover:border-gray-400 text-gray-600 transition-all"
-          aria-label="Chia sẻ"
-        >
-          <Share2 size={24} />
+          <Handbag size={18} className="md:w-5 md:h-5" />
+          <span className="hidden sm:inline">Thêm vào giỏ hàng</span>
+          <span className="sm:hidden">Thêm vào giỏ</span>
         </button>
       </div>
 
       {/* Sticky Mobile Add to Cart */}
       {isSticky && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-4 shadow-2xl z-40 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-3 md:p-4 shadow-2xl z-40 md:hidden">
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
-              <div className="text-sm text-gray-600">Tổng:</div>
-              <div className="text-lg font-bold text-primary">{formatCurrency(selectedOptions.totalPrice * quantity)}</div>
+              <div className="text-xs text-gray-600">Tổng:</div>
+              <div className="text-base md:text-lg font-bold text-primary">{formatCurrency(selectedOptions.totalPrice * quantity)}</div>
             </div>
             <button
               onClick={handleAddToCart}
-              className="flex-grow bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors shadow-lg flex items-center justify-center gap-2"
+              className="flex-grow bg-primary text-white font-bold py-2.5 md:py-3 px-4 md:px-6 rounded-2xl hover:bg-orange-600 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm"
             >
-              <ShoppingCart size={20} />
+              <ShoppingCart size={18} />
               Thêm {quantity} vào giỏ
             </button>
           </div>

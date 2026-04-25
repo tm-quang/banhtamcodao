@@ -43,9 +43,10 @@ const StatCard = ({ title, value, icon, color, growth, showGrowth = false }) => 
             overflow: 'hidden',
             background: `linear-gradient(135deg, ${alpha(color, 0.1)} 0%, ${alpha(color, 0.05)} 100%)`,
             border: `1px solid ${alpha(color, 0.2)}`,
+            boxShadow: `0 4px 12px ${alpha(color, 0.15)}, 0 2px 4px ${alpha('#000', 0.08)}`,
             '&:hover': {
-                boxShadow: `0 8px 24px ${alpha(color, 0.3)}`,
-                transform: 'translateY(-4px)',
+                boxShadow: `0 12px 32px ${alpha(color, 0.35)}, 0 4px 8px ${alpha('#000', 0.12)}`,
+                transform: 'translateY(-6px)',
                 border: `1px solid ${alpha(color, 0.4)}`,
             },
             '&::before': {
@@ -322,7 +323,7 @@ export default function DashboardPage() {
                         title="Đơn trong tháng"
                         value={dataLoading ? '...' : kpiStats.monthlyOrders?.value || 0}
                         icon={<CalendarRange size={22} />}
-                        color="#7c3aed"
+                        color="#1d4ed8"
                         growth={kpiStats.monthlyOrders?.growth}
                         showGrowth={true}
                     />
@@ -410,9 +411,10 @@ export default function DashboardPage() {
                     <Card ref={lineChartRef} sx={{
                         height: '100%',
                         minHeight: 550,
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                         border: '1px solid',
                         borderColor: 'divider',
+                        bgcolor: 'white',
                     }}>
                         <CardContent>
                             <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 2 }}>
@@ -477,9 +479,10 @@ export default function DashboardPage() {
                     <Card sx={{
                         height: '100%',
                         minHeight: 550,
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                         border: '1px solid',
                         borderColor: 'divider',
+                        bgcolor: 'white',
                     }}>
                         <CardContent>
                             <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 2 }}>
@@ -553,9 +556,10 @@ export default function DashboardPage() {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                         border: '1px solid',
                         borderColor: 'divider',
+                        bgcolor: 'white',
                     }}>
                         <CardContent sx={{ p: 0, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
                             <Box sx={{
@@ -636,14 +640,15 @@ export default function DashboardPage() {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                         border: '1px solid',
                         borderColor: 'divider',
+                        bgcolor: 'white',
                     }}>
                         <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
                             <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 2 }}>
-                                <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#7c3aed', 0.1) }}>
-                                    <Users size={20} style={{ color: '#7c3aed' }} />
+                                <Box sx={{ p: 1, borderRadius: 2, bgcolor: alpha('#1d4ed8', 0.1) }}>
+                                    <Users size={20} style={{ color: '#1d4ed8' }} />
                                 </Box>
                                 <Box>
                                     <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
@@ -691,13 +696,13 @@ export default function DashboardPage() {
                                             gap: 1.5,
                                             p: 1,
                                             borderRadius: 2,
-                                            '&:hover': { bgcolor: alpha('#7c3aed', 0.05) }
+                                            '&:hover': { bgcolor: alpha('#1d4ed8', 0.05) }
                                         }}>
                                             <Avatar sx={{
                                                 width: 36,
                                                 height: 36,
-                                                bgcolor: alpha('#7c3aed', 0.1),
-                                                color: '#7c3aed',
+                                                bgcolor: alpha('#1d4ed8', 0.1),
+                                                color: '#1d4ed8',
                                                 fontWeight: 700,
                                                 fontSize: '0.875rem'
                                             }}>
@@ -721,9 +726,10 @@ export default function DashboardPage() {
                         height: '100%',
                         display: 'flex',
                         flexDirection: 'column',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                         border: '1px solid',
                         borderColor: 'divider',
+                        bgcolor: 'white',
                     }}>
                         <CardContent sx={{ p: { xs: 2, sm: 2.5 }, display: 'flex', flexDirection: 'column', flex: 1 }}>
                             <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 2 }}>
@@ -816,21 +822,22 @@ export default function DashboardPage() {
                     <Card sx={{
                         height: '100%',
                         minHeight: 400,
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                         border: '1px solid',
                         borderColor: 'divider',
+                        bgcolor: 'white',
                     }}>
                         <CardContent sx={{ p: { xs: 2, sm: 2.5 } }}>
                             <Stack direction="row" alignItems="center" gap={1.5} sx={{ mb: 2.5 }}>
                                 <Box sx={{
                                     p: 1,
                                     borderRadius: 2,
-                                    bgcolor: alpha('#8b5cf6', 0.1),
+                                    bgcolor: alpha('#2563eb', 0.1),
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center'
                                 }}>
-                                    <Activity size={20} style={{ color: '#8b5cf6' }} />
+                                    <Activity size={20} style={{ color: '#2563eb' }} />
                                 </Box>
                                 <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>
                                     Hoạt động gần đây
@@ -869,7 +876,7 @@ export default function DashboardPage() {
                         background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
                         border: '1px solid',
                         borderColor: 'divider',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
                     }}>
                         <CardContent sx={{ p: { xs: 2, sm: 2.5, md: 3 } }}>
                             <Stack

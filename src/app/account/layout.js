@@ -19,18 +19,18 @@ const AccountLayoutSkeleton = () => (
     <div className="min-h-screen pt-20 pb-10">
         <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6">
             <div className="flex flex-col gap-2 mb-6">
-                <div className="h-4 w-32 rounded-lg shimmer" />
-                <div className="h-8 w-64 rounded-lg shimmer" />
+                <div className="h-4 w-32 rounded-lg shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
+                <div className="h-8 w-64 rounded-lg shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
             </div>
 
             <div className="rounded-3xl bg-white shadow-sm border border-gray-100">
                 <div className="border-b border-gray-100 px-6 py-4">
-                    <div className="h-12 w-full rounded-2xl shimmer" />
+                    <div className="h-12 w-full rounded-2xl shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
                 </div>
                 <div className="space-y-4 p-6">
-                    <div className="h-48 rounded-2xl shimmer" />
+                    <div className="h-48 rounded-2xl shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[1, 2, 3, 4].map(i => <div key={i} className="h-24 rounded-2xl shimmer" />)}
+                        {[1, 2, 3, 4].map(i => <div key={i} className="h-24 rounded-2xl shimmer" style={{ transform: 'scale(1)', transition: 'none' }} />)}
                     </div>
                 </div>
             </div>
@@ -95,10 +95,11 @@ export default function AccountLayout({ children }) {
                                             <Link
                                                 key={tab.name}
                                                 href={tab.href}
-                                                className={`group flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${isActive
+                                                className={`group flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors transition-shadow ${isActive
                                                     ? 'bg-primary text-white shadow-md shadow-primary/20'
                                                     : 'text-gray-500 hover:text-primary hover:bg-primary/5'
                                                     }`}
+                                                style={{ transform: 'scale(1)' }}
                                             >
                                                 <Icon size={18} className={isActive ? 'text-white' : 'text-gray-400 group-hover:text-primary'} />
                                                 {tab.name}

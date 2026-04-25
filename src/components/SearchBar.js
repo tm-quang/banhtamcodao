@@ -164,7 +164,7 @@ export default function SearchBar({ className = '', isContactPage = false }) {
       {!showSearchBox && (
         <button
           onClick={toggleSearchBox}
-          className={`p-2 ${isContactPage ? 'hover:text-white/80 text-white' : 'hover:text-primary'} transition-colors`}
+          className="p-2 hover:text-primary transition-colors text-inherit"
           aria-label="Mở tìm kiếm"
         >
           <Search size={22} />

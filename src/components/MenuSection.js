@@ -6,7 +6,7 @@ import Link from 'next/link';
 import ProductCard from './ProductCard';
 import AnimateOnScroll from './AnimateOnScroll';
 import CategorySlider from './CategorySlider';
-import { UtensilsCrossed, Star } from 'lucide-react';
+import { Search, Star, PackageSearch } from 'lucide-react';
 
 const MAX_PRODUCTS_PER_CATEGORY = 12;
 
@@ -47,19 +47,19 @@ export default function MenuSection({ products, categoriesList = [] }) {
 
     return (
         <AnimateOnScroll>
-            <div className="text-center mb-8 md:mb-12">
+            <div className="text-center md:mb-4">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold tracking-widest uppercase text-[#FF6F30] bg-[#FF6F30]/10 rounded-full">
                     <Star className="w-3 h-3 fill-current" />
                     GỢI Ý HÔM NAY
                     <Star className="w-3 h-3 fill-current" />
                 </span>
-                <h2 className="mt-2 text-4xl md:text-5xl font-lobster text-[#222629]">
+                <h2 className="mt-2 text-3xl md:text-4xl font-lobster text-[#222629]">
                     Thực đơn của chúng tôi
                 </h2>
             </div>
 
             {/* Category Filters */}
-            <div className="-mx-4 md:mx-0">
+            <div className="w-full md:mx-0">
                 <CategorySlider
                     categories={categoryNames}
                     activeCategory={activeCategory}
@@ -76,12 +76,15 @@ export default function MenuSection({ products, categoriesList = [] }) {
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                        <UtensilsCrossed className="w-8 h-8 text-gray-400" />
+                <div className="flex flex-col items-center justify-center py-16 md:py-20 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-gray-300">
+                    <div className="relative mb-6">
+                        <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-primary/30 to-primary/5 rounded-full flex items-center justify-center mb-4 shadow-inner">
+                            <PackageSearch className="w-10 h-10 md:w-12 md:h-12 text-primary/60" strokeWidth={1.5} />
+                        </div>
+                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary/30 rounded-full animate-pulse"></div>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-600">Chưa có món ăn nào trong danh mục này</h3>
-                    <p className="text-gray-500 text-sm mt-1">Vui lòng chọn danh mục khác hoặc quay lại sau nhé!</p>
+                    <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">Chưa có món ăn nào trong danh mục này</h3>
+                    <p className="text-gray-600 text-sm md:text-base max-w-md px-4">Vui lòng chọn danh mục khác hoặc quay lại sau nhé!</p>
                 </div>
             )}
 

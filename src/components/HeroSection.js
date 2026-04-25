@@ -32,7 +32,7 @@ const slides = [
 
 export default function HeroSection() {
   return (
-    <section className="relative w-full min-h-auto lg:min-h-[700px] overflow-hidden flex items-center pt-32 pb-12 md:py-0">
+    <section className="relative w-full min-h-auto lg:min-h-[700px] overflow-hidden flex items-center pt-24 pb-12 md:py-0">
       {/* Background decorative elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-orange-100/50 blur-3xl"></div>
@@ -54,22 +54,19 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full bg-orange-100 text-orange-600 font-semibold text-xs md:text-sm mb-3 md:mb-6 shadow-sm border border-orange-200"
             >
-              <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-orange-500 animate-pulse"></span>
-              Món mới: Bánh Tằm Bì Đặc Biệt
             </motion.div>
 
             {/* Headline */}
             <h1 className="font-lobster text-4xl md:text-6xl lg:text-7xl text-gray-900 leading-tight mb-3 md:mb-6">
               Đánh thức <br />
-              <span className="text-primary font-lobster">vị giác</span> với <span className="text-gray-900 font-lobster">Cô Đào</span>
+              <span className="text-primary font-lobster">vị giác</span> với <span className="text-gray-900 font-lobster">Bánh Tằm Cô Đào</span>
             </h1>
 
             {/* Description */}
             <p className="text-gray-600 text-base md:text-xl max-w-lg mb-5 md:mb-8 leading-relaxed">
-              Trải nghiệm ẩm thực miền Tây đỉnh cao với nguyên liệu tươi ngon nhất.
-              Giao hàng nhanh trong 30 phút, đảm bảo nóng hổi khi đến tay bạn.
+              Tận hưởng món ngon chuẩn vị.
+              Giao hàng tận nơi.
             </p>
 
             {/* Buttons */}

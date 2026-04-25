@@ -65,18 +65,18 @@ export default function OrderCard({ order }) {
     const createdAt = format(new Date(order.order_time), 'HH:mm, dd/MM/yyyy', { locale: vi });
 
     return (
-        <div className={`rounded-2xl border bg-white shadow-md transition hover:shadow-xl ${theme.border}`}>
+        <div className={`rounded-2xl border border-gray-200 bg-white shadow-md transition hover:shadow-lg ${theme.border}`}>
             <button
                 onClick={() => setIsOpen((prev) => !prev)}
                 className="flex w-full flex-col gap-3 px-4 py-4 text-left sm:flex-row sm:items-center sm:gap-6"
             >
                 <div className="flex flex-1 items-center gap-4">
-                    <div className="relative h-12 w-12 overflow-hidden rounded-full">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full bg-white border border-gray-200 flex items-center justify-center">
                         <Image
-                            src="/images/banner-logo/logo.png"
+                            src="/images/banner-logo/banhtamcodao-logo.png"
                             alt="Bánh Tằm Cô Đào"
                             fill
-                            className="object-cover"
+                            className="object-contain p-2"
                             sizes="48px"
                         />
                     </div>
@@ -122,11 +122,16 @@ export default function OrderCard({ order }) {
                         <div className="flex items-start gap-2">
                             <MapPin size={18} className="mt-0.5 text-slate-400" />
                             <div>
-                                <p className="font-semibold text-slate-700">Địa chỉ nhận</p>
-                                <p>{order.delivery_address || 'Chưa cập nhật'}</p>
+                                <p className="font-semibold text-slate-700">Thông tin khách hàng</p>
+                                <p className="font-medium text-slate-800">{order.customer_name || order.recipient_name || 'Chưa cập nhật'}</p>
                                 <p className="mt-1 flex items-center gap-2">
                                     <Phone size={14} />
-                                    {order.recipient_phone || '—'}
+                                    {order.customer_phone || order.recipient_phone || order.phone_number || '—'}
+                                </p>
+                                <p className="mt-1 text-xs">
+                                    {order.customer_address || order.delivery_address || 'Chưa cập nhật'}
+                                    {order.customer_district && `, ${order.customer_district}`}
+                                    {order.customer_city && `, ${order.customer_city}`}
                                 </p>
                             </div>
                         </div>
@@ -138,7 +143,7 @@ export default function OrderCard({ order }) {
                             {items?.map((item, index) => (
                                 <div
                                     key={index}
-                                    className="flex items-center justify-between rounded-xl border border-slate-100 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm"
+                                    className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-md"
                                 >
                                     <div>
                                         <p className="font-medium text-slate-800">{item.name}</p>

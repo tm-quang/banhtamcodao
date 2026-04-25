@@ -20,7 +20,7 @@ const SectionHeader = ({ icon: Icon, title, color = '#06b6d4' }) => (
 export default function CustomerModal({ open, onClose, onSave, customerToEdit }) {
     const [data, setData] = useState({
         full_name: '', username: '', email: '', phone_number: '',
-        password: '', role: 'customer', status: 'active'
+        password: '', role: 'customer', status: 'active', gender: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,10 +28,30 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
 
     useEffect(() => {
         if (open) {
-            setData(customerToEdit
-                ? { ...customerToEdit, password: '' }
-                : { full_name: '', username: '', email: '', phone_number: '', password: '', role: 'customer', status: 'active' }
-            );
+            if (customerToEdit) {
+                // Đảm bảo tất cả giá trị là string, không phải null hoặc undefined
+                setData({
+                    full_name: customerToEdit.full_name || '',
+                    username: customerToEdit.username || '',
+                    email: customerToEdit.email || '',
+                    phone_number: customerToEdit.phone_number || '',
+                    password: '',
+                    role: customerToEdit.role || 'customer',
+                    status: customerToEdit.status || 'active',
+                    gender: customerToEdit.gender || ''
+                });
+            } else {
+                setData({ 
+                    full_name: '', 
+                    username: '', 
+                    email: '', 
+                    phone_number: '', 
+                    password: '', 
+                    role: 'customer', 
+                    status: 'active', 
+                    gender: '' 
+                });
+            }
         }
     }, [open, customerToEdit]);
 
@@ -41,7 +61,28 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
 
     const handleSave = async () => {
         setIsSubmitting(true);
-        await onSave(data);
+        // Chỉ gửi các trường cần thiết
+        const dataToSave = {
+            full_name: data.full_name,
+            email: data.email || null,
+            phone_number: data.phone_number || null,
+            gender: data.gender || null,
+            role: data.role || 'customer',
+            status: data.status || 'active'
+        };
+        
+        // Chỉ thêm username và password khi tạo mới
+        if (!isEditMode) {
+            if (data.username) dataToSave.username = data.username;
+            if (data.password) dataToSave.password = data.password;
+        }
+        
+        // Thêm id nếu là edit mode
+        if (isEditMode && customerToEdit?.id) {
+            dataToSave.id = customerToEdit.id;
+        }
+        
+        await onSave(dataToSave);
         setIsSubmitting(false);
     };
 
@@ -88,29 +129,30 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
             <DialogContent sx={{ p: 4 }}>
                 <div className="space-y-5">
                     {/* Personal Info */}
-                    <div>
+                    <div className="mt-2">
                         <SectionHeader icon={User} title="Thông tin cá nhân" color="#06b6d4" />
                         <div className="grid grid-cols-2 gap-3">
                             <TextField
                                 name="full_name"
                                 label="Họ và tên"
-                                value={data.full_name}
+                                value={data.full_name || ''}
                                 onChange={handleChange}
                                 fullWidth
                                 required
                                 size="small"
                                 sx={{
                                     gridColumn: 'span 2',
-                                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                                    mt: 1,
                                 }}
                             />
                             <TextField
                                 name="username"
                                 label="Tên đăng nhập"
-                                value={data.username}
+                                value={data.username || ''}
                                 onChange={handleChange}
                                 fullWidth
-                                required
+                                required={!isEditMode}
                                 disabled={isEditMode}
                                 size="small"
                                 sx={{
@@ -145,7 +187,7 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                                 name="email"
                                 label="Email"
                                 type="email"
-                                value={data.email || ''}
+                                value={data.email ?? ''}
                                 onChange={handleChange}
                                 fullWidth
                                 size="small"
@@ -153,13 +195,14 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                                     startAdornment: <Mail size={14} className="text-gray-400 mr-2" />
                                 }}
                                 sx={{
-                                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                                    mt: 1,
                                 }}
                             />
                             <TextField
                                 name="phone_number"
                                 label="Số điện thoại"
-                                value={data.phone_number || ''}
+                                value={data.phone_number ?? ''}
                                 onChange={handleChange}
                                 fullWidth
                                 size="small"
@@ -167,15 +210,32 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                                     startAdornment: <Phone size={14} className="text-gray-400 mr-2" />
                                 }}
                                 sx={{
-                                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                                    mt: 1,
                                 }}
                             />
+                            <TextField
+                                name="gender"
+                                label="Giới tính"
+                                value={data.gender ?? ''}
+                                onChange={handleChange}
+                                select
+                                fullWidth
+                                size="small"
+                                sx={{
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                }}
+                            >
+                                <MenuItem value="">Chọn giới tính</MenuItem>
+                                <MenuItem value="Nam">Nam</MenuItem>
+                                <MenuItem value="Nữ">Nữ</MenuItem>
+                            </TextField>
                         </div>
                     </div>
 
                     {/* Role & Status */}
                     <div>
-                        <SectionHeader icon={Shield} title="Phân quyền" color="#8b5cf6" />
+                        <SectionHeader icon={Shield} title="Phân quyền" color="#2563eb" />
                         <div className="grid grid-cols-2 gap-3">
                             <TextField
                                 name="role"
@@ -186,7 +246,8 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                                 fullWidth
                                 size="small"
                                 sx={{
-                                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                                    mt: 1,
                                 }}
                             >
                                 <MenuItem value="customer">
@@ -197,7 +258,7 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                                 </MenuItem>
                                 <MenuItem value="admin">
                                     <span className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                                         Admin
                                     </span>
                                 </MenuItem>
@@ -211,7 +272,8 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                                 fullWidth
                                 size="small"
                                 sx={{
-                                    '& .MuiOutlinedInput-root': { borderRadius: 2 }
+                                    '& .MuiOutlinedInput-root': { borderRadius: 2 },
+                                    mt: 1,
                                 }}
                             >
                                 <MenuItem value="active">
@@ -256,7 +318,7 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
                 <Button
                     onClick={handleSave}
                     variant="contained"
-                    disabled={isSubmitting || !data.full_name || !data.username}
+                    disabled={isSubmitting || !data.full_name || (!isEditMode && !data.username)}
                     startIcon={isSubmitting ? <CircularProgress size={16} /> : <CheckCircle size={16} />}
                     sx={{
                         borderRadius: 2,

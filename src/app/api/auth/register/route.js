@@ -8,7 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request) {
     try {
-        let { fullName, phoneNumber, username, password, email } = await request.json();
+        let { fullName, phoneNumber, password, email, gender } = await request.json();
 
         /**
          * Email hoặc phoneNumber là bắt buộc để tạo Supabase Auth user
@@ -115,8 +115,7 @@ export async function POST(request) {
             email_confirm: true,
             user_metadata: {
                 full_name: fullName,
-                phone_number: originalPhoneNumber, // Lưu số gốc để hiển thị
-                username: username || null
+                phone_number: originalPhoneNumber // Lưu số gốc để hiển thị
             }
         });
 
@@ -144,6 +143,7 @@ export async function POST(request) {
                     full_name: fullName,
                     phone_number: originalPhoneNumber, // Lưu số gốc dạng 0933960788 để dễ tìm kiếm
                     email: email || null,
+                    gender: gender || null, // Giới tính: Nam hoặc Nữ
                     role: 'customer' // Role mặc định cho user mới đăng ký
                 }
             ]);
@@ -156,23 +156,6 @@ export async function POST(request) {
             throw customerError;
         }
 
-        /**
-         * Lưu username vào user_metadata của Supabase Auth (nếu có)
-         * Để dễ dàng truy xuất sau này
-         */
-        if (username) {
-            try {
-                await supabaseAdmin.auth.admin.updateUserById(authUserId, {
-                    user_metadata: {
-                        ...authData.user.user_metadata,
-                        username: username
-                    }
-                });
-            } catch (metadataError) {
-                // Không throw error vì đây không phải bước bắt buộc
-                console.warn('Could not update user metadata:', metadataError.message);
-            }
-        }
 
         return NextResponse.json({
             success: true,

@@ -19,7 +19,7 @@ const slugify = (str) => {
 };
 
 // Section Header Component
-const SectionHeader = ({ icon: Icon, title, color = '#8b5cf6' }) => (
+const SectionHeader = ({ icon: Icon, title, color = '#2563eb' }) => (
     <div className="flex items-center gap-2 mb-3">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: alpha(color, 0.1) }}>
             <Icon size={16} style={{ color }} />
@@ -74,7 +74,7 @@ export default function CategoryModal({ open, onClose, onSave, categoryToEdit, c
             <DialogTitle sx={{
                 p: 0,
                 background: isEditMode
-                    ? 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)'
+                    ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
                     : 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
             }}>
                 <div className="flex items-center justify-between px-5 py-4">
@@ -100,8 +100,8 @@ export default function CategoryModal({ open, onClose, onSave, categoryToEdit, c
             <DialogContent sx={{ p: 4 }}>
                 <div className="space-y-5">
                     {/* Basic Info */}
-                    <div>
-                        <SectionHeader icon={Info} title="Thông tin cơ bản" color="#8b5cf6" />
+                    <div className="mt-4">
+                        <SectionHeader icon={Info} title="Thông tin cơ bản" color="#2563eb"/>
                         <div className="space-y-3">
                             <TextField
                                 name="name"
@@ -115,6 +115,7 @@ export default function CategoryModal({ open, onClose, onSave, categoryToEdit, c
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
                                         borderRadius: 2,
+                                        mb: 1,
                                     }
                                 }}
                             />
@@ -175,9 +176,9 @@ export default function CategoryModal({ open, onClose, onSave, categoryToEdit, c
                     </div>
 
                     {/* Info Box */}
-                    <div className="p-3 rounded-lg bg-purple-50 border border-purple-100">
-                        <p className="text-xs text-purple-700 font-medium mb-1">💡 Gợi ý</p>
-                        <ul className="text-xs text-purple-600 space-y-0.5">
+                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
+                        <p className="text-xs text-blue-700 font-medium mb-1">💡 Gợi ý</p>
+                        <ul className="text-xs text-blue-600 space-y-0.5">
                             <li>• Danh mục gốc: Món chính, Đồ uống, Tráng miệng...</li>
                             <li>• Danh mục con: Bánh tầm, Nước ép, Chè...</li>
                         </ul>
@@ -216,9 +217,9 @@ export default function CategoryModal({ open, onClose, onSave, categoryToEdit, c
                         px: 4,
                         textTransform: 'none',
                         fontWeight: 600,
-                        bgcolor: isEditMode ? '#8b5cf6' : '#16a34a',
+                        bgcolor: isEditMode ? '#2563eb' : '#16a34a',
                         '&:hover': {
-                            bgcolor: isEditMode ? '#7c3aed' : '#15803d',
+                            bgcolor: isEditMode ? '#1d4ed8' : '#15803d',
                         }
                     }}
                 >

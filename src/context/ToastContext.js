@@ -99,7 +99,7 @@ const Toast = ({ toast, onRemove, index, total }) => {
                 }}
             >
                 <div className="bg-white shadow-xl rounded-2xl w-80 overflow-hidden border border-gray-100">
-                    <div className={`flex items-center gap-2 p-3 ${style.headerBg} border-b ${style.border}`}>
+                    <div className={`flex items-center gap-2 p-3 ${style.headerBg} border-b ${style.border} rounded-t-2xl`}>
                         <Icon className={style.iconColor} size={20} />
                         <p className="flex-grow text-sm font-semibold text-gray-800">{message}</p>
                         <button onClick={handleRemove} className="p-1 hover:bg-white/50 rounded-full transition-colors">

@@ -7,17 +7,10 @@ import {
     alpha, InputAdornment, Tooltip, Stack
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { CheckCircle, XCircle, Trash2, Search, Star, X, MessageSquare } from 'lucide-react';
+import { CheckCircle, XCircle, Trash2, Search, Star, X, MessageSquare, Clock, ThumbsUp } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/context/ToastContext';
 
-// Stats Badge Component
-const StatBadge = ({ label, value, color }) => (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${color}`}>
-        <span className="text-sm font-bold">{value}</span>
-        <span className="text-xs opacity-80">{label}</span>
-    </div>
-);
 
 // Confirmation Dialog
 const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => (
@@ -38,11 +31,11 @@ const ConfirmationDialog = ({ open, onClose, onConfirm, title, message }) => (
 
 const getStatusChip = (status) => {
     const statusMap = {
-        pending: { label: 'Chờ duyệt', color: '#f59e0b', bg: alpha('#f59e0b', 0.1) },
-        approved: { label: 'Đã duyệt', color: '#10b981', bg: alpha('#10b981', 0.1) },
-        rejected: { label: 'Từ chối', color: '#ef4444', bg: alpha('#ef4444', 0.1) },
+        pending: { label: 'Chờ duyệt', color: '#FFFFFF', bg: alpha('#f59e0b', 1) },
+        approved: { label: 'Đã duyệt', color: '#FFFFFF', bg: alpha('#16a34a', 1) },
+        rejected: { label: 'Từ chối', color: '#FFFFFF', bg: alpha('#ef4444', 1) },
     };
-    const { label, color, bg } = statusMap[status] || { label: status, color: '#6b7280', bg: alpha('#6b7280', 0.1) };
+    const { label, color, bg } = statusMap[status] || { label: status, color: '#FFFFFF', bg: alpha('#4b5563', 1) };
     return (
         <Chip
             label={label}
@@ -50,8 +43,8 @@ const getStatusChip = (status) => {
             sx={{
                 bgcolor: bg,
                 color: color,
-                fontWeight: 600,
-                fontSize: '0.7rem',
+                fontWeight: 500,
+                fontSize: '0.9rem',
             }}
         />
     );
@@ -193,44 +186,63 @@ export default function ReviewTable({ initialReviews }) {
         },
         {
             field: 'actions',
-            headerName: '',
-            width: 110,
+            headerName: 'Thao tác',
+            width: 180,
+            minWidth: 160,
+            headerAlign: 'center',
             align: 'center',
             sortable: false,
             renderCell: (params) => (
-                <Stack direction="row" spacing={0.5}>
-                    {params.row.status !== 'approved' && (
-                        <Tooltip title="Duyệt" arrow>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Stack direction="row" spacing={0.5}>
+                        {params.row.status !== 'approved' && (
+                            <Tooltip title="Duyệt" arrow>
+                                <IconButton
+                                    size="medium"
+                                    onClick={() => handleUpdateStatus(params.row.id, 'approved')}
+                                    sx={{ 
+                                        color: '#10b981', 
+                                        '&:hover': { bgcolor: alpha('#10b981', 0.1) },
+                                        width: 40,
+                                        height: 40,
+                                    }}
+                                >
+                                    <CheckCircle size={20} />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                        {params.row.status !== 'rejected' && (
+                            <Tooltip title="Từ chối" arrow>
+                                <IconButton
+                                    size="medium"
+                                    onClick={() => handleUpdateStatus(params.row.id, 'rejected')}
+                                    sx={{ 
+                                        color: '#f59e0b', 
+                                        '&:hover': { bgcolor: alpha('#f59e0b', 0.1) },
+                                        width: 40,
+                                        height: 40,
+                                    }}
+                                >
+                                    <XCircle size={20} />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                        <Tooltip title="Xóa" arrow>
                             <IconButton
-                                size="small"
-                                onClick={() => handleUpdateStatus(params.row.id, 'approved')}
-                                sx={{ color: '#10b981', '&:hover': { bgcolor: alpha('#10b981', 0.1) } }}
+                                size="medium"
+                                onClick={() => handleDelete(params.row.id)}
+                                sx={{ 
+                                    color: '#EF4444', 
+                                    '&:hover': { bgcolor: alpha('#EF4444', 0.1) },
+                                    width: 40,
+                                    height: 40,
+                                }}
                             >
-                                <CheckCircle size={16} />
+                                <Trash2 size={20} />
                             </IconButton>
                         </Tooltip>
-                    )}
-                    {params.row.status !== 'rejected' && (
-                        <Tooltip title="Từ chối" arrow>
-                            <IconButton
-                                size="small"
-                                onClick={() => handleUpdateStatus(params.row.id, 'rejected')}
-                                sx={{ color: '#f59e0b', '&:hover': { bgcolor: alpha('#f59e0b', 0.1) } }}
-                            >
-                                <XCircle size={16} />
-                            </IconButton>
-                        </Tooltip>
-                    )}
-                    <Tooltip title="Xóa" arrow>
-                        <IconButton
-                            size="small"
-                            onClick={() => handleDelete(params.row.id)}
-                            sx={{ color: '#ef4444', '&:hover': { bgcolor: alpha('#ef4444', 0.1) } }}
-                        >
-                            <Trash2 size={16} />
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
+                    </Stack>
+                </Box>
             )
         },
     ];
@@ -238,16 +250,119 @@ export default function ReviewTable({ initialReviews }) {
     const hasFilters = searchTerm || statusFilter;
 
     return (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box 
+            sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            suppressHydrationWarning={true}
+        >
             {/* Compact Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3">
-                    <h1 className="text-xl font-bold text-gray-900">Đánh giá</h1>
+                    <h1 className="text-xl font-bold text-gray-900">Quản lý đánh giá</h1>
                     <span className="text-sm text-gray-500">({stats.total} đánh giá)</span>
                 </div>
             </div>
 
-            {/* Filter & Stats Row */}
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {/* Tổng đánh giá */}
+                <Box sx={{ 
+                    p: 2,
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Star 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Star size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.total}</p>
+                        <p className="text-sm opacity-90">Tổng đánh giá</p>
+                    </div>
+                </Box>
+                {/* Chờ duyệt */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <Clock 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <Clock size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.pending}</p>
+                        <p className="text-sm opacity-90">Chờ duyệt</p>
+                    </div>
+                </Box>
+                {/* Đã duyệt */}
+                <Box sx={{ 
+                    p: 2, 
+                    borderRadius: 4, 
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                    color: 'white',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease-in-out',
+                    '&:hover': {
+                        transform: 'scale(1.05) translateY(-4px)',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10,
+                    }
+                }}>
+                    <ThumbsUp 
+                        size={80} 
+                        className="opacity-10" 
+                        style={{ 
+                            position: 'absolute', 
+                            bottom: 0, 
+                            right: 0 
+                        }} 
+                    />
+                    <div className="relative z-10">
+                        <ThumbsUp size={32} className="opacity-90 mb-3" />
+                        <p className="text-3xl font-bold mb-1">{stats.approved}</p>
+                        <p className="text-sm opacity-90">Đã duyệt</p>
+                    </div>
+                </Box>
+            </div>
+
+            {/* Filter & Actions Row */}
             <Paper
                 elevation={0}
                 sx={{
@@ -260,14 +375,6 @@ export default function ReviewTable({ initialReviews }) {
                 }}
             >
                 <div className="flex flex-wrap items-center gap-3">
-                    {/* Stats */}
-                    <div className="flex items-center gap-2 mr-2">
-                        <StatBadge label="Chờ duyệt" value={stats.pending} color="bg-amber-100 text-amber-700" />
-                        <StatBadge label="Đã duyệt" value={stats.approved} color="bg-green-100 text-green-700" />
-                    </div>
-
-                    <div className="h-6 w-px bg-gray-300 hidden md:block" />
-
                     {/* Search */}
                     <TextField
                         variant="outlined"
@@ -283,7 +390,8 @@ export default function ReviewTable({ initialReviews }) {
                             ),
                         }}
                         sx={{
-                            width: 180,
+                            flex: 1,
+                            minWidth: 180,
                             '& .MuiOutlinedInput-root': {
                                 bgcolor: 'white',
                                 borderRadius: 1.5,
@@ -332,10 +440,12 @@ export default function ReviewTable({ initialReviews }) {
                 elevation={0}
                 sx={{
                     flex: 1,
-                    minHeight: 0,
+                    minHeight: 600,
                     borderRadius: 2,
                     border: '1px solid',
                     borderColor: 'divider',
+                    bgcolor: 'white',
+                    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
                     overflow: 'hidden',
                     '& .MuiDataGrid-root': { border: 'none' },
                     '& .MuiDataGrid-columnHeaders': {
@@ -362,9 +472,9 @@ export default function ReviewTable({ initialReviews }) {
                 <DataGrid
                     rows={filteredReviews}
                     columns={columns}
-                    rowHeight={60}
+                    rowHeight={68}
                     disableRowSelectionOnClick
-                    pageSizeOptions={[10, 25, 50]}
+                    pageSizeOptions={[10, 25, 50, 100]}
                     initialState={{
                         pagination: { paginationModel: { pageSize: 25 } },
                         sorting: { sortModel: [{ field: 'created_at', sort: 'desc' }] },
@@ -374,6 +484,18 @@ export default function ReviewTable({ initialReviews }) {
                         MuiTablePagination: {
                             labelRowsPerPage: 'Hiển thị:',
                             labelDisplayedRows: ({ from, to, count }) => `${from}-${to} / ${count}`,
+                        }
+                    }}
+                    sx={{
+                        '& .MuiDataGrid-virtualScroller': {
+                            '&::-webkit-scrollbar': {
+                                width: 6,
+                                height: 6,
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                                bgcolor: alpha('#000', 0.15),
+                                borderRadius: 3,
+                            }
                         }
                     }}
                 />
