@@ -74,25 +74,51 @@ export async function GET(request) {
 
     query = query.order(sortField, { ascending: isAscending });
 
+    // 1. Lấy danh sách sản phẩm
     const { data: rows, error } = await query;
 
     if (error) {
       throw error;
     }
 
-    const products = rows.map(item => ({
-      id: item.id,
-      name: item.name || 'Sản phẩm',
-      slug: item.slug || 'san-pham',
-      price: parseFloat(item.price) || 0,
-      discount_price: item.discount_price ? parseFloat(item.discount_price) : null,
-      category_id: item.category_id,
-      category_name: item.categories?.name || 'Danh mục', // Lấy từ join
-      category_slug: item.categories?.slug || '', // Lấy slug từ join
-      image_url: item.image_url || 'https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png',
-      is_special: !!item.is_special,
-      description: item.description || 'Mô tả sản phẩm',
-    }));
+    // 2. Lấy danh sách khuyến mãi combo đang hoạt động để hiển thị "Mua 2 tặng 1..."
+    const { data: activePromos } = await supabase
+      .from('combo_promotions')
+      .select('name, conditions, status')
+      .eq('status', 'active');
+
+    const products = rows.map(item => {
+      // Tìm khuyến mãi phù hợp cho sản phẩm này
+      let promotion_text = null;
+      if (activePromos && activePromos.length > 0) {
+        const matchingPromo = activePromos.find(promo => {
+          const rules = promo.conditions?.rules || [];
+          return rules.some(rule => 
+            rule.apply_to_all || 
+            (rule.product_id && rule.product_id === item.id) ||
+            (rule.category_slug && item.categories?.slug === rule.category_slug)
+          );
+        });
+        if (matchingPromo) {
+          promotion_text = matchingPromo.name;
+        }
+      }
+
+      return {
+        id: item.id,
+        name: item.name || 'Sản phẩm',
+        slug: item.slug || 'san-pham',
+        price: parseFloat(item.price) || 0,
+        discount_price: item.discount_price ? parseFloat(item.discount_price) : null,
+        category_id: item.category_id,
+        category_name: item.categories?.name || 'Danh mục',
+        category_slug: item.categories?.slug || '',
+        image_url: item.image_url || 'https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png',
+        is_special: !!item.is_special,
+        description: item.description || 'Mô tả sản phẩm',
+        promotion_text: promotion_text // Trường mới thêm vào
+      };
+    });
 
     return NextResponse.json({ success: true, products }, {
       headers: {

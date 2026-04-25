@@ -39,8 +39,8 @@ export default function CategoryHighlights() {
     ];
 
     return (
-        <section className="py-4 md:py-8">
-            <div className="max-w-[1200px] mx-auto px-4">
+        <section className="section-spacing">
+            <div className="page-container">
                 <div className="text-center mb-6 md:mb-10">
                     <h2 className="text-2xl md:text-4xl font-lobster text-gray-900 mt-1 md:mt-2">Danh Mục Nổi Bật</h2>
                 </div>

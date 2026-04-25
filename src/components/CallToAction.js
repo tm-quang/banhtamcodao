@@ -9,8 +9,8 @@ import { UtensilsCrossed } from 'lucide-react';
  */
 export default function CallToAction() {
   return (
-    <section className="relative overflow-hidden py-10 md:py-16">
-      <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden section-spacing">
+      <div className="relative page-container">
         <motion.div
           className="max-w-3xl mx-auto text-center"
           initial={{ opacity: 0, y: 20 }}

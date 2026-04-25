@@ -646,7 +646,7 @@ export default function OrderTrackingPage() {
                     <div className="absolute top-20 right-1/4 w-48 h-48 bg-orange-200/10 rounded-full blur-3xl"></div>
                 </div>
 
-                <div className="max-w-[1200px] mx-auto px-4 relative z-10">
+                <div className="page-container relative z-10">
                     <div className="max-w-3xl mx-auto text-center">
                         {/* Logo */}
                         <div className="relative inline-block mb-2 sm:mb-2">
@@ -674,7 +674,7 @@ export default function OrderTrackingPage() {
             </div>
 
             {/* Search Section */}
-            <div className="max-w-[1200px] mx-auto px-4 -mt-6 relative z-20">
+            <div className="page-container -mt-6 relative z-20">
                 <div className="max-w-2xl mx-auto">
                     <form onSubmit={handleSearch}>
                         <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-md">
@@ -726,7 +726,7 @@ export default function OrderTrackingPage() {
             </div>
 
             {/* Results Section */}
-            <div className="max-w-[1200px] mx-auto px-4 py-8 sm:py-12">
+            <div className="page-container py-8 sm:py-12">
                 <div className="max-w-3xl mx-auto">
                     {loading && (
                         <div className="flex flex-col items-center justify-center py-16 space-y-4">

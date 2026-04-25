@@ -26,7 +26,7 @@ function MenuLoading() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-4 mt-6">
+      <div className="page-container mt-6">
         {/* Title section skeleton */}
         <div className="text-center mb-8 md:mb-12">
           {/* Badge skeleton - matches actual badge style */}
@@ -79,7 +79,7 @@ function MenuLoading() {
         </div>
 
         {/* Products grid placeholder */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="product-grid">
           {Array.from({ length: 8 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}

@@ -10,7 +10,7 @@ export default function RelatedProducts({ products }) {
     if (!products || products.length === 0) return null;
 
     return (
-        <div className="py-4 md:py-6">
+        <div className="section-spacing">
             <h2 className="text-3xl md:text-4xl font-lobster text-secondary text-center mb-8 md:mb-8">
                 Món ngon gợi ý
             </h2>

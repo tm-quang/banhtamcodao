@@ -43,7 +43,7 @@ async function getProducts(filters = {}) {
 /** Loading component */
 function MenuLoading() {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="product-grid">
             {Array.from({ length: 8 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
             ))}
@@ -144,41 +144,18 @@ export default function MenuContent() {
         <div className="pb-8">
             {/* Hero slider for Menu page (shorter height) */}
             <HeroSection
-                heightClass="h-[55vh] min-h-[360px]"
-                slides={[
-                    {
-                        imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
-                        title: "Thực đơn đặc sắc",
-                        subtitle: "Chọn món yêu thích của bạn ngay hôm nay",
-                        buttonText: "Xem món",
-                        buttonLink: "/menu"
-                    },
-                    {
-                        imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=2069&auto=format&fit=crop",
-                        title: "Nguyên liệu tươi mới",
-                        subtitle: "Đảm bảo chất lượng trong từng món",
-                        buttonText: "Khám phá",
-                        buttonLink: "/menu"
-                    },
-                    {
-                        imageUrl: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=2070&auto=format&fit=crop",
-                        title: "Ưu đãi hấp dẫn",
-                        subtitle: "Nhiều lựa chọn với mức giá tốt",
-                        buttonText: "Xem ưu đãi",
-                        buttonLink: "/menu"
-                    }
-                ]}
+                heightClass="min-h-[500px] lg:min-h-[600px]"
             />
 
             {/* Explore indicator under hero */}
-            <div className="-mt-10 mb-10 flex flex-col items-center justify-center">
-                <span className="text-white/90 text-sm mb-2">Khám phá thêm</span>
-                <div className="w-6 h-10 border-2 border-white/70 rounded-full flex items-start justify-center">
-                    <div className="w-1 h-3 bg-white/80 rounded-full mt-2 animate-pulse"></div>
+            <div className="py-4 flex flex-col items-center justify-center">
+                <span className="text-gray-400 text-[13px] mb-1.5">Khám phá thực đơn</span>
+                <div className="w-5 h-8 border-2 border-gray-300 rounded-full flex items-start justify-center">
+                    <div className="w-0.5 h-2 bg-gray-400 rounded-full mt-1 animate-pulse"></div>
                 </div>
             </div>
 
-            <div className="max-w-[1200px] mx-auto px-4 mt-6">
+            <div className="page-container mt-6">
                 <div className="text-center mb-2 md:mb-4">
                     <span className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-bold tracking-widest uppercase text-[#FF6F30] bg-[#FF6F30]/10 rounded-full">
                         <Star className="w-3 h-3 fill-current" />
@@ -208,7 +185,7 @@ export default function MenuContent() {
                 {loading ? (
                     <MenuLoading />
                 ) : products.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    <div className="product-grid">
                         {products.map(product => (
                             <ProductCard key={product.id} product={product} />
                         ))}

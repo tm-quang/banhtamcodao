@@ -199,7 +199,7 @@ export default async function HomePage() {
       </AnimateOnScroll>
 
       {/* Section Món Nổi Bật (Slider) - Commented out for now */}
-      {/* <section className="py-10 md:py-16" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>
+      {/* <section className="section-spacing" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 md:mb-12">
             <span className="text-primary font-bold tracking-wider uppercase text-xs md:text-sm">Được yêu thích nhất</span>
@@ -214,10 +214,10 @@ export default async function HomePage() {
       </section> */}
 
       {/* Section Thực Đơn Mới */}
-      <section className="relative py-6 md:py-16" aria-label="Thực đơn">
-        <div className="max-w-[1200px] mx-auto px-4">
+      <section className="relative section-spacing" aria-label="Thực đơn">
+        <div className="page-container">
           <Suspense fallback={
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="product-grid">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="bg-white rounded-xl shadow-md p-4">
                   <div className="relative overflow-hidden rounded-lg bg-gray-200 aspect-[4/3] mb-3">

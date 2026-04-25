@@ -63,7 +63,7 @@ export default function CartClient() {
     // Empty cart state
     if (cartItems.length === 0) {
         return (
-            <div className="max-w-lg mx-auto text-center py-16 md:py-24 px-4">
+            <div className="max-w-lg mx-auto text-center section-spacing px-4">
                 <div className="relative inline-block mb-8">
                     <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-orange-100 flex items-center justify-center mx-auto">
                         <Handbag className="w-16 h-16 text-primary/60" />
@@ -111,17 +111,17 @@ export default function CartClient() {
                 {!isFreeShipping ? (
                     <div className="px-5 md:px-6 py-4 border-y border-amber-100">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                <Truck className="w-4 h-4 text-amber-600" />
+                            <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                                <Truck className="w-4 h-4 text-white" />
                             </div>
                             <p className="text-sm font-medium text-gray-700">
                                 Mua thêm <span className="text-primary font-bold">{formatCurrency(remainingAmount)}</span> để được{' '}
-                                <span className="text-emerald-600 font-bold">MIỄN PHÍ SHIP</span>
+                                <span className="text-emerald-600 font-bold">MIỄN PHÍ GIAO HÀNG</span>
                             </p>
                         </div>
-                        <div className="relative w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                             <div
-                                className="absolute top-0 left-0 h-full bg-gradient-to-r from-amber-400 to-emerald-500 rounded-full transition-all duration-700 ease-out"
+                                className="absolute top-0 left-0 h-full bg-emerald-600 rounded-full transition-all duration-700 ease-out"
                                 style={{ width: `${progressPercentage}%` }}
                             />
                         </div>
@@ -277,7 +277,7 @@ export default function CartClient() {
                         <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                             <span className="text-gray-600">Phí giao hàng</span>
                             {isFreeShipping ? (
-                                <span className="text-emerald-600 font-semibold">Miễn phí</span>
+                                <span className="text-emerald-600 font-semibold">Miễn phí giao hàng</span>
                             ) : (
                                 <span className="text-sm text-gray-500">Sẽ được tính ở bước tiếp</span>
                             )}
@@ -303,12 +303,12 @@ export default function CartClient() {
                             <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
                                 <span className="flex items-center gap-1.5">
                                     <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                                    Thanh toán an toàn
+                                    Thanh toán linh hoạt
                                 </span>
                                 <span className="text-gray-300">|</span>
                                 <span className="flex items-center gap-1.5">
                                     <Zap className="w-3.5 h-3.5 text-amber-500" />
-                                    Giao nhanh 30 phút
+                                    Giao nhanh tận nơi
                                 </span>
                             </div>
                         </div>
@@ -345,7 +345,7 @@ export default function CartClient() {
                                 <button
                                     type="button"
                                     onClick={handleConfirmDelete}
-                                    className="flex-1 bg-rose-500 text-white font-semibold py-3 px-4 rounded-xl hover:bg-rose-600 transition-colors"
+                                    className="flex-1 bg-red-500 text-white font-semibold py-3 px-4 rounded-xl hover:bg-rose-600 transition-colors"
                                 >
                                     Xóa
                                 </button>

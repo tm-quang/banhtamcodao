@@ -54,7 +54,7 @@ const Footer = () => {
         />
       </div>
 
-      <div className="relative mx-auto max-w-[1200px] px-4 pt-12 pb-8 sm:px-6 lg:px-8">
+      <div className="relative page-container pt-8 pb-6">
         {/* Main Grid Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
 

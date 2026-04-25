@@ -70,13 +70,13 @@ export default function MenuSection({ products, categoriesList = [] }) {
 
             {/* Product Grid */}
             {displayedProducts.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
+                <div className="product-grid items-stretch">
                     {displayedProducts.slice(0, MAX_PRODUCTS_PER_CATEGORY).map((product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center py-16 md:py-20 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-gray-300">
+                <div className="flex flex-col items-center justify-center section-spacing text-center bg-slate-50 rounded-2xl border-2 border-dashed border-gray-300">
                     <div className="relative mb-6">
                         <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-primary/30 to-primary/5 rounded-full flex items-center justify-center mb-4 shadow-inner">
                             <PackageSearch className="w-10 h-10 md:w-12 md:h-12 text-primary/60" strokeWidth={1.5} />

@@ -136,8 +136,8 @@ export default function PromotionBanner() {
     const isDarkBadge = !['#FFD93D', '#4ECDC4', '#1ABC9C'].includes(badgeColor);
 
     return (
-        <section className="py-4 md:py-2">
-            <div className="max-w-[1200px] mx-auto px-4">
+        <section className="section-spacing">
+            <div className="page-container">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentSlide}

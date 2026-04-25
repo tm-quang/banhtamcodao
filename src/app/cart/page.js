@@ -15,7 +15,7 @@ export default function CartPage() {
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
       {/* Hero Section */}
       <div className="pt-20 pb-6 md:pb-8">
-        <div className="max-w-[1200px] mx-auto px-4">
+        <div className="page-container">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm mb-6">
             <Link
@@ -39,7 +39,7 @@ export default function CartPage() {
       </div>
 
       {/* Cart Content */}
-      <div className="max-w-[1200px] mx-auto px-4 pb-10 md:pb-16">
+      <div className="page-container pb-10 md:pb-16">
         <CartClient />
       </div>
     </div>

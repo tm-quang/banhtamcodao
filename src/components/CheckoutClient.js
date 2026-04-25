@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Truck, Store, Banknote, CreditCard, User, Phone, MapPin, Calendar, Clock, FileText, ShoppingCart, ArrowRight, CheckCircle2, Plus, X, Tag, Info, HelpCircle, Shield, Zap, Gift } from 'lucide-react';
+import { Truck, Store, Banknote, CreditCard, User, Phone, MapPin, Calendar, Clock, FileText, ShoppingCart, ArrowRight, CheckCircle2, Plus, X, Tag, Info, HelpCircle, Shield, Zap, Gift, LocateFixed } from 'lucide-react';
 import { SkeletonCheckout } from '@/components/Skeleton';
 
 const formatCurrency = (amount) => {
@@ -65,6 +65,8 @@ export default function CheckoutClient() {
     const [showDateTimeModal, setShowDateTimeModal] = useState(false);
     const [showShippingModal, setShowShippingModal] = useState(false);
     const [orderResult, setOrderResult] = useState(null); // { success: true/false, orderCode, total, paymentMethod }
+    const [isLocating, setIsLocating] = useState(false);
+    const [mapLink, setMapLink] = useState('');
     const hasAutoFilledRef = useRef(false);
 
     useEffect(() => {
@@ -171,6 +173,49 @@ export default function CheckoutClient() {
         setError('');
     };
 
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            alert('Trình duyệt của bạn không hỗ trợ định vị');
+            return;
+        }
+
+        setIsLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                const gmapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+                try {
+                    // Reverse geocoding using Nominatim (OSM)
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=vi`);
+                    const data = await res.json();
+
+                    if (data && data.display_name) {
+                        setAddress(data.display_name);
+                        setMapLink(gmapsLink);
+                    } else {
+                        setAddress(`${latitude}, ${longitude}`);
+                        setMapLink(gmapsLink);
+                    }
+                } catch (error) {
+                    console.error('Lỗi lấy địa chỉ:', error);
+                    setAddress(`${latitude}, ${longitude}`);
+                    setMapLink(gmapsLink);
+                } finally {
+                    setIsLocating(false);
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                let msg = 'Không thể lấy vị trí';
+                if (error.code === 1) msg = 'Vui lòng cấp quyền truy cập vị trí cho trình duyệt';
+                alert(msg);
+                setIsLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+    };
+
     const handleSubmitOrder = async (e) => {
         e.preventDefault();
         setError('');
@@ -223,7 +268,9 @@ export default function CheckoutClient() {
             const formData = new FormData(e.target);
             const phone_number = phone.trim();
             const recipient_name = name.trim();
-            const delivery_address = deliveryMethod === 'delivery' ? address.trim() : '';
+            // Đính kèm link bản đồ nếu có
+            const finalAddress = mapLink ? `${address.trim()} (📍 Bản đồ: ${mapLink})` : address.trim();
+            const delivery_address = deliveryMethod === 'delivery' ? finalAddress : '';
             const customer_note = formData.get('notes') || '';
 
             const items_list = cartItems.map(item => ({
@@ -318,7 +365,7 @@ export default function CheckoutClient() {
                                     <div className="mt-3 text-sm text-gray-600">
                                         <p>Ngân hàng: <span className="font-semibold">VietinBank</span></p>
                                         <p>STK: <span className="font-semibold">107870460026</span></p>
-                                        <p>Chủ TK: <span className="font-semibold">LÊ THỊ NGỌC ĐÀO</span></p>
+                                        <p>Chủ TK: <span className="font-semibold">TRAN MINH QUANG</span></p>
                                         <p>Số tiền: <span className="font-bold text-primary">{formatCurrency(orderResult.total)}</span></p>
                                         <p>Nội dung: <span className="font-semibold">{orderResult.orderCode}</span></p>
                                     </div>
@@ -403,7 +450,7 @@ export default function CheckoutClient() {
                 {/* Left Column: Form */}
                 <div className="lg:col-span-3 space-y-4">
                     {/* Customer Info Section */}
-                    <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <section className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
                         <div className="px-5 py-5 border-b border-gray-100">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
@@ -421,7 +468,7 @@ export default function CheckoutClient() {
                     </section>
 
                     {/* Delivery Info Section */}
-                    <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <section className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
                         <div className="px-5 py-5 border-b border-gray-100">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
@@ -441,7 +488,33 @@ export default function CheckoutClient() {
                             </div>
 
                             {deliveryMethod === 'delivery' && (
-                                <InputField label="Địa chỉ nhận hàng" icon={MapPin} required id="address" type="text" name="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Nhập địa chỉ chi tiết" />
+                                <div className="space-y-3">
+                                    <InputField
+                                        label="Địa chỉ nhận hàng"
+                                        icon={MapPin}
+                                        required
+                                        id="address"
+                                        type="text"
+                                        name="address"
+                                        value={address}
+                                        onChange={(e) => {
+                                            setAddress(e.target.value);
+                                            setMapLink(''); // Xóa link map nếu user tự sửa địa chỉ
+                                        }}
+                                        placeholder="Nhập địa chỉ chi tiết"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={handleGetCurrentLocation}
+                                        disabled={isLocating}
+                                        className="flex items-center gap-2 text-slate-600 font-semibold text-sm hover:text-slate-600 transition-colors group"
+                                    >
+                                        <div className={`p-1.5 rounded-full bg-slate-200 transition-colors ${isLocating ? 'animate-pulse' : ''}`}>
+                                            <MapPin size={16} />
+                                        </div>
+                                        {isLocating ? 'Đang xác định vị trí của bạn...' : 'Lấy vị trí giao hàng'}
+                                    </button>
+                                </div>
                             )}
 
                             <div className="grid grid-cols-2 gap-4">
@@ -470,7 +543,7 @@ export default function CheckoutClient() {
                     </section>
 
                     {/* Notes Section */}
-                    <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <section className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
                         <div className="px-5 py-5 border-b border-gray-100">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
@@ -490,7 +563,7 @@ export default function CheckoutClient() {
                     </section>
 
                     {/* Payment Method Section */}
-                    <section className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                    <section className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-300">
                         <div className="px-5 py-5 border-b border-gray-100">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
@@ -502,10 +575,10 @@ export default function CheckoutClient() {
                         <div className="p-5">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <TabButton isActive={paymentMethod === 'cod'} onClick={() => setPaymentMethod('cod')} icon={Banknote}>
-                                    Khi nhận hàng
+                                    Thanh toán khi nhận hàng
                                 </TabButton>
                                 <TabButton isActive={paymentMethod === 'transfer'} onClick={() => setPaymentMethod('transfer')} icon={CreditCard}>
-                                    Chuyển khoản
+                                    Chuyển khoản ngân hàng
                                 </TabButton>
                             </div>
                         </div>
@@ -514,7 +587,7 @@ export default function CheckoutClient() {
 
                 {/* Right Column: Order Summary */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white rounded-2xl shadow-lg sticky top-24 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-md sticky top-24 overflow-hidden border border-gray-300">
                         <div className="px-5 py-5 border-b border-gray-100">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-4">
@@ -532,29 +605,43 @@ export default function CheckoutClient() {
 
                         <div className="p-5">
                             {/* Cart Items */}
-                            <div className="space-y-3 mb-5 max-h-72 overflow-y-auto pr-1">
-                                {cartItems.map(item => (
-                                    <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                                        <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                                            <Image src={item.image_url} alt={item.name} fill sizes="56px" className="object-cover" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-0.5">
-                                                <p className="font-medium text-sm text-gray-900 line-clamp-1">{item.name}</p>
-                                                {item.is_free && (
-                                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 px-1.5 py-0.5 rounded-full">
-                                                        <Gift size={10} />
-                                                        Tặng
-                                                    </span>
-                                                )}
+                            <div className="space-y-1 mb-2 max-h-80 overflow-y-auto pr-1 custom-scrollbar">
+                                {cartItems.map(item => {
+                                    const unitPrice = item.is_free ? 0 : (item.discount_price ?? item.price);
+                                    const itemTotal = unitPrice * item.quantity;
+                                    return (
+                                        <div key={item.id} className="flex items-center justify-between py-1 border-b border-gray-200 last:border-0">
+                                            <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
+                                                {/* Ảnh món nhỏ gọn */}
+                                                <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                                                    <Image src={item.image_url} alt={item.name} fill sizes="44px" className="object-cover" />
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-bold text-gray-800 text-[15px] line-clamp-1">{item.name}</p>
+                                                        {item.is_free && (
+                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded-md">
+                                                                Tặng
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center text-[13px] text-gray-400 gap-1 leading-none">
+                                                        <span className="font-medium">{formatCurrency(unitPrice)}</span>
+                                                        <span className="text-gray-300">x</span>
+                                                        <span className="font-bold text-slate-500">{item.quantity}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <p className="text-xs text-gray-500">x{item.quantity}</p>
+
+                                            <div className="text-right flex-shrink-0">
+                                                <p className={`font-bold text-[15px] ${item.is_free ? 'text-emerald-600' : 'text-gray-800'}`}>
+                                                    {formatCurrency(itemTotal)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <p className={`font-bold text-sm flex-shrink-0 ${item.is_free ? 'text-green-600' : 'text-primary'}`}>
-                                            {item.is_free ? '0đ' : formatCurrency((item.discount_price ?? item.price) * item.quantity)}
-                                        </p>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             {/* Summary */}
@@ -587,12 +674,12 @@ export default function CheckoutClient() {
                                     {deliveryMethod === 'delivery' && isFreeShipping ? (
                                         <div className="flex items-center gap-2">
                                             <span className="text-gray-400 line-through text-sm">{formatCurrency(baseShippingFee)}</span>
-                                            <span className="font-semibold text-emerald-600">Miễn phí</span>
+                                            <span className="font-semibold text-emerald-600">Miễn phí giao hàng</span>
                                         </div>
                                     ) : deliveryMethod === 'delivery' ? (
                                         <span className="font-semibold text-gray-900">{formatCurrency(shippingFee)}</span>
                                     ) : (
-                                        <span className="font-semibold text-emerald-600">Miễn phí</span>
+                                        <span className="font-semibold text-emerald-600">Miễn phí giao hàng</span>
                                     )}
                                 </div>
 
@@ -617,8 +704,8 @@ export default function CheckoutClient() {
                                                 {isValidatingVoucher ? '...' : 'Áp dụng'}
                                             </button>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            Mã giảm giá không áp dụng đồng thời với KM khác.
+                                        <p className="text-xs text-gray-400 mt-2">
+                                            * Mã giảm giá không áp dụng đồng thời với KM khác.
                                         </p>
                                     </div>
                                 )}
@@ -647,7 +734,7 @@ export default function CheckoutClient() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="w-full bg-primary text-white font-bold py-4 rounded-xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                                    className="w-full bg-primary text-white font-bold py-4 rounded-xl text-lg shadow-md shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     {isSubmitting ? (
                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -664,12 +751,12 @@ export default function CheckoutClient() {
                                     <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
                                         <span className="flex items-center gap-1.5">
                                             <Shield className="w-3.5 h-3.5 text-emerald-500" />
-                                            Thanh toán an toàn
+                                            Thanh toán linh hoạt
                                         </span>
                                         <span className="text-gray-300">|</span>
                                         <span className="flex items-center gap-1.5">
                                             <Zap className="w-3.5 h-3.5 text-amber-500" />
-                                            Giao nhanh 30 phút
+                                            Giao nhanh tận nơi
                                         </span>
                                     </div>
                                 </div>

@@ -56,7 +56,7 @@ export default function ContactPage() {
                 <div className="absolute bottom-0 left-0 w-[250px] h-[250px] bg-orange-200/10 rounded-full blur-[50px] translate-y-1/2 -translate-x-1/4"></div>
             </div>
 
-            <div className="relative z-10 max-w-[1200px] mx-auto px-4">
+            <div className="relative z-10 page-container">
                 {/* Header Section */}
                 <div className="text-center mb-6 md:mb-10">
                     <AnimateOnScroll>

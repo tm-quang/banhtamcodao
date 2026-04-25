@@ -97,7 +97,7 @@ export default async function ProductDetailPage({ params }) {
 
   return (
     <div className="pt-20 md:pt-24 pb-8 md:pb-16">
-      <div className="max-w-[1200px] mx-auto px-4 md:px-4">
+      <div className="page-container">
         {/* Breadcrumb - Đồng bộ với cart/checkout */}
         <nav className="mb-4 md:mb-6">
           <ol className="flex items-center gap-2 text-sm flex-wrap">

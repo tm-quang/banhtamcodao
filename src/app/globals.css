@@ -29,6 +29,35 @@ body {
   font-family: var(--font-lobster), 'Lobster', cursive !important;
 }
 
+@layer components {
+  /* HỆ THỐNG LAYOUT CHUẨN ĐỒNG BỘ TOÀN DỰ ÁN */
+
+  /* 1. Container Wrapper: Giới hạn chiều rộng và lề 2 bên của mọi trang */
+  .page-container {
+    @apply max-w-[1200px] mx-auto px-1.5 lg:px-4 w-full;
+  }
+
+  /* 2. Section Spacing: Padding dọc (top/bottom) chuẩn cho các section */
+  .section-spacing {
+    @apply py-4 md:py-8 lg:py-12;
+  }
+
+  /* 3. Section Margin: Margin dọc chuẩn cho các khối rời rạc */
+  .section-margin {
+    @apply my-4 md:my-8 lg:my-12;
+  }
+
+  /* 4. Product Grid: Lưới hiển thị sản phẩm chuẩn */
+  .product-grid {
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5 md:gap-3;
+  }
+
+  /* 5. Card Padding: Padding chuẩn bên trong các thẻ (thẻ sản phẩm, form, popup) */
+  .card-padding {
+    @apply p-2.5 md:p-4;
+  }
+}
+
 @layer utilities {
   @keyframes slideInRight {
     from {

@@ -42,7 +42,7 @@ export default function WishlistPage() {
 
   if (!isLoaded) {
     return (
-      <div className="max-w-[1200px] mx-auto px-4 pt-24 pb-8">
+      <div className="page-container pt-24 pb-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded-2xl w-1/3 mb-8"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -56,7 +56,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="max-w-[1200px] mx-auto px-4 pt-24 pb-8">
+    <div className="page-container pt-24 pb-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm mb-6">
         <Link
@@ -133,7 +133,7 @@ export default function WishlistPage() {
 
       {/* Empty State */}
       {wishlistItems.length === 0 ? (
-        <div className="text-center py-16 md:py-24">
+        <div className="text-center section-spacing">
           <div className="relative inline-block mb-8">
             <div className="w-32 h-32 rounded-full bg-gradient-to-br from-rose-100 to-pink-100 flex items-center justify-center mx-auto shadow-inner">
               <Heart className="w-16 h-16 text-rose-500" />
