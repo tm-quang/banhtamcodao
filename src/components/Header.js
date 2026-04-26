@@ -429,7 +429,7 @@ const Header = () => {
               <Link href="/">
                 <img
                   src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png"
-                  alt="Bánh Tằm Cô Đào Logo" width={180} height={40}
+                  alt="Bánh Tằm Cô Đào Logo" width={200} height={40}
                   loading="eager"
                 />
               </Link>

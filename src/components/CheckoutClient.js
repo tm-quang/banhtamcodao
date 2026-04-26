@@ -250,6 +250,10 @@ export default function CheckoutClient() {
             if (permissionStatus.state === 'granted') {
                 startLocating();
                 return;
+            } else if (permissionStatus.state === 'denied') {
+                setLocationErrorMsg('Quyền truy cập vị trí của trang web này đang bị chặn. Vui lòng nhấn vào biểu tượng ổ khóa (hoặc biểu tượng cài đặt) bên cạnh địa chỉ trang web -> chọn "Cài đặt trang web" -> tìm mục "Vị trí" và đổi thành "Cho phép". Sau đó tải lại trang.');
+                setShowLocationError(true);
+                return;
             }
         } catch (e) {
             // Permissions API might not be supported
