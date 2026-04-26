@@ -89,8 +89,9 @@ export default function FlashSaleModal({ open, onClose, onSave, flashSaleToEdit 
     const footer = (
         <div className="flex items-center justify-end gap-3 w-full">
             <Button
+                variant="outline"
                 onClick={onClose}
-                className="flex items-center justify-center h-10 !rounded-2xl border border-gray-300 text-gray-400 hover:text-gray-600 bg-white font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+                className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
             >
                 Hủy bỏ
             </Button>

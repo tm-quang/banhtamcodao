@@ -254,7 +254,7 @@ export default function CustomersPage() {
       header: 'Khách hàng',
       cell: ({ row, getValue }) => (
         <div className="flex items-center gap-3 py-1">
-          <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center font-black text-base shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center font-black text-base shadow-lg shadow-blue-100">
             {getValue()?.charAt(0)?.toUpperCase() || '?'}
           </div>
           <div className="flex flex-col min-w-0">
@@ -281,34 +281,34 @@ export default function CustomersPage() {
     },
     {
       accessorKey: 'membership_level',
-      header: 'Nhóm khách hàng',
+      header: 'Hạng',
       cell: ({ getValue }) => <MembershipBadge level={getValue()} />,
-      size: 180,
+      size: 160,
     },
     {
       accessorKey: 'reward_points',
-      header: 'Điểm tích lũy',
+      header: 'Điểm',
       cell: ({ getValue }) => (
-        <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-red-600 text-white text-[11px] font-black uppercase tracking-tight shadow-sm">
+        <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 text-[11px] font-black uppercase tracking-tight border border-amber-100 shadow-sm">
           <Award size={14} className="mr-1.5" />
           {(getValue() || 0).toLocaleString('vi-VN')}
         </div>
       ),
-      size: 150,
+      size: 130,
     },
     {
       accessorKey: 'total_orders',
-      header: 'Tổng đơn',
+      header: 'Đơn',
       cell: ({ getValue }) => (
         <div className="text-blue-700 px-2 py-0.5 text-lg font-bold w-fit">
           {getValue() || 0}
         </div>
       ),
-      size: 100,
+      size: 80,
     },
     {
       accessorKey: 'total_spent',
-      header: 'Tổng chi tiêu',
+      header: 'Chi tiêu',
       cell: ({ getValue }) => (
         <span className="text-md font-black text-red-600">
           {formatCurrency(getValue() || 0)}
@@ -326,21 +326,23 @@ export default function CustomersPage() {
       id: 'actions',
       header: 'Thao tác',
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1.5">
           <Tooltip content="Sửa">
             <button
               onClick={() => { setEditingCustomer(row.original); setIsModalOpen(true); }}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+              className="w-10 h-10 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-blue-50"
             >
               <Edit size={18} />
-            </button></Tooltip>
+            </button>
+          </Tooltip>
           <Tooltip content="Xóa">
             <button
               onClick={() => setDeletingCustomer(row.original)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+              className="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-red-50"
             >
               <Trash2 size={18} />
-            </button></Tooltip>
+            </button>
+          </Tooltip>
         </div>
       ),
       size: 100,
@@ -350,19 +352,32 @@ export default function CustomersPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">Quản lý khách hàng</h1>
-          <span className="text-sm text-gray-500">({stats.total} khách hàng)</span>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
+              <Users size={18} />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Quản lý khách hàng</h1>
+          </div>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Danh sách khách hàng và lịch sử mua sắm ({stats.total} khách hàng)</p>
         </div>
-        <Button
-          variant="outline"
-          startIcon={<RefreshCw size={16} />}
-          onClick={fetchCustomers}
-          className="!bg-gray-500 !hover:bg-gray-600 text-white"
-        >
-          Làm mới
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+            onClick={fetchCustomers}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
+          >
+            Làm mới
+          </Button>
+          <Button
+            startIcon={<PlusCircle size={20} />}
+            onClick={() => { setEditingCustomer(null); setIsModalOpen(true); }}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
+          >
+            Thêm khách hàng
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -373,119 +388,135 @@ export default function CustomersPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-6">
         {loading ? (
-          <>
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-          </>
+          Array(5).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
           <>
             {/* Tổng khách hàng */}
-            <div 
+            <div
               onClick={() => setStatusFilter('')}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${!statusFilter ? 'ring-4 ring-blue-300 ring-offset-2' : ''}`}>
-              <Users size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Users size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.total}</p>
-                <p className="text-sm opacity-90">Tổng khách hàng</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${!statusFilter ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Users size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <Users size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng khách hàng</p>
+                </div>
               </div>
             </div>
 
             {/* Đang hoạt động */}
-            <div 
+            <div
               onClick={() => setStatusFilter('active')}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${statusFilter === 'active' ? 'ring-4 ring-green-300 ring-offset-2' : ''}`}>
-              <UserCheck size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <UserCheck size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.active}</p>
-                <p className="text-sm opacity-90">Đang hoạt động</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <UserCheck size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <UserCheck size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đang hoạt động</p>
+                </div>
               </div>
             </div>
 
             {/* Đã tắt */}
-            <div 
+            <div
               onClick={() => setStatusFilter('inactive')}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${statusFilter === 'inactive' ? 'ring-4 ring-gray-300 ring-offset-2' : ''}`}>
-              <UserX size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <UserX size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.inactive}</p>
-                <p className="text-sm opacity-90">Đã tắt</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'ring-4 ring-gray-300 ring-offset-2' : 'shadow-gray-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <UserX size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <UserX size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã tắt</p>
+                </div>
               </div>
             </div>
 
             {/* Tổng đơn */}
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <TrendingUp size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <TrendingUp size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.totalOrders}</p>
-                <p className="text-sm opacity-90">Tổng đơn</p>
+            <div className="group relative p-5 rounded-[28px] bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-purple-100">
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <TrendingUp size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <TrendingUp size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.totalOrders}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng đơn hàng</p>
+                </div>
               </div>
             </div>
 
             {/* Tổng chi tiêu */}
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <DollarSign size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <DollarSign size={32} className="opacity-90 mb-3" />
-                <p className="text-2xl font-bold mb-1">{formatCurrency(stats.totalSpent)}</p>
-                <p className="text-sm opacity-90">Tổng chi tiêu</p>
+            <div className="group relative p-5 rounded-[28px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-amber-100">
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <DollarSign size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <DollarSign size={20} />
+                </div>
+                <div>
+                  <p className="text-2xl font-black mb-0.5 tabular-nums tracking-tighter">{formatCurrency(stats.totalSpent)}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng chi tiêu</p>
+                </div>
               </div>
             </div>
           </>
         )}
       </div>
 
-      {/* Filter & Actions Row */}
-      <div className="p-4 mb-4 rounded-lg bg-gray-50 border border-gray-200">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Search */}
-          <div className="flex-1 min-w-[200px]">
+      {/* Filter Row */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="flex-1 min-w-[250px]">
+          <div className="relative group">
             <Input
+              placeholder="TÌM THEO TÊN, EMAIL, SỐ ĐIỆN THOẠI..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm..."
-              startIcon={<Search size={16} />}
+              startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+              className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
             />
           </div>
-
-          {/* Status Filter */}
+        </div>
+        <div className="flex items-center gap-3">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white"
+            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="active">Hoạt động</option>
-            <option value="inactive">Tắt</option>
+            <option value="inactive">Tạm tắt</option>
           </select>
 
           {(searchTerm || statusFilter) && (
-            <Button
-              size="sm"
-              variant="ghost"
-              startIcon={<X size={14} />}
+            <button
               onClick={() => { setSearchTerm(''); setStatusFilter(''); }}
+              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
-              Xóa lọc
-            </Button>
+              <X size={14} />
+              Xóa bộ lọc
+            </button>
           )}
-
-          {/* Add Button */}
-          <Button
-            variant="primary"
-            startIcon={<PlusCircle size={18} />}
-            onClick={() => { setEditingCustomer(null); setIsModalOpen(true); }}
-          >
-            Thêm khách hàng
-          </Button>
+          <div className="h-8 w-px bg-gray-200" />
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredCustomers.length} khách</span>
         </div>
       </div>
 
@@ -512,13 +543,37 @@ export default function CustomersPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
+      <Dialog
         open={Boolean(deletingCustomer)}
         onClose={() => setDeletingCustomer(null)}
-        onConfirm={confirmDelete}
-        title="Xác nhận xóa khách hàng"
-        description={`Bạn có chắc chắn muốn xóa khách hàng "${deletingCustomer?.full_name}" không?`}
-      />
+        size="sm"
+        title={
+          <div className="flex items-center gap-2 text-red-600">
+            <AlertCircle size={22} />
+            <span className="font-bold uppercase tracking-tight">Xác nhận xóa khách</span>
+          </div>
+        }
+        footer={
+          <div className="flex items-center justify-end gap-3 w-full">
+            <Button
+              onClick={() => setDeletingCustomer(null)}
+              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              className="flex items-center justify-center h-10 !rounded-2xl bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-100 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
+            >
+              Xác nhận xóa
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700">
+          Bạn có chắc chắn muốn xóa khách hàng <span className="font-black">"{deletingCustomer?.full_name}"</span> không? Hành động này không thể hoàn tác.
+        </p>
+      </Dialog>
 
       {/* Alert Modal */}
       <AlertModal

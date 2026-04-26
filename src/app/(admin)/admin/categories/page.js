@@ -1,83 +1,31 @@
 /**
- * Admin categories management page - Tailwind CSS Version
+ * Admin categories management page - Premium UI
  * @file src/app/(admin)/admin/categories/page.js
  */
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  PlusCircle, Edit, Trash2, FolderTree, Layers, Search, Tag, Link2, X, RefreshCw, AlertCircle, XCircle, Info, Star
+  PlusCircle, Edit, Trash2, FolderTree, Search, X, RefreshCw, AlertCircle, CheckCircle, XCircle, Star
 } from 'lucide-react';
 import { Button } from '@/components/tailwindcss/ui/Button';
 import { Input } from '@/components/tailwindcss/ui/Input';
-import { Chip } from '@/components/tailwindcss/ui/Chip';
 import { Dialog } from '@/components/tailwindcss/ui/Dialog';
 import { Tooltip } from '@/components/tailwindcss/ui/Tooltip';
 import { AlertModal } from '@/components/tailwindcss/ui/AlertModal';
 import { SkeletonStatsCard } from '@/components/tailwindcss/ui/Skeleton';
 import DataTable from '@/components/tailwindcss/ui/DataTable';
 import CategoryModal from '@/components/tailwindcss/CategoryModal';
-
-// Confirmation Dialog Component
-const ConfirmationDialog = ({ open, onClose, onConfirm, title, description, type = 'warning' }) => {
-  const footer = (
-    <div className="flex items-center justify-end gap-3">
-      <Button
-        variant="outline"
-        onClick={onClose}
-        className="!bg-gray-300 !hover:bg-gray-500 text-gray-700"
-      >
-        Hủy
-      </Button>
-      <Button
-        variant={type === 'danger' ? 'danger' : 'primary'}
-        onClick={onConfirm}
-        className="!hover:bg-opacity-90"
-      >
-        Xác nhận
-      </Button>
-    </div>
-  );
-
-  const icons = {
-    warning: AlertCircle,
-    danger: XCircle,
-    info: Info
-  };
-
-  const Icon = icons[type] || AlertCircle;
-  const iconColors = {
-    warning: 'text-amber-600',
-    danger: 'text-red-600',
-    info: 'text-blue-600'
-  };
-
-  return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      size="sm"
-      title={
-        <div className={`flex items-center gap-2 ${iconColors[type]}`}>
-          <Icon size={22} />
-          <span className="font-bold">{title}</span>
-        </div>
-      }
-      footer={footer}
-    >
-      <p className="text-gray-700">{description}</p>
-    </Dialog>
-  );
-};
+import { useRouter } from 'next/navigation';
 
 export default function CategoriesPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [deletingCategory, setDeletingCategory] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all'); // 'all', 'parent', 'child'
   const [error, setError] = useState(null);
   const [alertModal, setAlertModal] = useState({
     open: false,
@@ -87,22 +35,21 @@ export default function CategoriesPage() {
   });
 
   // Calculate stats
-  const stats = useMemo(() => ({
-    total: categories.length,
-    parent: categories.filter(c => !c.parent_id).length,
-    child: categories.filter(c => c.parent_id).length,
-  }), [categories]);
+  const stats = useMemo(() => {
+    const safeCategories = Array.isArray(categories) ? categories : [];
+    const total = safeCategories.length;
+    const active = safeCategories.filter(c => c.active || c.status === 'active').length;
+    const inactive = safeCategories.filter(c => !c.active && c.status !== 'active').length;
+    return { total, active, inactive };
+  }, [categories]);
 
   // Filter categories
   const filteredCategories = useMemo(() => {
-    return categories.filter(c => {
-      const searchMatch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.slug.toLowerCase().includes(searchTerm.toLowerCase());
-      const typeMatch = typeFilter === 'all' ? true :
-        typeFilter === 'parent' ? !c.parent_id : !!c.parent_id;
-      return searchMatch && typeMatch;
-    });
-  }, [categories, searchTerm, typeFilter]);
+    const safeCategories = Array.isArray(categories) ? categories : [];
+    return safeCategories.filter(category =>
+      (category.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [categories, searchTerm]);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -111,7 +58,7 @@ export default function CategoriesPage() {
       const res = await fetch('/api/admin/categories');
       const data = await res.json();
       if (data.success) {
-        setCategories(data.categories);
+        setCategories(data.categories || []);
       } else {
         setError('Không thể tải danh sách danh mục');
       }
@@ -141,8 +88,10 @@ export default function CategoriesPage() {
       if (res.ok) {
         setIsModalOpen(false);
         fetchCategories();
+        router.refresh();
       } else {
-        setAlertModal({ open: true, title: 'Lỗi', message: 'Có lỗi xảy ra!', type: 'error' });
+        const err = await res.json();
+        setAlertModal({ open: true, title: 'Lỗi', message: `Có lỗi xảy ra: ${err.message || 'Lỗi không xác định'}`, type: 'error' });
       }
     } catch (error) {
       console.error('Error saving category:', error);
@@ -158,6 +107,7 @@ export default function CategoriesPage() {
       if (res.ok) {
         setDeletingCategory(null);
         fetchCategories();
+        router.refresh();
       } else {
         setAlertModal({ open: true, title: 'Lỗi', message: 'Xóa thất bại!', type: 'error' });
       }
@@ -165,13 +115,6 @@ export default function CategoriesPage() {
       console.error('Error deleting category:', error);
       setAlertModal({ open: true, title: 'Lỗi', message: 'Xóa thất bại!', type: 'error' });
     }
-  };
-
-  // Get parent category name
-  const getParentName = (parentId) => {
-    if (!parentId) return null;
-    const parent = categories.find(c => c.id === parentId);
-    return parent?.name || `ID: ${parentId}`;
   };
 
   // Table columns definition
@@ -182,65 +125,64 @@ export default function CategoriesPage() {
       cell: ({ getValue }) => (
         <span className="text-sm font-bold text-blue-600 font-mono">#{getValue()}</span>
       ),
-      size: 60,
+      size: 70,
     },
     {
-      accessorKey: 'name',
-      header: 'Tên Danh mục',
-      cell: ({ row, getValue }) => (
-        <div className="flex flex-col justify-center py-0.5">
-          <span className="text-base font-semibold text-gray-900 leading-tight">
-            {getValue()}
-          </span>
-          {row.original.parent_id && (
-            <span className="text-xs text-gray-500 mt-0.5 font-medium">
-              ↳ {getParentName(row.original.parent_id)}
-            </span>
+      accessorKey: 'image_url',
+      header: 'Ảnh',
+      cell: ({ getValue, row }) => (
+        <div className="relative w-12 h-12 rounded-xl overflow-hidden shadow-inner border border-gray-100">
+          {getValue() ? (
+            <img
+              src={getValue()}
+              alt={row.original.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+              <FolderTree size={20} />
+            </div>
           )}
         </div>
       ),
-      size: 250,
+      size: 70,
     },
     {
-      accessorKey: 'slug',
-      header: 'Slug',
+      accessorKey: 'name',
+      header: 'Tên danh mục',
       cell: ({ getValue }) => (
-        <Chip
-          variant="outline"
-          size="sm"
-          icon={<Link2 size={12} />}
-          className="font-mono border-blue-200 text-blue-600 bg-blue-50/50"
-        >
-          {getValue()}
-        </Chip>
+        <span className="text-base font-semibold text-gray-900">{getValue()}</span>
       ),
-      size: 180,
+      size: 300,
     },
     {
-      accessorKey: 'parent_id',
-      header: 'Loại',
+      accessorKey: 'active',
+      header: 'Trạng thái',
       cell: ({ getValue }) => (
-        getValue() ? (
-          <span className="inline-block px-3 py-1.5 rounded-full text-md font-black tracking-tight bg-amber-500 text-white shadow-sm">
-            Con
-          </span>
-        ) : (
-          <span className="inline-block px-3 py-1.5 rounded-full text-md font-black tracking-tight bg-emerald-600 text-white shadow-sm">
-            Gốc
-          </span>
-        )
+        <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-tight shadow-sm ${getValue() ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'
+          }`}>
+          {getValue() ? 'Hoạt động' : 'Tắt'}
+        </span>
       ),
-      size: 120,
+      size: 150,
+    },
+    {
+      accessorKey: 'sort_order',
+      header: 'Thứ tự',
+      cell: ({ getValue }) => (
+        <span className="text-sm font-black text-gray-400">#{getValue() || 0}</span>
+      ),
+      size: 100,
     },
     {
       id: 'actions',
       header: 'Thao tác',
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1.5">
           <Tooltip content="Sửa">
             <button
               onClick={() => { setEditingCategory(row.original); setIsModalOpen(true); }}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+              className="w-10 h-10 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-blue-50"
             >
               <Edit size={18} />
             </button>
@@ -248,34 +190,46 @@ export default function CategoriesPage() {
           <Tooltip content="Xóa">
             <button
               onClick={() => setDeletingCategory(row.original)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+              className="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-red-50"
             >
               <Trash2 size={18} />
             </button>
           </Tooltip>
         </div>
       ),
-      size: 120,
+      size: 100,
     },
-  ], [categories]);
-
+  ], []);
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">Quản lý danh mục</h1>
-          <span className="text-sm text-gray-500">({stats.total} danh mục)</span>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
+              <FolderTree size={18} />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Danh mục sản phẩm</h1>
+          </div>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý phân loại thực đơn ({stats.total} danh mục)</p>
         </div>
-        <Button
-          variant="outline"
-          startIcon={<RefreshCw size={16} />}
-          onClick={fetchCategories}
-          className="!bg-gray-500 !hover:bg-gray-600 text-white"
-        >
-          Làm mới
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+            onClick={fetchCategories}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
+          >
+            Làm mới
+          </Button>
+          <Button
+            startIcon={<PlusCircle size={20} />}
+            onClick={() => { setEditingCategory(null); setIsModalOpen(true); }}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
+          >
+            Thêm danh mục
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -286,121 +240,109 @@ export default function CategoriesPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
         {loading ? (
-          <>
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-          </>
+          Array(6).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
           <>
             {/* Tổng danh mục */}
-            <div 
-              onClick={() => setTypeFilter('all')}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${typeFilter === 'all' ? 'ring-4 ring-blue-300 ring-offset-2' : ''}`}>
-              <FolderTree
-                size={80}
-                className="absolute bottom-0 right-0 opacity-10"
-              />
-              <div className="relative z-10">
-                <FolderTree size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.total}</p>
-                <p className="text-sm opacity-90">Tổng danh mục</p>
+            <div
+              onClick={() => setSearchTerm('')}
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-blue-100`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <FolderTree size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <FolderTree size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng danh mục</p>
+                </div>
               </div>
             </div>
 
-            {/* Danh mục gốc */}
-            <div 
-              onClick={() => setTypeFilter('parent')}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${typeFilter === 'parent' ? 'ring-4 ring-green-300 ring-offset-2' : ''}`}>
-              <Layers
-                size={80}
-                className="absolute bottom-0 right-0 opacity-10"
-              />
-              <div className="relative z-10">
-                <Layers size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.parent}</p>
-                <p className="text-sm opacity-90">Danh mục gốc</p>
+            {/* Hoạt động */}
+            <div
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-emerald-100`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <CheckCircle size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Hoạt động</p>
+                </div>
               </div>
             </div>
 
-            {/* Danh mục con */}
-            <div 
-              onClick={() => setTypeFilter('child')}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${typeFilter === 'child' ? 'ring-4 ring-amber-300 ring-offset-2' : ''}`}>
-              <Tag
-                size={80}
-                className="absolute bottom-0 right-0 opacity-10"
-              />
-              <div className="relative z-10">
-                <Tag size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.child}</p>
-                <p className="text-sm opacity-90">Danh mục con</p>
+            {/* Đã tắt */}
+            <div
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-gray-100`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <XCircle size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <XCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã tắt</p>
+                </div>
               </div>
             </div>
 
-            {/* Coming Soon Slots to match Products Page layout */}
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <Star size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Star size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">0</p>
-                <p className="text-sm opacity-90">COMING SOON</p>
+            {/* Placeholders */}
+            {[1, 2, 3].map(i => (
+              <div key={i} className="group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 opacity-40">
+                <div className="absolute -right-4 -bottom-4 opacity-15">
+                  <Star size={110} />
+                </div>
+                <div className="relative z-10 flex flex-col h-full justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                    <Star size={20} />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">0</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">PLACEHOLDER</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <Star size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Star size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">0</p>
-                <p className="text-sm opacity-90">COMING SOON</p>
-              </div>
-            </div>
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <Star size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Star size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">0</p>
-                <p className="text-sm opacity-90">COMING SOON</p>
-              </div>
-            </div>
+            ))}
           </>
         )}
       </div>
 
-      {/* Filter & Actions Row */}
-      <div className="p-4 mb-4 rounded-lg bg-gray-50 border border-gray-200">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Search */}
-          <div className="flex-1 min-w-[200px]">
+      {/* Filter Row */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="flex-1 min-w-[250px]">
+          <div className="relative group">
             <Input
+              placeholder="TÌM KIẾM TÊN DANH MỤC..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm..."
-              startIcon={<Search size={16} />}
+              startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+              className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
             />
           </div>
-
-          {(searchTerm || typeFilter !== 'all') && (
-            <Button
-              size="sm"
-              variant="ghost"
-              startIcon={<X size={14} />}
-              onClick={() => { setSearchTerm(''); setTypeFilter('all'); }}
+        </div>
+        <div className="flex items-center gap-3">
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
+              <X size={14} />
               Xóa lọc
-            </Button>
+            </button>
           )}
-
-          {/* Add Button */}
-          <Button
-            variant="primary"
-            startIcon={<PlusCircle size={18} />}
-            onClick={() => { setEditingCategory(null); setIsModalOpen(true); }}
-          >
-            + Thêm danh mục
-          </Button>
+          <div className="h-8 w-px bg-gray-200" />
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredCategories.length} kết quả</span>
         </div>
       </div>
 
@@ -423,18 +365,43 @@ export default function CategoriesPage() {
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
+        categories={categories || []}
         categoryToEdit={editingCategory}
-        categories={categories}
       />
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
+      <Dialog
         open={Boolean(deletingCategory)}
         onClose={() => setDeletingCategory(null)}
-        onConfirm={confirmDelete}
-        title="Xác nhận xóa danh mục"
-        description={`Bạn có chắc chắn muốn xóa danh mục "${deletingCategory?.name}" không?`}
-      />
+        size="sm"
+        title={
+          <div className="flex items-center gap-2 text-red-600">
+            <AlertCircle size={22} />
+            <span className="font-bold uppercase tracking-tight">Xác nhận xóa danh mục</span>
+          </div>
+        }
+        footer={
+          <div className="flex items-center justify-end gap-3 w-full">
+            <Button
+              variant="outline"
+              onClick={() => setDeletingCategory(null)}
+              className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              className="flex items-center justify-center h-10 !rounded-2xl bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-100 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
+            >
+              Xác nhận xóa
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700">
+          Bạn có chắc chắn muốn xóa danh mục <span className="font-black">"{deletingCategory?.name}"</span> không? Hành động này không thể hoàn tác.
+        </p>
+      </Dialog>
 
       {/* Alert Modal */}
       <AlertModal

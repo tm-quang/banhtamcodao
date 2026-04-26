@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Truck, Store, Banknote, CreditCard, User, Phone, MapPin, Calendar, Clock, FileText, ShoppingCart, ArrowRight, CheckCircle2, Plus, X, Tag, Info, HelpCircle, Shield, Zap, Gift, LocateFixed } from 'lucide-react';
+import { Truck, Store, Banknote, CreditCard, User, Phone, MapPin, Calendar, Clock, FileText, ShoppingCart, ArrowRight, CheckCircle2, Plus, X, Tag, Info, HelpCircle, Shield, Zap, Gift, LocateFixed, AlertCircle } from 'lucide-react';
 import { SkeletonCheckout } from '@/components/Skeleton';
 
 const formatCurrency = (amount) => {
@@ -67,6 +67,10 @@ export default function CheckoutClient() {
     const [orderResult, setOrderResult] = useState(null); // { success: true/false, orderCode, total, paymentMethod }
     const [isLocating, setIsLocating] = useState(false);
     const [mapLink, setMapLink] = useState('');
+    const [showLocationRationale, setShowLocationRationale] = useState(false);
+    const [showLocationError, setShowLocationError] = useState(false);
+    const [locationErrorMsg, setLocationErrorMsg] = useState('');
+    const [isRequestingPermission, setIsRequestingPermission] = useState(false);
     const hasAutoFilledRef = useRef(false);
 
     useEffect(() => {
@@ -173,15 +177,14 @@ export default function CheckoutClient() {
         setError('');
     };
 
-    const handleGetCurrentLocation = () => {
-        if (!navigator.geolocation) {
-            alert('Trình duyệt của bạn không hỗ trợ định vị');
-            return;
-        }
-
+    const startLocating = () => {
+        setShowLocationRationale(false);
         setIsLocating(true);
+        setIsRequestingPermission(true);
+
         navigator.geolocation.getCurrentPosition(
             async (position) => {
+                setIsRequestingPermission(false);
                 const { latitude, longitude } = position.coords;
                 const gmapsLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
@@ -206,14 +209,53 @@ export default function CheckoutClient() {
                 }
             },
             (error) => {
-                console.error('Geolocation error:', error);
-                let msg = 'Không thể lấy vị trí';
-                if (error.code === 1) msg = 'Vui lòng cấp quyền truy cập vị trí cho trình duyệt';
-                alert(msg);
+                setIsRequestingPermission(false);
+                console.error('Geolocation error:', { code: error.code, message: error.message });
+                let msg = 'Không thể lấy vị trí của bạn vào lúc này.';
+                if (error.code === 1) {
+                    msg = 'Quyền truy cập vị trí bị từ chối. Vui lòng cấp quyền trong cài đặt trình duyệt để lấy vị trí giao hàng.';
+                } else if (error.code === 2) {
+                    msg = 'Vị trí không khả dụng (Position Unavailable). Vui lòng kiểm tra GPS hoặc kết nối mạng.';
+                } else if (error.code === 3) {
+                    msg = 'Hết thời gian chờ lấy vị trí (Timeout). Vui lòng thử lại.';
+                }
+                setLocationErrorMsg(msg);
+                setShowLocationError(true);
                 setIsLocating(false);
             },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
+    };
+
+    const handleGetCurrentLocation = async () => {
+        if (!navigator.geolocation) {
+            setLocationErrorMsg('Trình duyệt của bạn không hỗ trợ định vị');
+            setShowLocationError(true);
+            return;
+        }
+
+        // Kiểm tra Secure Context (Bắt buộc cho Geolocation)
+        const isSecure = window.location.protocol === 'https:' ||
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1';
+
+        if (!isSecure) {
+            setLocationErrorMsg('Lỗi bảo mật: Trình duyệt chỉ cho phép lấy vị trí. Vui lòng kiểm tra lại hoặc đổi trình duyệt khác.');
+            setShowLocationError(true);
+            return;
+        }
+
+        try {
+            const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+            if (permissionStatus.state === 'granted') {
+                startLocating();
+                return;
+            }
+        } catch (e) {
+            // Permissions API might not be supported
+        }
+
+        setShowLocationRationale(true);
     };
 
     const handleSubmitOrder = async (e) => {
@@ -512,7 +554,9 @@ export default function CheckoutClient() {
                                         <div className={`p-1.5 rounded-full bg-slate-200 transition-colors ${isLocating ? 'animate-pulse' : ''}`}>
                                             <MapPin size={16} />
                                         </div>
-                                        {isLocating ? 'Đang xác định vị trí của bạn...' : 'Lấy vị trí giao hàng'}
+                                        {isRequestingPermission
+                                            ? <span className="text-blue-600 animate-bounce">Vui lòng chọn "Cho phép" ở phía trên trình duyệt...</span>
+                                            : isLocating ? 'Đang xác định vị trí của bạn...' : 'Lấy vị trí giao hàng'}
                                     </button>
                                 </div>
                             )}
@@ -931,6 +975,70 @@ export default function CheckoutClient() {
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Location Rationale Modal */}
+            {showLocationRationale && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowLocationRationale(false)}>
+                    <div className="relative bg-white rounded-3xl max-w-sm w-full p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in fade-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+                        <div className="text-center">
+                            <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center mx-auto mb-6 rotate-3">
+                                <MapPin className="w-10 h-10 text-blue-500" />
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 mb-3 uppercase tracking-tight">Xác định vị trí</h3>
+                            <p className="text-gray-500 text-sm leading-relaxed mb-8">
+                                Chúng tôi cần truy cập vị trí để tự động điền địa chỉ giao hàng và tính toán phí ship chính xác nhất cho bạn.
+                            </p>
+                            <div className="space-y-3">
+                                <button
+                                    type="button"
+                                    onClick={startLocating}
+                                    className="w-full bg-gray-900 text-white font-black py-4 rounded-2xl hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-gray-200 uppercase text-xs tracking-widest"
+                                >
+                                    Đồng ý
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowLocationRationale(false)}
+                                    className="w-full bg-gray-300 text-gray-700 font-black py-3 rounded-2xl hover:text-gray-600 transition-all uppercase text-[10px] tracking-widest"
+                                >
+                                    Để sau
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Location Error Modal */}
+            {showLocationError && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowLocationError(false)}>
+                    <div className="relative bg-white rounded-3xl max-w-sm w-full p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in fade-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
+                        <div className="text-center">
+                            <div className="w-20 h-20 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-6 -rotate-3">
+                                <AlertCircle className="w-10 h-10 text-rose-500" />
+                            </div>
+                            <h3 className="text-2xl font-black text-gray-900 mb-3 uppercase tracking-tight text-rose-600">Opps! Có lỗi</h3>
+                            <p className="text-gray-500 text-sm leading-relaxed mb-8 font-medium">
+                                {locationErrorMsg}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setShowLocationError(false)}
+                                className="w-full bg-gray-900 text-white font-black py-4 rounded-2xl hover:bg-gray-800 transition-all active:scale-95 shadow-xl shadow-gray-200 uppercase text-xs tracking-widest"
+                            >
+                                Đã hiểu
+                            </button>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setShowLocationError(false)}
+                            className="absolute top-4 right-4 p-2 rounded-xl text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-all"
+                        >
+                            <X size={20} />
+                        </button>
                     </div>
                 </div>
             )}

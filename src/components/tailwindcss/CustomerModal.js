@@ -1,22 +1,37 @@
 /**
- * CustomerModal component với Tailwind CSS
+ * CustomerModal component với Tailwind CSS - Premium UI
+ * @file src/components/tailwindcss/CustomerModal.js
  */
 'use client';
+
 import { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
-import { User, Mail, Phone, Shield, CheckCircle, X } from 'lucide-react';
+import { 
+  User, Mail, Phone, Shield, CheckCircle, X, 
+  Layout, ShieldCheck, Zap, Star, Loader2, Sparkles,
+  Lock, UserCircle, Globe, Settings
+} from 'lucide-react';
 
-const SectionHeader = ({ icon: Icon, title, color = '#06b6d4' }) => (
-  <div className="flex items-center gap-2 mb-3">
-    <div 
-      className="w-8 h-8 rounded-lg flex items-center justify-center"
-      style={{ backgroundColor: `${color}15` }}
-    >
-      <Icon size={16} style={{ color }} />
+const SectionHeader = ({ icon: Icon, title, color = '#06b6d4', subtitle }) => (
+  <div className="flex flex-col gap-1 mb-5 mt-8 first:mt-2">
+    <div className="flex items-center gap-3">
+      <div
+        className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform hover:scale-110 duration-300"
+        style={{
+          backgroundColor: `${color}15`,
+          border: `1px solid ${color}30`,
+          boxShadow: `0 4px 12px ${color}10`
+        }}
+      >
+        <Icon size={20} style={{ color }} />
+      </div>
+      <div>
+        <span className="text-[13px] font-black text-gray-800 uppercase tracking-wider block">{title}</span>
+        {subtitle && <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter">{subtitle}</p>}
+      </div>
     </div>
-    <span className="text-sm font-semibold text-gray-700">{title}</span>
   </div>
 );
 
@@ -67,29 +82,12 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
 
   const validate = () => {
     const newErrors = {};
-    
-    if (!data.full_name.trim()) {
-      newErrors.full_name = 'Vui lòng nhập họ tên';
-    }
-    
-    if (!isEditMode && !data.password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
-    } else if (data.password && data.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-    }
-    
-    if (!isEditMode && !data.username?.trim()) {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập';
-    }
-    
-    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      newErrors.email = 'Email không hợp lệ';
-    }
-    
-    if (data.phone_number && !/^[0-9]{10,11}$/.test(data.phone_number.replace(/\s/g, ''))) {
-      newErrors.phone_number = 'Số điện thoại không hợp lệ';
-    }
-
+    if (!data.full_name.trim()) newErrors.full_name = 'Vui lòng nhập họ tên';
+    if (!isEditMode && !data.password) newErrors.password = 'Vui lòng nhập mật khẩu';
+    else if (data.password && data.password.length < 6) newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    if (!isEditMode && !data.username?.trim()) newErrors.username = 'Vui lòng nhập tên đăng nhập';
+    if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) newErrors.email = 'Email không hợp lệ';
+    if (data.phone_number && !/^[0-9]{10,11}$/.test(data.phone_number.replace(/\s/g, ''))) newErrors.phone_number = 'Số điện thoại không hợp lệ';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -97,17 +95,12 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
   const handleChange = (e) => {
     const { name, value } = e.target;
     setData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validate()) {
-      return;
-    }
+    if (e) e.preventDefault();
+    if (!validate()) return;
 
     setIsSubmitting(true);
     try {
@@ -119,18 +112,11 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
         role: data.role || 'customer',
         status: data.status || 'active'
       };
-      
-      // Chỉ thêm username và password khi tạo mới
       if (!isEditMode) {
         if (data.username) submitData.username = data.username;
         if (data.password) submitData.password = data.password;
       }
-      
-      // Thêm id nếu là edit mode
-      if (isEditMode && customerToEdit?.id) {
-        submitData.id = customerToEdit.id;
-      }
-      
+      if (isEditMode && customerToEdit?.id) submitData.id = customerToEdit.id;
       await onSave(submitData);
     } catch (error) {
       console.error('Error saving customer:', error);
@@ -140,17 +126,21 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
   };
 
   const footer = (
-    <div className="flex items-center justify-end gap-3">
-      <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-        Hủy
-      </Button>
-      <Button 
-        variant="primary" 
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        startIcon={isSubmitting ? null : <CheckCircle size={16} />}
+    <div className="flex items-center justify-end gap-3 w-full">
+      <Button
+        variant="outline"
+        onClick={onClose}
+        className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
       >
-        {isSubmitting ? 'Đang lưu...' : isEditMode ? 'Cập nhật' : 'Tạo mới'}
+        Hủy bỏ
+      </Button>
+      <Button
+        onClick={handleSubmit}
+        disabled={isSubmitting || !data.full_name}
+        startIcon={isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+        className={`flex items-center justify-center h-10 !rounded-2xl shadow-xl transition-all font-black uppercase text-[11px] tracking-widest px-8 text-white ${isEditMode ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-100' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'}`}
+      >
+        {isSubmitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật ngay' : 'Tạo tài khoản')}
       </Button>
     </div>
   );
@@ -159,141 +149,168 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
     <Dialog
       open={open}
       onClose={onClose}
-      size="lg"
+      size="xl"
       title={
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-            <User size={22} className="text-blue-600" />
+        <div className="flex items-center gap-4 py-1">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg rotate-3 transition-transform hover:rotate-0 ${isEditMode ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200/50' : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-200/50'}`}>
+            <UserCircle size={24} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="font-black text-gray-900 block">
-              {isEditMode ? 'Chỉnh sửa khách hàng' : 'Thêm khách hàng mới'}
+            <span className="font-black text-gray-900 text-2xl tracking-tight block uppercase">
+              {isEditMode ? 'Hồ sơ khách hàng' : 'Thêm thành viên mới'}
             </span>
-            <p className="text-xs text-gray-500 font-medium truncate">
-              {isEditMode ? `ID: #${customerToEdit?.id}` : 'Tạo tài khoản mới cho khách hàng'}
-            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <div className={`w-2 h-2 rounded-full animate-pulse ${isEditMode ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+              <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.2em]">
+                {isEditMode ? `ĐANG CHỈNH SỬA ID: #${customerToEdit?.id}` : 'THIẾT LẬP TÀI KHOẢN KHÁCH HÀNG MỚI'}
+              </p>
+            </div>
           </div>
         </div>
       }
       footer={footer}
     >
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Thông tin cơ bản */}
-        <div>
-          <SectionHeader icon={User} title="Thông tin cá nhân" color="#0ea5e9" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Input
-              label="Họ và tên *"
-              name="full_name"
-              value={data.full_name}
-              onChange={handleChange}
-              error={errors.full_name}
-              required
-              placeholder="VD: Nguyễn Văn A"
-              className="font-bold"
-            />
-            <Input
-              label={isEditMode ? "Tên đăng nhập (Khóa)" : "Tên đăng nhập *"}
-              name="username"
-              value={data.username}
-              onChange={handleChange}
-              error={errors.username}
-              disabled={isEditMode}
-              required={!isEditMode}
-              placeholder="username"
-              className="bg-gray-50 font-mono text-blue-600"
-            />
-            <Input
-              label="Địa chỉ Email"
-              name="email"
-              type="email"
-              value={data.email}
-              onChange={handleChange}
-              error={errors.email}
-              startIcon={<Mail size={16} />}
-              placeholder="example@gmail.com"
-            />
-            <Input
-              label="Số điện thoại"
-              name="phone_number"
-              value={data.phone_number}
-              onChange={handleChange}
-              error={errors.phone_number}
-              startIcon={<Phone size={16} />}
-              placeholder="09xxx..."
-            />
-          </div>
-        </div>
+      <div className="space-y-10 pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Cột trái: Thông tin định danh */}
+          <div className="space-y-10">
+            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+              <SectionHeader icon={User} title="Thông tin cá nhân" subtitle="Họ tên và định danh tài khoản" color="#2563eb" />
+              <div className="space-y-6 relative z-10">
+                <Input
+                  label="Họ và tên khách hàng *"
+                  name="full_name"
+                  value={data.full_name}
+                  onChange={handleChange}
+                  error={errors.full_name}
+                  required
+                  placeholder="VD: Nguyễn Văn An"
+                  className="!rounded-2xl border-gray-300 font-black bg-gray-50/30 py-4 shadow-inner text-lg"
+                />
+                <Input
+                  label={isEditMode ? "Tên đăng nhập (Cố định)" : "Tên đăng nhập *"}
+                  name="username"
+                  value={data.username}
+                  onChange={handleChange}
+                  error={errors.username}
+                  disabled={isEditMode}
+                  required={!isEditMode}
+                  placeholder="VD: an.nguyen"
+                  className={`!rounded-2xl border-gray-300 font-bold bg-gray-50/30 py-4 shadow-inner font-mono text-blue-600 ${isEditMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                />
+              </div>
+            </div>
 
-        {/* Mật khẩu */}
-        <div>
-          <SectionHeader icon={Shield} title="Bảo mật tài khoản" color="#8b5cf6" />
-          <div className="p-5 bg-purple-50/30 rounded-2xl border border-purple-100">
-            <Input
-              label={isEditMode ? "Mật khẩu mới (Nếu có)" : "Thiết lập mật khẩu *"}
-              name="password"
-              type="password"
-              value={data.password}
-              onChange={handleChange}
-              error={errors.password}
-              required={!isEditMode}
-              helperText={isEditMode ? 'Để trống nếu không muốn thay đổi mật khẩu hiện tại' : 'Tối thiểu 6 ký tự để đảm bảo an toàn'}
-            />
+            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+              <SectionHeader icon={Lock} title="Bảo mật & Phân quyền" subtitle="Thiết lập mật khẩu và vai trò" color="#8b5cf6" />
+              <div className="space-y-6 relative z-10">
+                <Input
+                  label={isEditMode ? "Mật khẩu mới (Nếu có)" : "Mật khẩu tài khoản *"}
+                  name="password"
+                  type="password"
+                  value={data.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  required={!isEditMode}
+                  placeholder="••••••••"
+                  className="!rounded-2xl border-gray-300 font-bold bg-gray-50/30 py-4 shadow-inner"
+                  helperText={isEditMode ? "Để trống nếu không muốn thay đổi mật khẩu hiện tại" : "Mật khẩu tối thiểu 6 ký tự"}
+                />
+                <div>
+                  <label className="block text-[10px] font-black text-purple-600 uppercase tracking-widest mb-2 ml-1">Vai trò hệ thống</label>
+                  <select
+                    name="role"
+                    value={data.role}
+                    onChange={handleChange}
+                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl font-black text-gray-700 focus:ring-4 focus:ring-purple-50/50 focus:border-purple-500 outline-none transition-all appearance-none cursor-pointer shadow-inner"
+                  >
+                    <option value="customer">KHÁCH HÀNG (CUSTOMER)</option>
+                    <option value="admin">QUẢN TRỊ VIÊN (ADMIN)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Cài đặt */}
-        <div>
-          <SectionHeader icon={Shield} title="Phân quyền & Trạng thái" color="#10b981" />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="space-y-1.5">
-              <label className="block text-sm font-bold text-gray-700">
-                Vai trò hệ thống
-              </label>
-              <select
-                name="role"
-                value={data.role}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-md font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
-              >
-                <option value="customer">Khách hàng</option>
-                <option value="admin">Quản trị viên</option>
-              </select>
+          {/* Cột phải: Liên lạc & Trạng thái */}
+          <div className="space-y-10">
+            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+              <SectionHeader icon={Globe} title="Thông tin liên lạc" subtitle="Email và số điện thoại liên hệ" color="#10b981" />
+              <div className="space-y-6 relative z-10">
+                <Input
+                  label="Địa chỉ Email"
+                  name="email"
+                  type="email"
+                  value={data.email}
+                  onChange={handleChange}
+                  error={errors.email}
+                  placeholder="example@gmail.com"
+                  className="!rounded-2xl border-gray-300 font-bold bg-gray-50/30 py-4 shadow-inner"
+                  prefix={<Mail size={16} className="text-gray-400 ml-4 mr-2" />}
+                />
+                <Input
+                  label="Số điện thoại"
+                  name="phone_number"
+                  value={data.phone_number}
+                  onChange={handleChange}
+                  error={errors.phone_number}
+                  placeholder="09xxx..."
+                  className="!rounded-2xl border-gray-300 font-bold bg-gray-50/30 py-4 shadow-inner"
+                  prefix={<Phone size={16} className="text-gray-400 ml-4 mr-2" />}
+                />
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="block text-sm font-bold text-gray-700">
-                Trạng thái hoạt động
-              </label>
-              <select
-                name="status"
-                value={data.status}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-md font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
-              >
-                <option value="active">Đang hoạt động</option>
-                <option value="inactive">Tạm khóa</option>
-              </select>
+
+            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+              <SectionHeader icon={Settings} title="Cấu hình tài khoản" subtitle="Trạng thái và các thiết lập khác" color="#f59e0b" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                <div>
+                  <label className="block text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2 ml-1">Trạng thái hoạt động</label>
+                  <select
+                    name="status"
+                    value={data.status}
+                    onChange={handleChange}
+                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl font-black text-gray-700 focus:ring-4 focus:ring-amber-50/50 focus:border-amber-500 outline-none transition-all appearance-none cursor-pointer shadow-inner"
+                  >
+                    <option value="active">ĐANG HOẠT ĐỘNG</option>
+                    <option value="inactive">TẠM KHÓA / NGỪNG</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 ml-1">Giới tính</label>
+                  <select
+                    name="gender"
+                    value={data.gender}
+                    onChange={handleChange}
+                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl font-black text-gray-700 focus:ring-4 focus:ring-blue-50/50 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer shadow-inner"
+                  >
+                    <option value="">CHƯA XÁC ĐỊNH</option>
+                    <option value="male">NAM</option>
+                    <option value="female">NỮ</option>
+                    <option value="other">KHÁC</option>
+                  </select>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="block text-sm font-bold text-gray-700">
-                Giới tính
-              </label>
-              <select
-                name="gender"
-                value={data.gender}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-md font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
-              >
-                <option value="">Chưa xác định</option>
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
-              </select>
+
+            <div className="p-6 rounded-[28px] bg-gradient-to-br from-indigo-50 to-blue-100 border border-blue-200 shadow-sm flex items-center gap-4 group hover:bg-blue-100 transition-colors">
+              <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                <Sparkles size={24} className="text-blue-600" />
+              </div>
+              <div>
+                <p className="text-[11px] font-black text-blue-800 uppercase tracking-wider">Hỗ trợ khách hàng</p>
+                <p className="text-[11px] font-bold text-blue-600/70 uppercase tracking-tighter mt-0.5">Tài khoản này có thể tham gia tích điểm và nhận ưu đãi từ hệ thống.</p>
+              </div>
             </div>
           </div>
+
         </div>
-      </form>
+      </div>
     </Dialog>
   );
 }
-

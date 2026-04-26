@@ -2,78 +2,59 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Quote, MessageSquare, CheckCircle2 } from 'lucide-react';
 
-const reviews = [
+const MOCK_REVIEWS = [
     {
         id: 1,
-        name: "Nguyễn Thu Hà",
-        role: "Thực khách thân thiết",
-        content: "Bánh tằm ở đây ngon xuất sắc, nước cốt dừa béo ngậy mà không bị ngán. Sợi bánh dai mềm vừa phải, ăn kèm xíu mại rất hợp. Sẽ ủng hộ dài dài!",
+        customer_name: "Nguyễn Thu Hà",
+        comment: "Bánh tằm ở đây ngon xuất sắc, nước cốt dừa béo ngậy mà không bị ngán. Sợi bánh dai mềm vừa phải, ăn kèm xíu mại rất hợp. Sẽ ủng hộ dài dài!",
         rating: 5,
-        avatar: "H"
+        products: { name: "Bánh tằm bì xíu mại" }
     },
     {
         id: 2,
-        name: "Trần Minh Tuấn",
-        role: "Food Reviewer",
-        content: "Không gian quán ấm cúng, nhân viên nhiệt tình. Món ăn được trình bày đẹp mắt, hương vị chuẩn miền Tây. Rất thích món bánh tằm bì ở đây.",
+        customer_name: "Trần Minh Tuấn",
+        comment: "Không gian quán ấm cúng, nhân viên nhiệt tình. Món ăn được trình bày đẹp mắt, hương vị chuẩn miền Tây. Rất thích món bánh tằm bì ở đây.",
         rating: 5,
-        avatar: "T"
-    },
-    {
-        id: 3,
-        name: "Lê Thị Mai",
-        role: "Khách hàng",
-        content: "Giao hàng nhanh, đóng gói cẩn thận. Đồ ăn vẫn còn nóng hổi khi nhận được. Giá cả rất hợp lý cho chất lượng như thế này.",
-        rating: 4,
-        avatar: "M"
-    },
-    {
-        id: 4,
-        name: "Phạm Văn Đức",
-        role: "Khách hàng thường xuyên",
-        content: "Đã ăn ở đây nhiều lần rồi, chất lượng luôn ổn định. Bánh tằm nóng giòn, nước cốt dừa đậm đà. Nhân viên phục vụ rất chuyên nghiệp và thân thiện.",
-        rating: 5,
-        avatar: "Đ"
-    },
-    {
-        id: 5,
-        name: "Hoàng Thị Lan",
-        role: "Food Blogger",
-        content: "Món ăn ở đây thực sự đáng giá. Bánh tằm tươi ngon, gia vị vừa miệng. Đặc biệt là phần nước cốt dừa rất đặc biệt, không giống nơi khác. Đáng để thử!",
-        rating: 5,
-        avatar: "L"
-    },
-    {
-        id: 6,
-        name: "Nguyễn Văn An",
-        role: "Khách hàng",
-        content: "Lần đầu thử bánh tằm ở đây và rất ấn tượng. Món ăn ngon, giá cả phải chăng. Sẽ quay lại và giới thiệu cho bạn bè. Cảm ơn quán rất nhiều!",
-        rating: 5,
-        avatar: "A"
-    },
-    {
-        id: 7,
-        name: "Trần Thị Hương",
-        role: "Thực khách",
-        content: "Bánh tằm ở đây làm tôi nhớ về quê nhà. Hương vị chân chất, đậm đà. Phục vụ nhanh chóng, không gian sạch sẽ. Chắc chắn sẽ quay lại nhiều lần nữa.",
-        rating: 5,
-        avatar: "H"
+        products: { name: "Bánh tằm bì" }
     }
 ];
 
 export default function Testimonials() {
+    const [reviews, setReviews] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [autoplay, setAutoplay] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!autoplay) return;
+        const fetchReviews = async () => {
+            try {
+                const res = await fetch('/api/home-testimonials?limit=8');
+                const data = await res.json();
+                if (data.success && data.testimonials && data.testimonials.length > 0) {
+                    setReviews(data.testimonials);
+                } else {
+                    setReviews(MOCK_REVIEWS.map(r => ({ ...r, content: r.comment })));
+                }
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+                setReviews(MOCK_REVIEWS.map(r => ({ ...r, content: r.comment })));
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchReviews();
+    }, []);
+
+    useEffect(() => {
+        if (!autoplay || reviews.length <= 1) return;
         const interval = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % reviews.length);
-        }, 5000);
+        }, 6000);
         return () => clearInterval(interval);
-    }, [autoplay]);
+    }, [autoplay, reviews.length]);
 
     const nextReview = () => {
         setAutoplay(false);
@@ -85,91 +66,117 @@ export default function Testimonials() {
         setCurrentIndex((prev) => (prev - 1 + reviews.length) % reviews.length);
     };
 
+    if (loading) {
+        return (
+            <div className="section-spacing container mx-auto px-4 flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    if (reviews.length === 0) return null;
+
     return (
         <section className="section-spacing relative overflow-hidden" aria-label="Đánh giá khách hàng">
-            {/* Background decoration */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-5 pointer-events-none">
-                <div className="absolute top-10 left-10 w-64 h-64 bg-primary rounded-full blur-3xl"></div>
-                <div className="absolute bottom-10 right-10 w-80 h-80 bg-secondary rounded-full blur-3xl"></div>
+            {/* Background elements - subtler */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
+                <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-8 md:mb-8">
-                    <span className="text-secondary font-bold tracking-wider uppercase text-xs md:text-sm">Ý kiến khách hàng</span>
-                    <h2 className="text-3xl md:text-4xl font-lobster text-gray-800 mt-2">Khách hàng nói gì về chúng tôi?</h2>
+            <div className="page-container relative z-10">
+                <div className="text-center mt-4 mb-4 md:mb-8">
+                    <h2 className="text-2xl md:text-3xl font-lobster text-gray-800 leading-tight px-4">
+                        Khách hàng nói gì về <br></br><span className="text-primary">Bánh Tằm Cô Đào?</span>
+                    </h2>
                 </div>
 
-                <div className="max-w-4xl mx-auto">
-                    <div className="relative bg-white rounded-2xl shadow-xl p-6 md:p-12 border border-gray-100">
-                        <Quote className="absolute top-4 left-4 md:top-8 md:left-8 text-primary/20 w-10 h-10 md:w-16 md:h-16 -z-0" />
+                <div className="relative max-w-2xl mx-auto px-4">
+                    <AnimatePresence mode='wait'>
+                        <motion.div
+                            key={currentIndex}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                            className="bg-white rounded-2xl shadow-md shadow-gray-200/50 border border-gray-200 p-6 md:p-10 text-center relative overflow-hidden"
+                        >
+                            {/* Smaller decorative quotes */}
+                            <Quote className="absolute top-6 left-6 text-primary/5 w-12 h-12 pointer-events-none" />
+                            <Quote className="absolute bottom-6 right-6 text-primary/5 w-12 h-12 pointer-events-none rotate-180" />
 
-                        <div className="relative z-10">
-                            <AnimatePresence mode='wait'>
-                                <motion.div
-                                    key={currentIndex}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="flex flex-col items-center text-center"
-                                >
-                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-xl md:text-2xl font-bold mb-4 md:mb-6 shadow-lg">
-                                        {reviews[currentIndex].avatar}
-                                    </div>
+                            <div className="relative z-10 flex flex-col items-center">
+                                <div className="flex gap-0.5 mb-5">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            size={16}
+                                            className={`${i < reviews[currentIndex].rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
+                                        />
+                                    ))}
+                                </div>
 
-                                    <div className="flex gap-1 mb-3 md:mb-4">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
-                                                className={`w-4 h-4 md:w-5 md:h-5 ${i < reviews[currentIndex].rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-                                            />
-                                        ))}
-                                    </div>
+                                <p className="text-gray-600 text-base md:text-xl font-medium italic leading-relaxed mb-8 max-w-lg mx-auto">
+                                    &quot;{reviews[currentIndex].content}&quot;
+                                </p>
 
-                                    <p className="text-gray-600 text-base md:text-xl italic mb-4 md:mb-6 leading-relaxed px-2 md:px-0">
-                                        &quot;{reviews[currentIndex].content}&quot;
-                                    </p>
-
+                                <div className="flex flex-col items-center">
+                                    {reviews[currentIndex].avatar_url ? (
+                                        <img
+                                            src={reviews[currentIndex].avatar_url}
+                                            alt={reviews[currentIndex].customer_name}
+                                            className="w-14 h-14 rounded-full border-2 border-white shadow-lg mb-3 object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-primary to-orange-400 flex items-center justify-center text-white font-bold text-lg shadow-lg border-2 border-white mb-3">
+                                            {reviews[currentIndex].customer_name?.charAt(0) || 'U'}
+                                        </div>
+                                    )}
                                     <div>
-                                        <h4 className="text-lg md:text-xl font-bold text-gray-800">{reviews[currentIndex].name}</h4>
-                                        <p className="text-primary text-xs md:text-sm">{reviews[currentIndex].role}</p>
+                                        <div className="flex items-center justify-center gap-1.5 mb-0.5">
+                                            <h4 className="text-base font-bold text-gray-800">{reviews[currentIndex].customer_name}</h4>
+                                            <CheckCircle2 size={14} className="text-blue-500" />
+                                        </div>
+                                        <p className="text-gray-400 font-medium text-[10px] md:text-xs tracking-wider uppercase">Thực khách</p>
                                     </div>
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
 
-                        {/* Navigation Buttons */}
+                    {/* Navigation Buttons */}
+                    <div className="absolute top-1/2 -left-0 md:-left-8 -translate-y-1/2 z-20">
                         <button
                             onClick={prevReview}
-                            className="absolute top-1/2 -left-3 md:-left-12 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:scale-110 transition-all duration-300 group"
-                            aria-label="Previous review"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white rounded-full shadow-2xl flex items-center justify-center text-gray-800 hover:text-white hover:bg-primary transition-all duration-300 group active:scale-90"
                         >
-                            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-x-0.5 transition-transform" />
+                            <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                         </button>
+                    </div>
+                    <div className="absolute top-1/2 -right-0 md:-right-8 -translate-y-1/2 z-20">
                         <button
                             onClick={nextReview}
-                            className="absolute top-1/2 -right-3 md:-right-12 -translate-y-1/2 w-8 h-8 md:w-12 md:h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-gray-600 hover:text-primary hover:scale-110 transition-all duration-300 group"
-                            aria-label="Next review"
+                            className="w-10 h-10 md:w-14 md:h-14 bg-white rounded-full shadow-2xl flex items-center justify-center text-gray-800 hover:text-white hover:bg-primary transition-all duration-300 group active:scale-90"
                         >
-                            <ChevronRight className="w-5 h-5 md:w-6 md:h-6 group-hover:translate-x-0.5 transition-transform" />
+                            <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
+                </div>
 
-                    {/* Dots */}
-                    <div className="flex justify-center gap-2 mt-6 md:mt-8">
-                        {reviews.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => {
-                                    setAutoplay(false);
-                                    setCurrentIndex(index);
-                                }}
-                                className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 ${index === currentIndex ? 'bg-primary w-6 md:w-8' : 'bg-gray-300 hover:bg-primary/50'
-                                    }`}
-                                aria-label={`Go to review ${index + 1}`}
-                            />
-                        ))}
-                    </div>
+                {/* Progress indicators */}
+                <div className="flex justify-center gap-3 mt-12">
+                    {reviews.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => {
+                                setAutoplay(false);
+                                setCurrentIndex(index);
+                            }}
+                            className={`h-1.5 rounded-full transition-all duration-500 ${index === currentIndex ? 'bg-primary w-12' : 'bg-gray-200 w-4 hover:bg-primary/30'
+                                }`}
+                            aria-label={`Go to review ${index + 1}`}
+                        />
+                    ))}
                 </div>
             </div>
         </section>

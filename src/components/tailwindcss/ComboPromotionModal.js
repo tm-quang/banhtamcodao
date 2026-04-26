@@ -201,8 +201,9 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
             </div>
             <div className="flex items-center gap-3">
                 <Button
+                    variant="outline"
                     onClick={onClose}
-                    className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 text-gray-400 hover:text-gray-600 bg-white font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+                    className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
                 >
                     Hủy bỏ
                 </Button>

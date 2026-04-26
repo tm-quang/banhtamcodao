@@ -58,10 +58,10 @@ export default function ProductCard({ product }) {
             </span>
           </div>
 
-          {/* Khối Nội dung phụ (Giá giảm & Khuyến mãi) - Chỉ hiện nếu có ít nhất 1 loại */}
+          {/* Khối Nội dung phụ (Giá giảm & Khuyến mãi) - Cố định các tầng để giữ hàng ngang nhưng chỉ hiện khi có dữ liệu để thu gọn card khi cần */}
           {(hasDiscount || product.promotion_text) ? (
             <div className="flex flex-col gap-1">
-              {/* Tầng 1: Giá gốc & Badge % (Slot cố định) */}
+              {/* Tầng 1: Giá gốc & Badge % (Slot cố định h-6/h-7) */}
               <div className="h-6 md:h-7 flex items-center">
                 {hasDiscount && (
                   <div className="flex items-center gap-2 lg:items-baseline lg:gap-3">
@@ -75,7 +75,7 @@ export default function ProductCard({ product }) {
                 )}
               </div>
 
-              {/* Tầng 2: Khuyến mãi Combo (Slot cố định) */}
+              {/* Tầng 2: Khuyến mãi Combo (Slot cố định h-5/h-6) */}
               <div className="h-5 md:h-6 flex items-center">
                 {product.promotion_text && (
                   <div className="flex items-center gap-1 text-emerald-500 rounded-lg w-fit transition-all">
@@ -87,13 +87,7 @@ export default function ProductCard({ product }) {
                 )}
               </div>
             </div>
-          ) : (
-            /** 
-             * Nếu không có cả 2, không render gì cả để hàng tự co gọn 
-             * (CSS Grid row sẽ tự tính toán chiều cao nhỏ hơn)
-             */
-            null
-          )}
+          ) : null}
 
           <button
             onClick={handleAddToCart}

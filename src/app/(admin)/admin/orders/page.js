@@ -208,8 +208,9 @@ const OrderDetailModal = ({ open, onClose, order }) => {
     const footer = (
         <div className="flex items-center justify-end gap-3 w-full">
             <Button
+                variant="outline"
                 onClick={onClose}
-                className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-8 transition-all active:scale-95 shadow-sm"
+                className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-8 transition-all active:scale-95 shadow-sm"
             >
                 Đóng cửa sổ
             </Button>

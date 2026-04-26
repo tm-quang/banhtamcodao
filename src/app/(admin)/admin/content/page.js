@@ -1,13 +1,13 @@
 /**
- * Admin Customer Groups Management Page - Premium UI
- * @file src/app/(admin)/admin/customer-groups/page.js
+ * Admin Content Management Page - Testimonials Premium UI
+ * @file src/app/(admin)/admin/content/page.js
  */
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  PlusCircle, Edit, Trash2, Search, Users, Award, X,
-  CheckCircle, RefreshCw, AlertCircle, Zap, Shield
+  MessageSquare, PlusCircle, Edit, Trash2, Search, X, Star,
+  CheckCircle, XCircle, RefreshCw, AlertCircle, FileText
 } from 'lucide-react';
 import { Button } from '@/components/tailwindcss/ui/Button';
 import { Input } from '@/components/tailwindcss/ui/Input';
@@ -16,173 +16,130 @@ import { Tooltip } from '@/components/tailwindcss/ui/Tooltip';
 import { AlertModal } from '@/components/tailwindcss/ui/AlertModal';
 import { SkeletonStatsCard } from '@/components/tailwindcss/ui/Skeleton';
 import DataTable from '@/components/tailwindcss/ui/DataTable';
-import CustomerGroupModal from '@/components/tailwindcss/CustomerGroupModal';
+import TestimonialModal from '@/components/tailwindcss/TestimonialModal';
 import { useRouter } from 'next/navigation';
 
-const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('vi-VN').format(amount);
-};
-
-export default function CustomerGroupsPage() {
+export default function ContentManagementPage() {
   const router = useRouter();
-  const [groups, setGroups] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingGroup, setEditingGroup] = useState(null);
-  const [deletingGroup, setDeletingGroup] = useState(null);
+  const [editingItem, setEditingItem] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [deletingId, setDeletingId] = useState(null);
   const [alert, setAlert] = useState({ open: false, message: '', title: '', type: 'info' });
 
-  const fetchGroups = async () => {
+  const fetchTestimonials = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/admin/customer-groups');
+      const res = await fetch('/api/admin/content');
       const data = await res.json();
       if (data.success) {
-        setGroups(data.groups || []);
+        setTestimonials(data.testimonials || []);
       }
     } catch (error) {
-      console.error('Error fetching customer groups:', error);
-      showAlert('Không thể tải danh sách nhóm khách hàng', 'Lỗi', 'error');
+      console.error('Failed to fetch testimonials:', error);
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    fetchGroups();
+    fetchTestimonials();
   }, []);
 
-  const showAlert = (message, title = 'Thông báo', type = 'info') => {
-    setAlert({ open: true, message, title, type });
-  };
-
-  // Calculate stats
-  const stats = useMemo(() => ({
-    total: groups.length,
-    active: groups.filter(g => g.is_active).length,
-    inactive: groups.filter(g => !g.is_active).length,
-  }), [groups]);
-
-  // Filter groups
-  const filteredGroups = useMemo(() => {
+  const filteredData = useMemo(() => {
     const search = searchTerm.toLowerCase();
-    return groups.filter(g => {
-      const matchesSearch = g.name?.toLowerCase().includes(search) ||
-        g.description?.toLowerCase().includes(search);
-      const matchesStatus = statusFilter === 'all' ||
-        (statusFilter === 'active' ? g.is_active : !g.is_active);
+    return testimonials.filter(t => {
+      const matchesSearch = !searchTerm ||
+        t.customer_name?.toLowerCase().includes(search) ||
+        t.content?.toLowerCase().includes(search);
+      const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [groups, searchTerm, statusFilter]);
+  }, [testimonials, searchTerm, statusFilter]);
 
-  const handleSave = async (groupData) => {
-    const isEditMode = Boolean(groupData.id);
-    const url = '/api/admin/customer-groups';
-    const method = isEditMode ? 'PUT' : 'POST';
+  const handleSave = async (formData) => {
+    const isEdit = Boolean(editingItem?.id);
+    const url = isEdit ? `/api/admin/content/${editingItem.id}` : '/api/admin/content';
+    const method = isEdit ? 'PUT' : 'POST';
 
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(groupData),
+        body: JSON.stringify(formData)
       });
-
-      const data = await res.json();
-      if (data.success) {
+      const result = await res.json();
+      if (res.ok && result.success) {
         setIsModalOpen(false);
-        setEditingGroup(null);
-        await fetchGroups();
+        fetchTestimonials();
         router.refresh();
-        showAlert(isEditMode ? 'Cập nhật nhóm thành công!' : 'Thêm nhóm thành công!', 'Thành công', 'success');
+        setAlert({ open: true, title: 'Thành công', message: isEdit ? 'Cập nhật thành công!' : 'Thêm mới thành công!', type: 'success' });
       } else {
-        showAlert('Lỗi: ' + (data.message || 'Không thể lưu nhóm khách hàng'), 'Lỗi', 'error');
+        setAlert({ open: true, title: 'Lỗi', message: result.message || 'Có lỗi xảy ra', type: 'error' });
       }
     } catch (error) {
-      showAlert('Lỗi: Không thể lưu nhóm khách hàng', 'Lỗi', 'error');
+      setAlert({ open: true, title: 'Lỗi', message: 'Lỗi kết nối server', type: 'error' });
     }
   };
 
-  const handleDelete = async () => {
-    if (!deletingGroup) return;
+  const confirmDelete = async () => {
+    if (!deletingId) return;
     try {
-      const res = await fetch(`/api/admin/customer-groups?id=${deletingGroup.id}`, {
-        method: 'DELETE'
-      });
-      const data = await res.json();
-      if (data.success) {
-        setDeletingGroup(null);
-        await fetchGroups();
+      const res = await fetch(`/api/admin/content/${deletingId}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        setDeletingId(null);
+        fetchTestimonials();
         router.refresh();
-        showAlert('Vô hiệu hóa nhóm thành công!', 'Thành công', 'success');
-      } else {
-        showAlert('Lỗi: ' + (data.message || 'Không thể xóa nhóm'), 'Lỗi', 'error');
+        setAlert({ open: true, title: 'Thành công', message: 'Xóa thành công!', type: 'success' });
       }
     } catch (error) {
-      showAlert('Lỗi: Không thể xóa nhóm', 'Lỗi', 'error');
+      setAlert({ open: true, title: 'Lỗi', message: 'Xóa thất bại', type: 'error' });
     }
   };
 
   const columns = useMemo(() => [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      cell: ({ getValue }) => (
-        <span className="text-xs font-black text-blue-600 font-mono">#{getValue()}</span>
-      ),
-      size: 70
-    },
-    {
-      accessorKey: 'name',
-      header: 'Nhóm khách hàng',
+      accessorKey: 'customer_name',
+      header: 'Khách hàng',
       cell: ({ getValue, row }) => (
-        <div className="flex flex-col py-0.5">
-          <span className="text-base font-bold text-gray-900 leading-tight">
-            {getValue()}
-          </span>
-          {row.original.description && (
-            <span className="text-xs text-blue-600 font-medium line-clamp-1 mt-0.5">
-              {row.original.description}
-            </span>
-          )}
+        <div className="flex items-center gap-3 py-1">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 flex items-center justify-center text-blue-600 font-black text-xs shadow-inner">
+            {getValue()?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold text-gray-900 leading-tight">{getValue()}</span>
+            <div className="flex gap-0.5 mt-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={10} className={i < row.original.rating ? "text-amber-400 fill-amber-400" : "text-gray-200"} />
+              ))}
+            </div>
+          </div>
         </div>
       ),
-      size: 250
+      size: 200
     },
     {
-      accessorKey: 'min_points',
-      header: 'Điểm tối thiểu',
+      accessorKey: 'content',
+      header: 'Nội dung hiển thị',
       cell: ({ getValue }) => (
-        <div className="flex items-center">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-black uppercase tracking-tight border border-amber-100 shadow-sm">
-            <Award size={12} className="shrink-0" />
-            {formatCurrency(getValue() || 0)} ĐIỂM
-          </span>
+        <div className="max-w-[400px]">
+          <p className="text-sm text-gray-600 line-clamp-2 italic leading-relaxed">"{getValue()}"</p>
         </div>
       ),
-      size: 160
+      size: 400
     },
     {
-      accessorKey: 'points_per_amount',
-      header: 'Tỷ lệ tích điểm',
-      cell: ({ getValue }) => (
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-gray-900">10k = {getValue() || 0} điểm</span>
-          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Điểm / 10.000 VNĐ</span>
-        </div>
-      ),
-      size: 150
-    },
-    {
-      accessorKey: 'is_active',
+      accessorKey: 'status',
       header: 'Trạng thái',
       cell: ({ getValue }) => (
-        <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-tight shadow-sm ${getValue() ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'
-          }`}>
-          {getValue() ? 'Hoạt động' : 'Tắt'}
+        <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-tight shadow-sm ${getValue() === 'active' ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'}`}>
+          {getValue() === 'active' ? 'Hiện' : 'Ẩn'}
         </span>
       ),
-      size: 130
+      size: 100
     },
     {
       id: 'actions',
@@ -191,7 +148,7 @@ export default function CustomerGroupsPage() {
         <div className="flex items-center justify-center gap-1.5">
           <Tooltip content="Sửa">
             <button
-              onClick={() => { setEditingGroup(row.original); setIsModalOpen(true); }}
+              onClick={() => { setEditingItem(row.original); setIsModalOpen(true); }}
               className="w-10 h-10 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-blue-50"
             >
               <Edit size={18} />
@@ -199,7 +156,7 @@ export default function CustomerGroupsPage() {
           </Tooltip>
           <Tooltip content="Xóa">
             <button
-              onClick={() => setDeletingGroup(row.original)}
+              onClick={() => setDeletingId(row.original.id)}
               className="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-red-50"
             >
               <Trash2 size={18} />
@@ -207,8 +164,8 @@ export default function CustomerGroupsPage() {
           </Tooltip>
         </div>
       ),
-      size: 100,
-    },
+      size: 100
+    }
   ], []);
 
   return (
@@ -218,32 +175,32 @@ export default function CustomerGroupsPage() {
         <div className="flex flex-col">
           <div className="flex items-center gap-2.5 mb-0.5">
             <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
-              <Users size={18} />
+              <FileText size={18} />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Nhóm khách hàng</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Quản lý nội dung</h1>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý cấp bậc và quyền lợi thành viên ({stats.total} nhóm)</p>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý đánh giá khách hàng (Testimonials) trang chủ ({testimonials.length} nội dung)</p>
         </div>
         <div className="flex items-center gap-3">
           <Button
             startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-            onClick={fetchGroups}
+            onClick={fetchTestimonials}
             className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
           >
             Làm mới
           </Button>
           <Button
             startIcon={<PlusCircle size={20} />}
-            onClick={() => { setEditingGroup(null); setIsModalOpen(true); }}
+            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
             className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
           >
-            Thêm nhóm mới
+            Thêm đánh giá mới
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {loading ? (
           Array(3).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
@@ -252,15 +209,15 @@ export default function CustomerGroupsPage() {
               onClick={() => { setStatusFilter('all'); setSearchTerm(''); }}
               className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'all' ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
               <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Users size={110} />
+                <MessageSquare size={110} />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Users size={20} />
+                  <MessageSquare size={20} />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng số nhóm</p>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{testimonials.length}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng số đánh giá</p>
                 </div>
               </div>
             </div>
@@ -269,15 +226,15 @@ export default function CustomerGroupsPage() {
               onClick={() => setStatusFilter('active')}
               className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
               <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Shield size={110} />
+                <CheckCircle size={110} />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Shield size={20} />
+                  <CheckCircle size={20} />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Nhóm hoạt động</p>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{testimonials.filter(t => t.status === 'active').length}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đang hiển thị</p>
                 </div>
               </div>
             </div>
@@ -286,15 +243,15 @@ export default function CustomerGroupsPage() {
               onClick={() => setStatusFilter('inactive')}
               className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'ring-4 ring-amber-300 ring-offset-2' : 'shadow-amber-100'}`}>
               <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Zap size={110} />
+                <XCircle size={110} />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Zap size={20} />
+                  <XCircle size={20} />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Nhóm tạm tắt</p>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{testimonials.filter(t => t.status === 'inactive').length}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đang tạm ẩn</p>
                 </div>
               </div>
             </div>
@@ -307,7 +264,7 @@ export default function CustomerGroupsPage() {
         <div className="flex-1 min-w-[250px]">
           <div className="relative group">
             <Input
-              placeholder="TÌM KIẾM TÊN NHÓM, MÔ TẢ..."
+              placeholder="TÌM KIẾM THEO TÊN KHÁCH, NỘI DUNG..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
@@ -322,70 +279,68 @@ export default function CustomerGroupsPage() {
               className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
               <X size={14} />
-              Xóa bộ lọc
+              Xóa lọc
             </button>
           )}
           <div className="h-8 w-px bg-gray-200" />
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredGroups.length} nhóm</span>
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredData.length} nội dung</span>
         </div>
       </div>
 
       {/* Data Table */}
       <div className="flex-1 min-h-[600px]">
         <DataTable
-          data={filteredGroups}
+          data={filteredData}
           columns={columns}
           loading={loading}
           searchable={false}
           pageSize={25}
-          emptyStateIcon={<Users size={48} className="text-gray-400" />}
-          emptyStateTitle="Không có nhóm khách hàng"
-          emptyStateDescription="Chưa có nhóm nào để hiển thị"
+          emptyStateIcon={<FileText size={48} className="text-gray-400" />}
+          emptyStateTitle="Không có nội dung"
+          emptyStateDescription="Chưa có đánh giá testimonial nào để hiển thị"
         />
       </div>
 
-      {/* Modal */}
-      <CustomerGroupModal
+      {/* Premium Testimonial Modal */}
+      <TestimonialModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
-        groupToEdit={editingGroup}
+        testimonialToEdit={editingItem}
       />
 
       {/* Delete Confirmation */}
       <Dialog
-        open={Boolean(deletingGroup)}
-        onClose={() => setDeletingGroup(null)}
+        open={deletingId !== null}
+        onClose={() => setDeletingId(null)}
         size="sm"
         title={
-          <div className="flex items-center gap-2 text-red-600">
+          <div className="flex items-center gap-2 text-red-600 font-black uppercase tracking-tight">
             <AlertCircle size={22} />
-            <span className="font-bold uppercase tracking-tight">Xác nhận vô hiệu hóa</span>
+            <span>Xác nhận xóa</span>
           </div>
         }
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex justify-end gap-3 w-full">
             <Button
-              onClick={() => setDeletingGroup(null)}
-              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+              variant="outline"
+              onClick={() => setDeletingId(null)}
+              className="!rounded-2xl px-6 h-10 font-black uppercase text-[11px] tracking-widest"
             >
-              Hủy bỏ
+              Hủy
             </Button>
             <Button
-              onClick={handleDelete}
-              className="flex items-center justify-center h-10 !rounded-2xl bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-100 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
+              onClick={confirmDelete}
+              className="!rounded-2xl bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-100 px-8 h-10 font-black uppercase text-[11px] tracking-widest"
             >
-              Vô hiệu hóa
+              Xóa vĩnh viễn
             </Button>
           </div>
         }
       >
-        <p className="text-gray-700">
-          Bạn có chắc chắn muốn vô hiệu hóa nhóm <span className="font-black">"{deletingGroup?.name}"</span>? Các khách hàng trong nhóm này có thể bị ảnh hưởng về quyền lợi tích điểm.
-        </p>
+        <p className="text-gray-600 text-sm font-medium">Bạn có chắc muốn xóa đánh giá này khỏi trang chủ? Hành động này không thể hoàn tác.</p>
       </Dialog>
 
-      {/* Alert Modal */}
       <AlertModal
         open={alert.open}
         onClose={() => setAlert({ ...alert, open: false })}

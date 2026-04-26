@@ -23,7 +23,6 @@ const menuSections = [
             { href: '/admin/categories', icon: FolderTree, label: 'Danh mục' },
             { href: '/admin/customers', icon: Users, label: 'Khách hàng' },
             { href: '/admin/orders', icon: ShoppingCart, label: 'Đơn hàng' },
-            { href: '/admin/reviews', icon: Star, label: 'Đánh giá' },
             { href: '/admin/analytics', icon: BarChart3, label: 'Phân tích' },
             { href: '/admin/promotions', icon: Ticket, label: 'Khuyến mãi' },
             { href: '/admin/flash-sales', icon: Zap, label: 'Flash Sale' },
@@ -31,10 +30,22 @@ const menuSections = [
         ]
     },
     {
+        title: 'NỘI DUNG, PHẢN HỒI',
+        items: [
+            {
+                label: 'Quản lý chung',
+                icon: FileEdit,
+                submenu: [
+                    { href: '/admin/reviews', label: 'Quản lý đánh giá' },
+                    { href: '/admin/content', label: 'Quản lý nội dung' },
+                ]
+            }
+        ]
+    },
+    {
         title: 'CÀI ĐẶT',
         items: [
             { href: '/admin/customer-groups', icon: UserCog, label: 'Nhóm khách hàng' },
-            { href: '/admin/pages', icon: FileEdit, label: 'Nội dung' },
             { href: '/admin/banners', icon: PictureInPicture, label: 'Banner' },
             { href: '/admin/settings', icon: Settings, label: 'Cài đặt' },
             { href: '/admin/help', icon: HelpCircle, label: 'Trợ giúp' },
@@ -42,9 +53,58 @@ const menuSections = [
     }
 ];
 
+import { ChevronDown, ChevronRight } from 'lucide-react';
+
 // NavItem component
-const NavItem = ({ item, isActive }) => {
+const NavItem = ({ item, isActive, pathname }) => {
+    const [isOpen, setIsOpen] = React.useState(isActive || (item.submenu && item.submenu.some(sub => pathname.startsWith(sub.href))));
     const Icon = item.icon;
+
+    if (item.submenu) {
+        return (
+            <li>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`
+                        w-full group relative flex items-center gap-3 px-4 py-2.5 mx-3 rounded-xl cursor-pointer 
+                        transition-all duration-200
+                        ${isOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'}
+                    `}
+                >
+                    <Icon
+                        size={20}
+                        className={`transition-colors flex-shrink-0 ${isOpen ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`}
+                    />
+                    <span className="text-sm flex-1 text-left font-medium">{item.label}</span>
+                    {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+                
+                {isOpen && (
+                    <ul className="mt-1 ml-9 space-y-1 pr-3">
+                        {item.submenu.map((sub) => {
+                            const isSubActive = pathname.startsWith(sub.href);
+                            return (
+                                <li key={sub.href}>
+                                    <Link
+                                        href={sub.href}
+                                        className={`
+                                            block px-4 py-2 rounded-lg text-[13px] transition-all
+                                            ${isSubActive 
+                                                ? 'bg-blue-100 text-blue-700 font-bold' 
+                                                : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
+                                            }
+                                        `}
+                                    >
+                                        {sub.label}
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
+            </li>
+        );
+    }
 
     return (
         <li>
@@ -86,7 +146,7 @@ const NavItem = ({ item, isActive }) => {
 // Section Title với icon tùy chọn
 const SectionTitle = ({ title, icon: Icon, titleColor = 'text-gray-400', noPadding = false }) => (
     <h3 className={`
-        ${noPadding ? '' : 'px-6 pt-5 pb-2'} text-xs font-bold uppercase tracking-wider
+        ${noPadding ? '' : 'px-6 pt-5 pb-2'} text-[10px] font-black uppercase tracking-[0.15em]
         flex items-center gap-2
         ${titleColor}
     `}>
@@ -95,11 +155,14 @@ const SectionTitle = ({ title, icon: Icon, titleColor = 'text-gray-400', noPaddi
     </h3>
 );
 
+import React from 'react';
+
 export default function TailwindSidebar() {
     const pathname = usePathname();
 
     // Check if item is active
     const isItemActive = (href) => {
+        if (!href) return false;
         if (href === '/admin') {
             return pathname === '/admin' || pathname === '/dashboard';
         }
@@ -107,44 +170,43 @@ export default function TailwindSidebar() {
     };
 
     return (
-        <aside className="w-52 h-screen bg-white border-r border-gray-200 flex flex-col hidden md:flex flex-shrink-0 shadow-lg">
+        <aside className="w-56 h-screen bg-white border-r border-gray-200 flex flex-col hidden md:flex flex-shrink-0 shadow-lg">
             {/* Logo Header */}
-            <div className="h-16 flex items-center px-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <div className="h-20 flex items-center px-6 border-b border-gray-100 bg-white">
                 <Link href="/admin" className="flex items-center gap-3 group">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all">
-                        <Sparkles size={20} className="text-white" />
+                    <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all transform group-hover:scale-105">
+                        <Sparkles size={22} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-tight">
-                            BÁNH TẰM
+                        <h1 className="text-lg font-black text-gray-900 tracking-tighter leading-none">
+                            CÔ ĐÀO
                         </h1>
-                        <p className="text-xs text-gray-500 -mt-0.5 flex items-center gap-1">
-                            <span>CÔ ĐÀO</span>
-                            <span className="px-1.5 py-0.5 bg-red-600 text-white text-[11px] font-bold rounded-full">
-                                ADMIN
-                            </span>
+                        <p className="text-[10px] text-gray-400 font-bold tracking-widest mt-1 flex items-center gap-1 uppercase">
+                            <span>Admin Panel</span>
+                            <span className="w-1 h-1 bg-red-500 rounded-full animate-pulse"></span>
                         </p>
                     </div>
                 </Link>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <nav className="flex-1 overflow-y-auto py-4 scrollbar-hide">
                 {menuSections.map((section, sectionIndex) => {
                     return (
-                        <div key={sectionIndex}>
+                        <div key={sectionIndex} className="mb-4">
                             <SectionTitle
                                 title={section.title}
                                 icon={section.titleIcon}
                                 titleColor={section.titleColor}
                             />
 
-                            <ul className="space-y-0.5">
-                                {section.items.map((item) => (
+                            <ul className="space-y-1">
+                                {section.items.map((item, idx) => (
                                     <NavItem
-                                        key={item.href}
+                                        key={item.href || idx}
                                         item={item}
                                         isActive={isItemActive(item.href)}
+                                        pathname={pathname}
                                     />
                                 ))}
                             </ul>
@@ -154,25 +216,18 @@ export default function TailwindSidebar() {
             </nav>
 
             {/* Footer - Visit Website & Info */}
-            <div className="p-4 border-t border-gray-200 space-y-2 bg-gray-50">
+            <div className="p-4 border-t border-gray-100 bg-gray-50/50">
                 <Link
                     href="/"
                     target="_blank"
-                    className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-full bg-red-500 hover:bg-red-600 text-white hover:text-white transition-all text-sm font-medium border border-gray-200"
+                    className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-gray-900 hover:bg-black text-white transition-all text-xs font-bold shadow-sm"
                 >
-                    <ExternalLink size={16} />
-                    <span>Về trang chủ</span>
+                    <ExternalLink size={14} />
+                    <span>XEM WEBSITE</span>
                 </Link>
-
-                {/* Info Badge */}
-                {/* <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-200">
-                    <Sparkles size={14} className="text-purple-600 flex-shrink-0" />
-                    <p className="text-xs text-purple-700 font-medium">
-                        Trang Tailwind CSS đang được phát triển
-                    </p>
-                </div> */}
             </div>
         </aside>
     );
 }
+
 

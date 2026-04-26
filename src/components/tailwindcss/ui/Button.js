@@ -17,7 +17,7 @@ export function Button({
     secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
-    outline: 'border-0 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
+    outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-gray-500',
     ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
   };
 
@@ -29,13 +29,6 @@ export function Button({
 
   return (
     <button
-      style={{ 
-        border: 'none !important', 
-        outline: 'none !important',
-        borderWidth: '0 !important',
-        borderStyle: 'none !important',
-        boxShadow: 'none'
-      }}
       className={`
         inline-flex items-center justify-center gap-2
         rounded-xl font-semibold
@@ -43,31 +36,10 @@ export function Button({
         transform hover:scale-105 active:scale-95
         focus:outline-none focus:ring-2 focus:ring-offset-2
         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
-        !border-0 !border-none !outline-none
-        hover:!border-0 active:!border-0 focus:!border-0
-        [&]:border-0 [&]:outline-none
         ${variants[variant]}
         ${sizes[size]}
       `.trim() + (className ? ` ${className}` : '')}
       disabled={disabled || loading}
-      onMouseDown={(e) => {
-        e.currentTarget.style.setProperty('border', 'none', 'important');
-        e.currentTarget.style.setProperty('outline', 'none', 'important');
-        e.currentTarget.style.setProperty('border-width', '0', 'important');
-        e.currentTarget.style.setProperty('box-shadow', 'none', 'important');
-      }}
-      onMouseUp={(e) => {
-        e.currentTarget.style.setProperty('border', 'none', 'important');
-        e.currentTarget.style.setProperty('outline', 'none', 'important');
-      }}
-      onFocus={(e) => {
-        e.currentTarget.style.setProperty('border', 'none', 'important');
-        e.currentTarget.style.setProperty('outline', 'none', 'important');
-      }}
-      onBlur={(e) => {
-        e.currentTarget.style.setProperty('border', 'none', 'important');
-        e.currentTarget.style.setProperty('outline', 'none', 'important');
-      }}
       {...props}
     >
       {loading ? (

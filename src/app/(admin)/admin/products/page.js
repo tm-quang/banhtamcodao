@@ -213,7 +213,9 @@ export default function ProductsPage() {
     const active = products.filter(p => p.status === 'active').length;
     const inactive = products.filter(p => p.status === 'inactive' || p.status === 'hidden').length;
     const special = products.filter(p => p.is_special).length;
-    return { total, active, inactive, special };
+    const lowStock = products.filter(p => p.inventory !== null && p.inventory < 10 && p.inventory > 0).length;
+    const outOfStock = products.filter(p => p.inventory === 0).length;
+    return { total, active, inactive, special, lowStock, outOfStock };
   }, [products]);
 
 
@@ -497,19 +499,19 @@ export default function ProductsPage() {
       id: 'actions',
       header: 'Thao tác',
       cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-1">
-          <Tooltip content="Sửa">
+        <div className="flex items-center justify-center gap-1.5">
+          <Tooltip content="Chỉnh sửa">
             <button
               onClick={() => { setEditingProduct(row.original); setIsModalOpen(true); }}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+              className="w-10 h-10 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-blue-50"
             >
               <Edit size={18} />
             </button>
           </Tooltip>
-          <Tooltip content="Xóa">
+          <Tooltip content="Xóa vĩnh viễn">
             <button
               onClick={() => setDeletingProduct(row.original)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+              className="w-10 h-10 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-2xl flex items-center justify-center transition-all shadow-lg shadow-red-50"
             >
               <Trash2 size={18} />
             </button>
@@ -523,19 +525,32 @@ export default function ProductsPage() {
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-2">
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold text-gray-900">Quản lý món</h1>
-          <span className="text-sm text-gray-500">({stats.total} món)</span>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
+              <Package size={18} fill="currentColor" />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Quản lý món</h1>
+          </div>
+          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý danh sách thực đơn và tồn kho ({stats.total} món)</p>
         </div>
-        <Button
-          variant="outline"
-          startIcon={<RefreshCw size={16} />}
-          onClick={() => { fetchProducts(); fetchCategories(); }}
-          className="!bg-gray-500 !hover:bg-gray-600 text-white"
-        >
-          Làm mới
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+            onClick={() => { fetchProducts(); fetchCategories(); }}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
+          >
+            Làm mới
+          </Button>
+          <Button
+            startIcon={<PlusCircle size={20} />}
+            onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
+          >
+            Thêm món mới
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -546,79 +561,114 @@ export default function ProductsPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
         {loading ? (
-          <>
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-            <SkeletonStatsCard />
-          </>
+          Array(6).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
           <>
             {/* Tổng món */}
-            <div 
+            <div
               onClick={() => setFilters(prev => ({ ...prev, status: '', isSpecial: null }))}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${(!filters.status && filters.isSpecial === null) ? 'ring-4 ring-blue-300 ring-offset-2' : ''}`}>
-              <Package size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Package size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.total}</p>
-                <p className="text-sm opacity-90">Tổng món</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${(!filters.status && filters.isSpecial === null) ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Package size={110} fill="currentColor" />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <Package size={20} fill="currentColor" />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng món</p>
+                </div>
               </div>
             </div>
 
             {/* Đang bán */}
-            <div 
+            <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'active', isSpecial: null }))}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-green-600 to-green-700 text-white shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${filters.status === 'active' ? 'ring-4 ring-green-300 ring-offset-2' : ''}`}>
-              <CheckCircle size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <CheckCircle size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.active}</p>
-                <p className="text-sm opacity-90">Đang bán</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'active' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <CheckCircle size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <CheckCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đang bán</p>
+                </div>
               </div>
             </div>
 
             {/* Ngưng bán */}
-            <div 
+            <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'inactive', isSpecial: null }))}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-gray-500 to-gray-600 text-white shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${filters.status === 'inactive' ? 'ring-4 ring-gray-300 ring-offset-2' : ''}`}>
-              <XCircle size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <XCircle size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.inactive}</p>
-                <p className="text-sm opacity-90">Ngưng bán</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'inactive' ? 'ring-4 ring-gray-300 ring-offset-2' : 'shadow-gray-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <XCircle size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <XCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Ngưng bán</p>
+                </div>
               </div>
             </div>
 
-            {/* Hot */}
-            <div 
+            {/* Bán chạy */}
+            <div
               onClick={() => setFilters(prev => ({ ...prev, status: '', isSpecial: true }))}
-              className={`relative p-4 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1 ${filters.isSpecial === true ? 'ring-4 ring-amber-300 ring-offset-2' : ''}`}>
-              <Star size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Star size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">{stats.special}</p>
-                <p className="text-sm opacity-90">Hot</p>
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.isSpecial === true ? 'ring-4 ring-amber-300 ring-offset-2' : 'shadow-amber-100'}`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Star size={110} fill="currentColor" />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <Star size={20} fill="currentColor" />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.special}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Món Hot</p>
+                </div>
               </div>
             </div>
 
-            {/* Coming Soon placeholders */}
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <Star size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Star size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">0</p>
-                <p className="text-sm opacity-90">COMING SOON</p>
+            {/* Sắp hết */}
+            <div
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-rose-100`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <ShoppingBag size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <ShoppingBag size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.lowStock}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Sắp hết hàng</p>
+                </div>
               </div>
             </div>
-            <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl hover:-translate-y-1">
-              <Star size={80} className="absolute bottom-0 right-0 opacity-10" />
-              <div className="relative z-10">
-                <Star size={32} className="opacity-90 mb-3" />
-                <p className="text-3xl font-bold mb-1">0</p>
-                <p className="text-sm opacity-90">COMING SOON</p>
+
+            {/* Hết hàng */}
+            <div
+              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-slate-100`}>
+              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <AlertCircle size={110} />
+              </div>
+              <div className="relative z-10 flex flex-col h-full justify-between">
+                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
+                  <AlertCircle size={20} />
+                </div>
+                <div>
+                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.outOfStock}</p>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã hết hàng</p>
+                </div>
               </div>
             </div>
           </>
@@ -626,61 +676,58 @@ export default function ProductsPage() {
       </div>
 
       {/* Filter & Actions Row */}
-      <div className="p-4 mb-4 rounded-lg bg-gray-50 border border-gray-200">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Search */}
-          <div className="flex-1 min-w-[200px]">
-            <Input
-              value={filters.name}
-              onChange={(e) => handleFilterChange('name', e.target.value)}
-              placeholder="Tìm kiếm..."
-              startIcon={<Search size={16} />}
-            />
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        {/* Search & Selects */}
+        <div className="flex flex-wrap items-center gap-4 flex-1">
+          <div className="flex-1 min-w-[250px]">
+            <div className="relative group">
+              <Input
+                placeholder="TÌM KIẾM TÊN MÓN ĂN..."
+                value={filters.name}
+                onChange={(e) => handleFilterChange('name', e.target.value)}
+                startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+                className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
+              />
+            </div>
           </div>
 
-          {/* Category Filter */}
-          <select
-            value={filters.category}
-            onChange={(e) => handleFilterChange('category', e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="">Danh mục</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.name}>{cat.name}</option>
-            ))}
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={filters.status}
-            onChange={(e) => handleFilterChange('status', e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="">Trạng thái</option>
-            <option value="active">Đang bán</option>
-            <option value="inactive">Ngưng bán</option>
-            <option value="hidden">Ẩn</option>
-          </select>
-
-          {hasActiveFilters && (
-            <Button
-              size="sm"
-              variant="ghost"
-              startIcon={<X size={14} />}
-              onClick={clearFilters}
+          <div className="flex items-center gap-3">
+            <select
+              value={filters.category}
+              onChange={(e) => handleFilterChange('category', e.target.value)}
+              className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
             >
-              Xóa lọc
-            </Button>
-          )}
+              <option value="">Tất cả danh mục</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
 
-          {/* Add Button */}
-          <Button
-            variant="primary"
-            startIcon={<PlusCircle size={18} />}
-            onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
-          >
-            + Thêm món
-          </Button>
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+              className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
+            >
+              <option value="">Tất cả trạng thái</option>
+              <option value="active">Đang bán</option>
+              <option value="inactive">Ngưng bán</option>
+              <option value="hidden">Ẩn</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {hasActiveFilters && (
+            <button
+              onClick={clearFilters}
+              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
+            >
+              <X size={14} />
+              Xóa bộ lọc
+            </button>
+          )}
+          <div className="h-8 w-px bg-gray-200" />
+          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredProducts.length} món</span>
         </div>
       </div>
 
@@ -708,13 +755,37 @@ export default function ProductsPage() {
       />
 
       {/* Delete Confirmation Dialog */}
-      <ConfirmationDialog
+      <Dialog
         open={Boolean(deletingProduct)}
         onClose={() => setDeletingProduct(null)}
-        onConfirm={confirmDelete}
-        title="Xác nhận xóa món"
-        description={`Bạn có chắc chắn muốn xóa món "${deletingProduct?.name}" không?`}
-      />
+        size="sm"
+        title={
+          <div className="flex items-center gap-2 text-red-600">
+            <AlertCircle size={22} />
+            <span className="font-bold uppercase tracking-tight">Xác nhận xóa món</span>
+          </div>
+        }
+        footer={
+          <div className="flex items-center justify-end gap-3 w-full">
+            <Button
+              onClick={() => setDeletingProduct(null)}
+              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+            >
+              Hủy bỏ
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              className="flex items-center justify-center h-10 !rounded-2xl bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-100 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
+            >
+              Xác nhận xóa
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-gray-700">
+          Bạn có chắc chắn muốn xóa món <span className="font-black">"{deletingProduct?.name}"</span> không? Hành động này không thể hoàn tác.
+        </p>
+      </Dialog>
 
       {/* Alert Modal */}
       <AlertModal
