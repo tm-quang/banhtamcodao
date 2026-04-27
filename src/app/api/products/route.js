@@ -78,29 +78,44 @@ export async function GET(request) {
     const { data: rows, error } = await query;
 
     if (error) {
-      throw error;
+      console.error('Supabase error fetching products:', error);
+      return NextResponse.json({ success: false, message: 'Lỗi khi truy vấn sản phẩm: ' + error.message, products: [] }, { status: 500 });
     }
 
     // 2. Lấy danh sách khuyến mãi combo đang hoạt động để hiển thị "Mua 2 tặng 1..."
     const { data: activePromos } = await supabase
       .from('combo_promotions')
-      .select('name, conditions, status')
+      .select('name, description, conditions, status')
       .eq('status', 'active');
 
     const products = rows.map(item => {
       // Tìm khuyến mãi phù hợp cho sản phẩm này
       let promotion_text = null;
       if (activePromos && activePromos.length > 0) {
-        const matchingPromo = activePromos.find(promo => {
-          const rules = promo.conditions?.rules || [];
-          return rules.some(rule => 
-            rule.apply_to_all || 
-            (rule.product_id && rule.product_id === item.id) ||
-            (rule.category_slug && item.categories?.slug === rule.category_slug)
-          );
-        });
-        if (matchingPromo) {
-          promotion_text = matchingPromo.name;
+        try {
+          const matchingPromo = activePromos.find(promo => {
+            // Đảm bảo conditions là object
+            let conditions = promo.conditions;
+            if (typeof conditions === 'string') {
+              try {
+                conditions = JSON.parse(conditions);
+              } catch (e) {
+                return false;
+              }
+            }
+            
+            const rules = conditions?.rules || [];
+            return rules.some(rule => 
+              rule.apply_to_all || 
+              (rule.product_id && rule.product_id === item.id) ||
+              (rule.category_slug && item.categories?.slug === rule.category_slug)
+            );
+          });
+          if (matchingPromo) {
+            promotion_text = matchingPromo.name;
+          }
+        } catch (err) {
+          console.error(`Error matching promo for product ${item.id}:`, err);
         }
       }
 
@@ -128,7 +143,12 @@ export async function GET(request) {
 
   } catch (error) {
     console.error('API Error - /api/products:', error);
-    return NextResponse.json({ success: false, message: error.message, products: [] }, { status: 500 });
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Lỗi server: ' + (error.message || 'Unknown error'), 
+      error: error,
+      products: [] 
+    }, { status: 500 });
   }
 }
 

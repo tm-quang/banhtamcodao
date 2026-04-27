@@ -94,7 +94,7 @@ export default function DataTable({
                     <th
                       key={header.id}
                       className={`
-                        px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600
+                        px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-600
                         ${header.column.getCanSort() ? 'cursor-pointer select-none hover:bg-gray-100' : ''}
                       `}
                       onClick={header.column.getToggleSortingHandler()}
@@ -151,7 +151,7 @@ export default function DataTable({
                     {row.getVisibleCells().map(cell => (
                       <td
                         key={cell.id}
-                        className="whitespace-nowrap px-6 py-2 text-sm text-gray-900"
+                        className="whitespace-nowrap px-3 py-2 text-sm text-gray-900"
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </td>

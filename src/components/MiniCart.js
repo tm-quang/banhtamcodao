@@ -15,6 +15,7 @@ export default function MiniCart({ isOpen, onClose }) {
     const { cartItems, removeFromCart } = useCart();
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const subtotal = cartItems.reduce((total, item) => {
         // Bỏ qua sản phẩm tặng (is_free = true)
@@ -31,11 +32,16 @@ export default function MiniCart({ isOpen, onClose }) {
     };
 
     // Handler để xác nhận xóa
-    const handleConfirmDelete = () => {
+    const handleConfirmDelete = async () => {
         if (itemToDelete) {
-            removeFromCart(itemToDelete.id);
-            setShowDeleteModal(false);
-            setItemToDelete(null);
+            setIsDeleting(true);
+            try {
+                await removeFromCart(itemToDelete.id);
+                setShowDeleteModal(false);
+                setItemToDelete(null);
+            } finally {
+                setIsDeleting(false);
+            }
         }
     };
 
@@ -105,7 +111,7 @@ export default function MiniCart({ isOpen, onClose }) {
                         {/* Danh sách sản phẩm - Compact */}
                         <div className="max-h-64 overflow-y-auto p-3 space-y-2">
                             {cartItems.map(item => (
-                                <div key={item.id} className="flex gap-2 items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <div key={`${item.id}-${item.is_free ? 'free' : 'paid'}-${item.combo_promotion_id || ''}`} className="flex gap-2 items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
                                     <div className="relative w-12 h-12 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
                                         <Image
                                             src={item.image_url}
@@ -121,7 +127,7 @@ export default function MiniCart({ isOpen, onClose }) {
                                             {item.is_free && (
                                                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 px-1.5 py-0.5 rounded-full">
                                                     <Gift size={10} />
-                                                    Tặng
+                                                    Tặng kèm
                                                 </span>
                                             )}
                                         </div>
@@ -129,13 +135,15 @@ export default function MiniCart({ isOpen, onClose }) {
                                             {item.quantity} x {item.is_free ? '0đ' : formatCurrency(item.discount_price ?? item.price)}
                                         </p>
                                     </div>
-                                    <button
-                                        onClick={() => handleDeleteClick(item.id)}
-                                        className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
-                                        aria-label="Xóa sản phẩm"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                                    {!item.is_free && (
+                                        <button
+                                            onClick={() => handleDeleteClick(item.id)}
+                                            className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
+                                            aria-label="Xóa sản phẩm"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -214,9 +222,14 @@ export default function MiniCart({ isOpen, onClose }) {
                                     <button
                                         type="button"
                                         onClick={handleConfirmDelete}
-                                        className="flex-1 bg-red-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-red-600 transition-colors"
+                                        disabled={isDeleting}
+                                        className="flex-1 bg-red-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center disabled:opacity-50"
                                     >
-                                        Xóa
+                                        {isDeleting ? (
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        ) : (
+                                            'Xóa'
+                                        )}
                                     </button>
                                 </div>
                             </div>

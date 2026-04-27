@@ -20,7 +20,8 @@ export async function GET(request) {
                 status, 
                 order_time,
                 delivery_method,
-                payment_status
+                payment_status,
+                status_history
             `)
             .order('order_time', { ascending: false });
 

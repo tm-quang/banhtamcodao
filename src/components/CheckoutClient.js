@@ -14,6 +14,26 @@ const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
 };
 
+// Helper để lấy thời gian hiện tại theo múi giờ Hồ Chí Minh (GMT+7)
+const getHCMNow = () => {
+    return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+};
+
+// Helper để format date thành YYYY-MM-DD
+const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+// Helper để format time thành HH:mm
+const formatTime = (date) => {
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
+
 const TabButton = ({ isActive, onClick, children, icon: Icon }) => (
     <button
         type="button"
@@ -74,13 +94,12 @@ export default function CheckoutClient() {
     const hasAutoFilledRef = useRef(false);
 
     useEffect(() => {
-        const now = new Date();
-        const timezoneOffset = 7 * 60;
-        const localNow = new Date(now.getTime() + timezoneOffset * 60 * 1000);
-        const dateString = localNow.toISOString().split('T')[0];
-        const timeString = localNow.toISOString().split('T')[1].substring(0, 5);
-        setDate(dateString);
-        setTime(timeString);
+        // Mặc định thời gian nhận tại quán là +30 phút
+        const hcmNow = getHCMNow();
+        const minDateTime = new Date(hcmNow.getTime() + 30 * 60000);
+        
+        setDate(formatDate(minDateTime));
+        setTime(formatTime(minDateTime));
     }, []);
 
     // Tự động điền thông tin khách hàng khi đã đăng nhập (chỉ chạy một lần)
@@ -296,21 +315,49 @@ export default function CheckoutClient() {
             return;
         }
 
-        // Check date
-        if (!date) {
+        // Check date (chỉ cho Nhận tại quán)
+        if (deliveryMethod === 'pickup' && !date) {
             focusAndScroll('date', 'Vui lòng chọn ngày nhận hàng');
             return;
         }
 
-        // Check time
-        if (!time) {
+        // Check time (chỉ cho Nhận tại quán)
+        if (deliveryMethod === 'pickup' && !time) {
             focusAndScroll('time', 'Vui lòng chọn thời gian nhận hàng');
             return;
+        }
+
+        // Validate thời gian Nhận tại quán phải lớn hơn hiện tại 30 phút
+        if (deliveryMethod === 'pickup' && date && time) {
+            const hcmNow = getHCMNow();
+            const [y, m, d] = date.split('-').map(Number);
+            const [hh, mm] = time.split(':').map(Number);
+            const selectedDateTime = new Date(y, m - 1, d, hh, mm);
+            
+            const diffInMinutes = (selectedDateTime.getTime() - hcmNow.getTime()) / 60000;
+            if (diffInMinutes < 29) {
+                focusAndScroll('time', 'Thời gian nhận tại quán phải lớn hơn hiện tại ít nhất 30 phút');
+                return;
+            }
         }
 
         setIsSubmitting(true);
 
         try {
+            // Validate cart items before placing order
+            const validationResponse = await fetch('/api/cart/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items_list: cartItems })
+            });
+            const validationData = await validationResponse.json();
+
+            if (!validationData.success) {
+                setError(validationData.message);
+                setIsSubmitting(false);
+                return;
+            }
+
             const formData = new FormData(e.target);
             const phone_number = phone.trim();
             const recipient_name = name.trim();
@@ -345,15 +392,16 @@ export default function CheckoutClient() {
                     total_amount: total,
                     items_list,
                     customer_note,
-                    delivery_date: date,
-                    delivery_time: time
+                    delivery_date: deliveryMethod === 'pickup' ? date : null,
+                    delivery_time: deliveryMethod === 'pickup' ? time : null
                 }),
             });
 
             const data = await response.json();
 
-            if (!data.success) {
-                throw new Error(data.message || 'Có lỗi xảy ra khi đặt hàng');
+            if (!response.ok || !data.success) {
+                const errorMsg = data.details || data.message || data.error || 'Lỗi không xác định khi tạo đơn hàng';
+                throw new Error(errorMsg);
             }
 
             clearCartSilent();
@@ -529,7 +577,7 @@ export default function CheckoutClient() {
                                     Giao hàng tận nơi
                                 </TabButton>
                                 <TabButton isActive={deliveryMethod === 'pickup'} onClick={() => setDeliveryMethod('pickup')} icon={Store}>
-                                    Tự đến quán lấy
+                                    Nhận tại quán
                                 </TabButton>
                             </div>
 
@@ -565,28 +613,45 @@ export default function CheckoutClient() {
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
-                                        Ngày nhận hàng
-                                        <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-gray-100 transition-colors">
-                                            <HelpCircle className="w-4 h-4 text-gray-500" />
-                                        </button>
-                                    </label>
-                                    <input type="date" id="date" value={date} onChange={e => setDate(e.target.value)} required className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" />
+                            {deliveryMethod === 'pickup' && (
+                                <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                                            <Calendar className="w-4 h-4 text-gray-400" />
+                                            Ngày nhận hàng
+                                            <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                                <HelpCircle className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        </label>
+                                        <input 
+                                            type="date" 
+                                            id="date" 
+                                            value={date} 
+                                            min={formatDate(getHCMNow())}
+                                            onChange={e => setDate(e.target.value)} 
+                                            required={deliveryMethod === 'pickup'}
+                                            className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" 
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                                            <Clock className="w-4 h-4 text-gray-400" />
+                                            Thời gian nhận
+                                            <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-gray-100 transition-colors">
+                                                <HelpCircle className="w-4 h-4 text-gray-500" />
+                                            </button>
+                                        </label>
+                                        <input 
+                                            type="time" 
+                                            id="time" 
+                                            value={time} 
+                                            onChange={e => setTime(e.target.value)} 
+                                            required={deliveryMethod === 'pickup'}
+                                            className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" 
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                        <Clock className="w-4 h-4 text-gray-400" />
-                                        Thời gian nhận
-                                        <button type="button" onClick={() => setShowDateTimeModal(true)} className="ml-auto p-1 rounded-full hover:bg-gray-100 transition-colors">
-                                            <HelpCircle className="w-4 h-4 text-gray-500" />
-                                        </button>
-                                    </label>
-                                    <input type="time" id="time" value={time} onChange={e => setTime(e.target.value)} required className="block w-full border border-gray-200 rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all bg-white" />
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </section>
 
@@ -658,7 +723,7 @@ export default function CheckoutClient() {
                                     const unitPrice = item.is_free ? 0 : (item.discount_price ?? item.price);
                                     const itemTotal = unitPrice * item.quantity;
                                     return (
-                                        <div key={item.id} className="flex items-center justify-between py-1 border-b border-gray-200 last:border-0">
+                                        <div key={`${item.id}-${item.is_free ? 'free' : 'paid'}-${item.combo_promotion_id || ''}`} className="flex items-center justify-between py-1 border-b border-gray-200 last:border-0">
                                             <div className="flex items-center gap-3 flex-1 min-w-0 pr-2">
                                                 {/* Ảnh món nhỏ gọn */}
                                                 <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
@@ -669,8 +734,9 @@ export default function CheckoutClient() {
                                                     <div className="flex items-center gap-2">
                                                         <p className="font-bold text-gray-800 text-[15px] line-clamp-1">{item.name}</p>
                                                         {item.is_free && (
-                                                            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded-md">
-                                                                Tặng
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 px-1.5 py-0.5 rounded-full">
+                                                                <Gift size={10} />
+                                                                Tặng kèm
                                                             </span>
                                                         )}
                                                     </div>
@@ -747,9 +813,13 @@ export default function CheckoutClient() {
                                                 type="button"
                                                 onClick={handleApplyVoucher}
                                                 disabled={isValidatingVoucher}
-                                                className="bg-gray-900 text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-gray-800 transition-colors text-sm disabled:opacity-50"
+                                                className="bg-gray-900 text-white font-semibold py-2.5 px-4 rounded-xl hover:bg-gray-800 transition-colors text-sm disabled:opacity-50 min-w-[100px] flex items-center justify-center"
                                             >
-                                                {isValidatingVoucher ? '...' : 'Áp dụng'}
+                                                {isValidatingVoucher ? (
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                ) : (
+                                                    'Áp dụng'
+                                                )}
                                             </button>
                                         </div>
                                         <p className="text-xs text-gray-400 mt-2">
@@ -785,7 +855,7 @@ export default function CheckoutClient() {
                                     className="w-full bg-primary text-white font-bold py-4 rounded-xl text-lg shadow-md shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
                                 >
                                     {isSubmitting ? (
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                     ) : (
                                         <>
                                             <CheckCircle2 className="w-5 h-5" />
@@ -822,9 +892,10 @@ export default function CheckoutClient() {
                             <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
                                 <Info className="w-8 h-8 text-blue-500" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Thông báo</h3>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Thời gian nhận tại quán</h3>
                             <p className="text-gray-600 mb-6">
-                                Quý khách vui lòng chọn thời gian và ngày nhận hàng để quán chuẩn bị đơn hàng cho quý khách!
+                                Quý khách vui lòng chọn ngày và giờ muốn đến nhận hàng. <br/>
+                                <span className="font-semibold text-primary">Lưu ý:</span> Thời gian nhận phải sau thời điểm hiện tại ít nhất <span className="font-bold">30 phút</span> để quán kịp chuẩn bị món.
                             </p>
                             <button
                                 type="button"

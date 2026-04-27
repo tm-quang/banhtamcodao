@@ -10,7 +10,7 @@ import {
     Search, Phone, Calendar, MapPin, User, FileText,
     CheckCircle2, Clock, Truck, XCircle, AlertCircle,
     ChevronDown, Package, Sparkles, UtensilsCrossed,
-    ShoppingBag, CookingPot, FileWarning, RotateCcw, Tag
+    ShoppingBag, CookingPot, FileWarning, RotateCcw, Tag, ShoppingCart
 } from 'lucide-react';
 import { TextSkeleton } from '@/components/LoadingAnimations';
 import { format } from 'date-fns';
@@ -23,14 +23,63 @@ const formatCurrency = (amount) => {
 };
 
 /**
+ * Format date to HCMC Timezone (GMT+7)
+ */
+const formatHCMCDateTime = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        const options = {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        };
+        const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(date);
+        const p = (type) => parts.find(it => it.type === type).value;
+        return `${p('day')}/${p('month')}/${p('year')} ${p('hour')}:${p('minute')}`;
+    } catch (e) {
+        return dateStr;
+    }
+};
+
+/**
+ * Format raw date string (YYYY-MM-DD) to DD/MM/YYYY
+ */
+const formatDateOnly = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr.includes('-')) {
+        const [y, m, d] = dateStr.split('-');
+        if (y.length === 4) return `${d}/${m}/${y}`;
+    }
+    return dateStr;
+};
+
+/**
+ * Format raw time string (HH:mm:ss) to HH:mm
+ */
+const formatTimeOnly = (timeStr) => {
+    if (!timeStr) return '';
+    if (timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+    }
+    return timeStr;
+};
+
+/**
  * Order status timeline component - redesigned with centered icons and simple colors
  */
 const OrderStatusTimeline = ({ currentStatus }) => {
     const statuses = [
-        { key: 'Chờ xác nhận', icon: Clock, label: 'Chờ xác nhận' },
-        { key: 'Đã xác nhận', icon: CheckCircle2, label: 'Đã xác nhận' },
-        { key: 'Đang vận chuyển', icon: Truck, label: 'Đang giao' },
-        { key: 'Hoàn thành', icon: Package, label: 'Hoàn thành' },
+        { key: 'Chờ xác nhận', icon: Clock, label: 'Chờ xác nhận', activeColor: 'bg-amber-500' },
+        { key: 'Đã xác nhận', icon: CheckCircle2, label: 'Đã xác nhận', activeColor: 'bg-blue-600' },
+        { key: 'Đang vận chuyển', icon: Truck, label: 'Đang vận chuyển', activeColor: 'bg-cyan-600' },
+        { key: 'Hoàn thành', icon: Package, label: 'Hoàn thành', activeColor: 'bg-green-600' },
     ];
 
     const currentIndex = statuses.findIndex(s => s.key === currentStatus);
@@ -39,10 +88,10 @@ const OrderStatusTimeline = ({ currentStatus }) => {
     if (isCancelled) {
         return (
             <div className="flex items-center justify-center gap-2 py-3 px-4">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                    <XCircle className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center shadow-sm">
+                    <XCircle className="w-6 h-6 text-white" />
                 </div>
-                <span className="font-semibold text-red-700">Đơn hàng đã bị hủy</span>
+                <span className="font-black text-red-600 uppercase tracking-widest text-xs">Đã hủy đơn</span>
             </div>
         );
     }
@@ -92,8 +141,8 @@ const OrderStatusTimeline = ({ currentStatus }) => {
                                     <div
                                         className={`
                                             w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 relative z-10
-                                            ${isCompleted ? 'bg-green-500 text-white shadow-md' : ''}
-                                            ${isCurrent ? 'bg-primary text-white shadow-md' : ''}
+                                            ${isCompleted ? 'bg-green-600 text-white shadow-md' : ''}
+                                            ${isCurrent ? `${status.activeColor} text-white shadow-md` : ''}
                                             ${isPending ? 'bg-gray-100 text-gray-400' : ''}
                                         `}
                                         style={isCurrent ? { transform: 'scale(1.1)' } : {}}
@@ -123,12 +172,13 @@ const OrderStatusTimeline = ({ currentStatus }) => {
 };
 
 /**
- * Helper function to mask phone number (show only first 4 digits)
+ * Helper function to mask sensitive text (show only first N characters)
  */
-const maskPhone = (phone) => {
-    if (!phone) return '';
-    if (phone.length <= 4) return phone;
-    return phone.substring(0, 4) + 'xxxxxx';
+const maskText = (text, visibleCount = 4) => {
+    if (!text) return '';
+    const str = String(text);
+    if (str.length <= visibleCount) return str;
+    return str.substring(0, visibleCount) + '*'.repeat(str.length - visibleCount);
 };
 
 /**
@@ -162,48 +212,49 @@ const OrderCard = ({ order }) => {
         const configs = {
             'Chờ xác nhận': {
                 icon: Clock,
-                gradient: 'from-amber-400 to-orange-500',
+                color: 'bg-amber-500',
                 headerBg: 'bg-white',
                 border: 'border-amber-200',
                 text: 'text-amber-700',
-                badge: 'bg-amber-100 text-amber-800 border border-amber-200',
-                dot: 'bg-amber-500'
+                badge: 'bg-amber-500 text-white border-none',
+                dot: 'bg-amber-400'
             },
             'Đã xác nhận': {
                 icon: CheckCircle2,
-                gradient: 'from-blue-400 to-cyan-500',
+                color: 'bg-blue-600',
                 headerBg: 'bg-white',
                 border: 'border-blue-200',
                 text: 'text-blue-700',
-                badge: 'bg-blue-100 text-blue-800 border border-blue-200',
-                dot: 'bg-blue-500'
+                badge: 'bg-blue-600 text-white border-none',
+                dot: 'bg-blue-400'
             },
             'Đang vận chuyển': {
                 icon: Truck,
-                gradient: 'from-indigo-400 to-blue-500',
+                color: 'bg-cyan-600',
                 headerBg: 'bg-white',
-                border: 'border-indigo-200',
-                text: 'text-indigo-700',
-                badge: 'bg-indigo-100 text-indigo-800 border border-indigo-200',
-                dot: 'bg-indigo-500'
+                border: 'border-cyan-200',
+                text: 'text-cyan-700',
+                badge: 'bg-cyan-600 text-white border-none',
+                dot: 'bg-cyan-400'
             },
             'Hoàn thành': {
                 icon: CheckCircle2,
-                gradient: 'from-emerald-400 to-green-500',
+                color: 'bg-green-600',
                 headerBg: 'bg-white',
-                border: 'border-emerald-200',
-                text: 'text-emerald-700',
-                badge: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
-                dot: 'bg-emerald-500'
+                border: 'border-green-200',
+                text: 'text-green-700',
+                badge: 'bg-green-600 text-white border-none',
+                dot: 'bg-green-400'
             },
             'Đã hủy': {
                 icon: XCircle,
-                gradient: 'from-rose-400 to-red-500',
+                color: 'bg-red-600',
                 headerBg: 'bg-white',
-                border: 'border-rose-200',
-                text: 'text-rose-700',
-                badge: 'bg-rose-100 text-rose-800 border border-rose-200',
-                dot: 'bg-rose-500'
+                border: 'border-red-200',
+                text: 'text-red-700',
+                badge: 'bg-red-600 text-white border-none',
+                dot: 'bg-red-400',
+                label: 'Đã hủy đơn'
             }
         };
         return configs[status] || {
@@ -222,8 +273,8 @@ const OrderCard = ({ order }) => {
 
     return (
         <div className={`group relative overflow-hidden rounded-2xl border ${statusConfig.border} bg-white shadow-md hover:shadow-md transition-shadow`}>
-            {/* Decorative gradient line at top */}
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${statusConfig.gradient}`}></div>
+            {/* Decorative solid color line at top */}
+            <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.color}`}></div>
 
             {/* Header - Always visible */}
             <button
@@ -236,16 +287,20 @@ const OrderCard = ({ order }) => {
                         {/* Row 1: Icon + Order code + Chevron */}
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="relative w-10 h-10 overflow-hidden shadow-lg flex-shrink-0">
+                                <div className="relative w-14 h-14 overflow-hidden flex-shrink-0">
                                     <Image src="/images/banner-logo/banhtamcodao-logo.png" alt="Logo" fill className="object-contain" />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="font-bold text-lg text-gray-900 truncate">
-                                        {order.order_code}
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                        <p className="text-[12px] font-bold text-gray-500 uppercase tracking-tight">Đơn hàng của bạn</p>
+                                    </div>
+                                    <p className="font-black text-lg text-primary truncate">
+                                        #{order.order_code}
                                     </p>
-                                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${statusConfig.badge} font-semibold text-xs`}>
+                                    <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ${statusConfig.badge} font-bold text-[10px] uppercase tracking-wider`}>
                                         <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot} animate-pulse`}></span>
-                                        {order.status || 'Đang xử lý'}
+                                        {statusConfig.label || order.status || 'Đang xử lý'}
                                     </div>
                                 </div>
                             </div>
@@ -255,13 +310,19 @@ const OrderCard = ({ order }) => {
                         </div>
 
                         {/* Row 2: Date + Items count */}
-                        <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <div className="flex flex-col gap-1 text-[13px] text-gray-500">
                             <div className="flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5" />
-                                <span>{format(new Date(order.order_time), 'HH:mm, dd/MM/yyyy', { locale: vi })}</span>
+                                <ShoppingCart className="w-3.5 h-3.5" />
+                                <span>Đặt lúc: {formatHCMCDateTime(order.order_time)}</span>
                             </div>
-                            <span className="text-gray-300">•</span>
-                            <div className="flex items-center gap-1.5">
+                            {(order.delivery_date || order.delivery_time) && (
+                                <div className="flex items-center gap-1.5 text-primary font-medium">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    <span>Dự kiến giao lúc: {formatTimeOnly(order.delivery_time)} {order.delivery_date && `, ${formatDateOnly(order.delivery_date)}`}</span>
+                                </div>
+                            )}
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                                <Package className="w-3.5 h-3.5" />
                                 <span>{items.length} món</span>
                             </div>
                         </div>
@@ -278,28 +339,42 @@ const OrderCard = ({ order }) => {
                     {/* Desktop Layout */}
                     <div className="hidden sm:flex items-center justify-between gap-6">
                         <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="relative w-12 h-12 overflow-hidden flex-shrink-0">
+                            <div className="relative w-20 h-20 overflow-hidden flex-shrink-0">
                                 <Image src="/images/banner-logo/banhtamcodao-logo.png" alt="Logo" fill className="object-contain" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <p className="font-bold text-xl text-gray-900">
-                                        {order.order_code}
-                                    </p>
-                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${statusConfig.badge} font-semibold text-xs`}>
-                                        <span className={`w-2 h-2 rounded-full ${statusConfig.dot} animate-pulse`}></span>
-                                        {order.status || 'Đang xử lý'}
+                                <div className="flex flex-col mb-1">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                                        <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Đơn hàng của bạn</p>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <p className="font-black text-2xl text-primary">
+                                            {order.order_code}
+                                        </p>
+                                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${statusConfig.badge} font-bold text-[10px] uppercase tracking-widest`}>
+                                            <span className={`w-2 h-2 rounded-full ${statusConfig.dot} animate-pulse`}></span>
+                                            {statusConfig.label || order.status || 'Đang xử lý'}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-gray-600">
-                                    <div className="flex items-center gap-1.5">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>{format(new Date(order.order_time), 'HH:mm, dd/MM/yyyy', { locale: vi })}</span>
+                                <div className="flex flex-col gap-1 text-[13px] text-gray-600">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-0.5 rounded-md">
+                                            <ShoppingCart className="w-3.5 h-3.5 text-gray-400" />
+                                            <span>Đặt lúc: {formatHCMCDateTime(order.order_time)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-0.5 rounded-md">
+                                            <Package className="w-3.5 h-3.5 text-gray-400" />
+                                            <span>{items.length} món</span>
+                                        </div>
                                     </div>
-                                    <span className="text-gray-300">•</span>
-                                    <div className="flex items-center gap-1.5">
-                                        <span>{items.length} món</span>
-                                    </div>
+                                    {(order.delivery_date || order.delivery_time) && (
+                                        <div className="flex items-center gap-1.5 text-primary font-semibold bg-primary/5 px-2 py-1 rounded-md w-fit mt-1">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            <span>Giao lúc: {order.delivery_time} {order.delivery_date && `, ${order.delivery_date}`}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -321,89 +396,105 @@ const OrderCard = ({ order }) => {
             {/* Expanded Content */}
             {isExpanded && (
                 <div className="animate-expandDown border-t border-gray-100">
-                    <div className="p-4 sm:p-5 space-y-4 bg-gray-50/50">
+                    <div className="p-2 sm:p-5 space-y-2 bg-gray-50/50">
                         {/* Status Timeline with visual colors */}
                         <OrderStatusTimeline currentStatus={order.status} />
 
-                        {/* Recipient & Address Info */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-gray-300 shadow-md">
-                                <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0">
-                                    <User className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Người nhận</p>
-                                    <p className="font-semibold text-gray-900 mb-1">{order.recipient_name || 'Chưa cập nhật'}</p>
-                                    {order.recipient_phone && (
-                                        <p className="text-sm text-gray-600 flex items-center gap-1.5">
-                                            <Phone className="w-3.5 h-3.5" />
-                                            {maskPhone(order.recipient_phone)}
-                                        </p>
-                                    )}
+                        {/* Recipient Info - Redesigned to match items style */}
+                        <div className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-300">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-300 bg-gray-50/50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-200">
+                                        <MapPin className="w-4 h-4 text-primary" />
+                                    </div>
+                                    <p className="font-bold text-gray-900">Thông tin nhận hàng</p>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-3 p-4 rounded-2xl bg-white border border-gray-300 shadow-md">
-                                <div className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center flex-shrink-0">
-                                    <MapPin className="w-5 h-5 text-white" />
+
+                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-3">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest flex items-center gap-1.5">
+                                            <User className="w-3.5 h-3.5" /> Người nhận
+                                        </p>
+                                        <p className="text-sm font-bold text-gray-900 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
+                                            {maskText(order.recipient_name)}
+                                        </p>
+                                    </div>
+                                    {order.phone_number && (
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest flex items-center gap-1.5">
+                                                <Phone className="w-3.5 h-3.5" /> Số điện thoại
+                                            </p>
+                                            <p className="text-sm font-bold text-gray-700 bg-gray-50 px-3 py-2 rounded-xl border border-gray-100">
+                                                {maskText(order.phone_number)}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Địa chỉ giao hàng</p>
-                                    <p className="font-semibold text-gray-900">{truncateAddress(order.delivery_address)}</p>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5" /> Địa chỉ giao hàng
+                                    </p>
+                                    <div className="text-sm text-gray-600 bg-gray-50 px-3 py-3 rounded-xl border border-gray-100 min-h-[80px] leading-relaxed">
+                                        {maskText(order.delivery_address)}
+                                    </div>
                                 </div>
+                                {order.note && (
+                                    <div className="col-span-1 sm:col-span-2 space-y-1">
+                                        <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest flex items-center gap-1.5">
+                                            <FileText className="w-3.5 h-3.5" /> Ghi chú từ khách hàng
+                                        </p>
+                                        <div className="text-sm text-amber-800 bg-amber-50/50 px-3 py-2 rounded-xl border border-amber-100 italic">
+                                            "{maskText(order.note)}"
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* Order Items - Simple Table Format */}
+                        {/* Order Items - Detailed Invoice Format */}
                         <div className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-300">
-                            <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-300">
-                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                                    <FileText className="w-4 h-4 text-gray-700" />
-                                </div>
-                                <p className="font-semibold text-gray-900">Chi tiết đơn hàng</p>
-                                <span className="ml-auto text-xs text-gray-500 bg-white px-2 py-0.5 rounded-full border">{items.length} món</span>
-                            </div>
-
-                            {/* Table Header */}
-                            <div className="hidden sm:grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50/50 text-xs font-semibold text-gray-700 uppercase tracking-wide border-b border-gray-200">
-                                <div className="col-span-5">Tên món</div>
-                                <div className="col-span-2 text-right">Đơn giá</div>
-                                <div className="col-span-2 text-center">SL</div>
-                                <div className="col-span-3 text-right">Thành tiền</div>
-                            </div>
-
-                            {/* Items List */}
-                            <div className="divide-y divide-gray-50">
-                                {items.map((item, index) => (
-                                    <div key={index} className="px-4 py-3 hover:bg-gray-50/50 transition-colors">
-                                        {/* Mobile */}
-                                        <div className="sm:hidden space-y-1">
-                                            <div className="flex justify-between items-start">
-                                                <p className="font-medium text-gray-900">{item.name}</p>
-                                                <p className="font-semibold text-red-600">{formatCurrency(item.price * item.qty)}</p>
-                                            </div>
-                                            <div className="flex gap-3 text-sm text-gray-500">
-                                                <span>{formatCurrency(item.price)} x {item.qty}</span>
-                                            </div>
-                                        </div>
-                                        {/* Desktop */}
-                                        <div className="hidden sm:grid grid-cols-12 gap-2 items-center">
-                                            <div className="col-span-5">
-                                                <p className="font-medium text-gray-900">{item.name}</p>
-                                            </div>
-                                            <div className="col-span-2 text-right text-gray-600">
-                                                {formatCurrency(item.price)}
-                                            </div>
-                                            <div className="col-span-2 text-center">
-                                                <span className="inline-flex items-center justify-center w-8 h-8 text-gray-600 font-semibold text-sm">
-                                                    {item.qty}
-                                                </span>
-                                            </div>
-                                            <div className="col-span-3 text-right font-semibold text-red-600">
-                                                {formatCurrency(item.price * item.qty)}
-                                            </div>
-                                        </div>
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-300 bg-gray-50/50">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-200">
+                                        <FileText className="w-4 h-4 text-primary" />
                                     </div>
-                                ))}
+                                    <p className="font-bold text-gray-900">Chi tiết sản phẩm</p>
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white px-2 py-1 rounded-md border border-gray-200">{items.length} món</span>
+                            </div>
+
+                            <div className="p-0 overflow-x-auto">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-[10px] sm:text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-4 py-3 font-bold">Món ăn</th>
+                                            <th className="px-2 py-3 font-bold text-center">SL</th>
+                                            <th className="px-3 py-3 font-bold text-right">Đơn giá</th>
+                                            <th className="px-4 py-3 font-bold text-right">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {items.map((item, index) => (
+                                            <tr key={index} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-4 py-3">
+                                                    <p className="font-bold text-gray-900 leading-tight">{item.name}</p>
+                                                    {item.note && <p className="text-[10px] text-gray-400 mt-0.5 italic">{item.note}</p>}
+                                                </td>
+                                                <td className="px-2 py-3 text-center font-medium text-gray-600">
+                                                    {item.qty}
+                                                </td>
+                                                <td className="px-3 py-3 text-right text-gray-600 tabular-nums">
+                                                    {formatCurrency(item.price)}
+                                                </td>
+                                                <td className="px-4 py-3 text-right font-black text-gray-600 tabular-nums">
+                                                    {formatCurrency(item.price * item.qty)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
 
                             {/* Discount/Voucher Line */}
@@ -423,27 +514,24 @@ const OrderCard = ({ order }) => {
                                 </div>
                             )}
 
-                            {/* Order Total */}
-                            <div className="px-4 py-3 border-t border-dashed border-gray-300 bg-gray-50/50">
-                                <div className="flex items-center justify-between">
-                                    <span className="font-semibold text-gray-700 text-lg">Tổng cộng:</span>
-                                    <span className="text-xl font-bold text-red-600">{formatCurrency(order.total_amount)}</span>
+                            {/* Order Total - Receipt Style */}
+                            <div className="px-6 py-5 border-t border-dashed border-gray-300 bg-gray-50/30 relative">
+                                {/* Zigzag bottom edge effect using CSS or simple border */}
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between text-gray-500 text-sm">
+                                        <span>Tạm tính:</span>
+                                        <span className="tabular-nums">{formatCurrency(subtotal)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-gray-900">
+                                        <span className="font-bold text-lg">Tổng cộng:</span>
+                                        <span className="text-2xl font-black text-red-600 tabular-nums">{formatCurrency(order.total_amount)}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-gray-100 text-center">
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Cảm ơn quý khách!</p>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Notes if any */}
-                        {order.customer_note && (
-                            <div className="p-3 rounded-2xl bg-amber-50 shadow-md border border-amber-200 flex items-start gap-2">
-                                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                                    <FileWarning className="w-4 h-4 text-amber-600" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-semibold text-amber-700 mb-0.5">Ghi chú</p>
-                                    <p className="text-sm text-amber-800">{order.customer_note}</p>
-                                </div>
-                            </div>
-                        )}
 
                         {/* Reorder Button */}
                         <button
@@ -506,7 +594,6 @@ const OrderCard = ({ order }) => {
                             {isReordering ? (
                                 <>
                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    <span>Đang xử lý...</span>
                                 </>
                             ) : (
                                 <>
@@ -607,9 +694,16 @@ export default function OrderTrackingPage() {
             const data = await res.json();
             if (data.success) {
                 // Sort by order_time descending (newest first)
-                const sortedOrders = (data.orders || []).sort((a, b) =>
+                let sortedOrders = (data.orders || []).sort((a, b) =>
                     new Date(b.order_time) - new Date(a.order_time)
                 );
+
+                // Privacy: If searching by phone (numeric and long), limit to top 5 newest orders
+                const isPhoneSearch = /^\d+$/.test(searchInput.trim()) && searchInput.trim().length >= 8;
+                if (isPhoneSearch && sortedOrders.length > 5) {
+                    sortedOrders = sortedOrders.slice(0, 5);
+                }
+
                 setAllOrders(sortedOrders);
                 setCurrentPage(1);
                 if (sortedOrders.length === 0) {

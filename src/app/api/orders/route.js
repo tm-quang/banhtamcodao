@@ -13,21 +13,36 @@ import supabase from '@/lib/supabase';
  * @returns {Promise<string>} Order code
  */
 async function generateOrderCode() {
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2); // 2 chữ số cuối của năm
-    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Tháng (01-12)
-    const yymm = `${year}${month}`; // Ví dụ: 2510 (năm 2025, tháng 10)
+    let yymm = '';
+    try {
+        // Luôn lấy thời gian theo múi giờ Hồ Chí Minh
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Ho_Chi_Minh',
+            year: 'numeric',
+            month: '2-digit'
+        });
+        
+        const parts = formatter.formatToParts(now);
+        const year = parts.find(p => p.type === 'year').value.slice(-2);
+        const month = parts.find(p => p.type === 'month').value;
+        yymm = `${year}${month}`;
+    } catch (error) {
+        console.error('Error in generateOrderCode (timezone):', error);
+        // Fallback to UTC if timezone fails
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2);
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        yymm = `${year}${month}`;
+    }
 
     let attempts = 0;
-    /** Giảm số lần thử để tránh timeout, Supabase check nhanh hơn */
     const maxAttempts = 20;
 
     while (attempts < maxAttempts) {
-        /** Tạo 4 số random (0000-9999) */
         const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         const orderCode = `DH-${yymm}${random}`;
 
-        /** Kiểm tra xem mã đã tồn tại trong database chưa */
         try {
             const { data, error } = await supabase
                 .from('orders')
@@ -36,22 +51,13 @@ async function generateOrderCode() {
                 .maybeSingle();
 
             if (error) throw error;
-
-            /** Nếu không trùng (data là null), trả về mã này */
-            if (!data) {
-                return orderCode;
-            }
+            if (!data) return orderCode;
         } catch (error) {
             console.error('Error checking order code:', error);
-            /** Nếu lỗi check, cứ return đại để không block, hoặc continue
-             * Ở đây ta continue để thử mã khác
-             */
         }
-
         attempts++;
     }
 
-    /** Nếu sau nhiều lần thử vẫn trùng, thêm timestamp vào cuối để đảm bảo unique */
     const timestamp = Date.now().toString().slice(-4);
     return `DH-${yymm}${timestamp}`;
 }
@@ -91,24 +97,38 @@ export async function POST(request) {
         const order_code = await generateOrderCode();
 
         // Chuyển đổi items_list từ array sang string format "|||"
-        // Giữ nguyên logic cũ để tương thích
         const itemsListString = Array.isArray(items_list)
             ? items_list.map(item => JSON.stringify(item)).join('|||')
             : items_list;
 
-        // Tạo datetime từ date và time
-        let order_time = new Date();
-        if (delivery_date && delivery_time) {
-            const [year, month, day] = delivery_date.split('-');
-            const [hours, minutes] = delivery_time.split(':');
-            order_time = new Date(year, month - 1, day, hours, minutes);
+        // Thời gian đặt hàng (Lấy đúng múi giờ Hồ Chí Minh để lưu vào DB)
+        let order_time;
+        try {
+            const hcmNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+            const pad = (n) => String(n).padStart(2, '0');
+            order_time = `${hcmNow.getFullYear()}-${pad(hcmNow.getMonth() + 1)}-${pad(hcmNow.getDate())}T${pad(hcmNow.getHours())}:${pad(hcmNow.getMinutes())}:${pad(hcmNow.getSeconds())}+07:00`;
+        } catch (tzError) {
+            console.error('Timezone error in POST /api/orders:', tzError);
+            order_time = new Date().toISOString(); // Fallback to UTC ISO
         }
+
+        // Lấy thời gian hiện tại HCMC để làm mặc định
+        const hcmNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+        const pad = (n) => String(n).padStart(2, '0');
+        const isoDate = `${hcmNow.getFullYear()}-${pad(hcmNow.getMonth() + 1)}-${pad(hcmNow.getDate())}`;
+        const nowTime = `${pad(hcmNow.getHours())}:${pad(hcmNow.getMinutes())}`;
+
+        // Xác định giá trị cuối cùng để lưu vào DB (Dùng format chuẩn ISO cho DATE/TIME types)
+        const finalDeliveryDate = delivery_date || isoDate;
+        const finalDeliveryTime = delivery_time || nowTime;
 
         // Xác định status mặc định
         const status = 'Chờ xác nhận';
 
+        console.log('Inserting order into DB:', { order_code, delivery_method, order_time, finalDeliveryDate });
+
         // Insert vào database
-        const { data, error } = await supabase
+        const { data, error: dbError } = await supabase
             .from('orders')
             .insert([
                 {
@@ -120,18 +140,35 @@ export async function POST(request) {
                     shipping_fee: shipping_fee || 0,
                     total_amount,
                     items_list: itemsListString,
-                    note: customer_note || null,
+                    note: customer_note || '',
                     status,
                     delivery_method: delivery_method || 'delivery',
-                    delivery_date: delivery_date || null,
-                    delivery_time: delivery_time || null,
-                    order_time: order_time.toISOString()
+                    delivery_date: finalDeliveryDate,
+                    delivery_time: finalDeliveryTime,
+                    order_time: order_time
                 }
             ])
             .select();
 
-        if (error) {
-            throw error;
+        if (dbError) {
+            console.error('Database Insert Error:', JSON.stringify(dbError, null, 2));
+            return NextResponse.json(
+                { 
+                    success: false, 
+                    message: 'Lỗi khi lưu đơn hàng vào database', 
+                    details: dbError.message,
+                    code: dbError.code
+                },
+                { status: 500 }
+            );
+        }
+
+        if (!data || data.length === 0) {
+            console.error('No data returned after insert');
+            return NextResponse.json(
+                { success: false, message: 'Không nhận được phản hồi từ database sau khi lưu' },
+                { status: 500 }
+            );
         }
 
         return NextResponse.json({
@@ -142,14 +179,13 @@ export async function POST(request) {
         });
 
     } catch (error) {
-        console.error('API Error - POST /api/orders:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
+        console.error('General API Error - POST /api/orders:', error);
         return NextResponse.json(
             {
                 success: false,
                 message: 'Lỗi server khi tạo đơn hàng',
                 error: error.message || 'Unknown error',
-                details: error.details || error.hint || null
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
             },
             { status: 500 }
         );

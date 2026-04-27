@@ -14,7 +14,8 @@ export function Dialog({
   children,
   size = 'md',
   showCloseButton = true,
-  footer
+  footer,
+  noPadding = false
 }) {
   const sizes = {
     sm: 'max-w-md',
@@ -62,7 +63,7 @@ export function Dialog({
               >
                 {/* Header */}
                 {title && (
-                  <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 md:py-5 flex-shrink-0 bg-white">
+                  <div className={`flex items-center justify-between border-b border-gray-100 py-4 md:py-5 flex-shrink-0 bg-white ${noPadding ? 'px-4' : 'px-6'}`}>
                     {typeof title === 'string' ? (
                       <HeadlessDialog.Title className="text-xl font-bold text-gray-900 tracking-tight">
                         {title}
@@ -84,13 +85,13 @@ export function Dialog({
                 )}
  
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+                <div className={`flex-1 overflow-y-auto custom-scrollbar ${noPadding ? 'px-3 py-4' : 'px-6 py-6'}`}>
                   {children}
                 </div>
  
                 {/* Footer */}
                 {footer && (
-                  <div className="border-t border-gray-100 bg-gray-50/50 px-6 py-4 md:py-5 flex-shrink-0">
+                  <div className={`border-t border-gray-100 bg-gray-50/50 py-4 md:py-5 flex-shrink-0 ${noPadding ? 'px-3' : 'px-6'}`}>
                     {footer}
                   </div>
                 )}

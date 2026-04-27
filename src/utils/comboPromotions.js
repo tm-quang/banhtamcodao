@@ -232,3 +232,133 @@ export function checkAllComboPromotions(cartItems, combos) {
     return allRewards;
 }
 
+
+/**
+ * Gợi ý các combo sắp đạt được dựa trên giỏ hàng hiện tại
+ * @param {Array} cartItems - Danh sách sản phẩm trong giỏ
+ * @param {Array} combos - Danh sách combo promotions active
+ * @returns {Array} - Danh sách các gợi ý (mỗi gợi ý chứa thông tin combo và những gì còn thiếu)
+ */
+export function getPromotionSuggestions(cartItems, combos) {
+    if (!combos || combos.length === 0 || !cartItems || cartItems.length === 0) {
+        return [];
+    }
+
+    const suggestions = [];
+    const nonFreeItems = cartItems.filter(item => !item.is_free);
+
+    for (const combo of combos) {
+        if (!combo.conditions || !combo.conditions.rules || combo.conditions.rules.length === 0) {
+            continue;
+        }
+
+        // Kiểm tra giá trị đơn hàng tối thiểu trước
+        let isMinOrderValueMet = true;
+        let neededValue = 0;
+        if (combo.min_order_value) {
+            const totalPrice = nonFreeItems.reduce((sum, item) => {
+                const price = item.discount_price ?? item.price ?? item.finalPrice ?? 0;
+                return sum + (price * (item.quantity || 0));
+            }, 0);
+            
+            if (totalPrice < combo.min_order_value) {
+                isMinOrderValueMet = false;
+                neededValue = combo.min_order_value - totalPrice;
+            }
+        }
+
+        const parsedConditions = typeof combo.conditions === 'string' ? JSON.parse(combo.conditions) : combo.conditions;
+        const { operator, rules } = parsedConditions;
+        
+        // Tính toán trạng thái của từng rule
+        const ruleStatuses = rules.map(rule => {
+            let matchingQuantity = 0;
+            let matchingItems = [];
+
+            for (const cartItem of nonFreeItems) {
+                let matches = false;
+                if (rule.product_id && cartItem.id === rule.product_id) matches = true;
+                else if (rule.product_slug && cartItem.slug === rule.product_slug) matches = true;
+                else if (rule.category_id && cartItem.category_id === rule.category_id) matches = true;
+                else if (rule.category_slug) {
+                    if (cartItem.category_slug === rule.category_slug) matches = true;
+                    else if (cartItem.category_name && categoryNameToSlug(cartItem.category_name) === rule.category_slug.toLowerCase()) matches = true;
+                }
+
+                if (matches) {
+                    matchingQuantity += cartItem.quantity || 0;
+                    matchingItems.push(cartItem);
+                }
+            }
+
+            const minQty = parseInt(rule.min_quantity) || 1;
+            const currentLevel = Math.floor(matchingQuantity / minQty);
+            const remainingToNext = minQty - (matchingQuantity % minQty);
+            const isPartiallySatisfied = matchingQuantity > 0 && matchingQuantity % minQty !== 0;
+
+            return {
+                rule,
+                matchingQuantity,
+                minQty,
+                currentLevel,
+                remainingToNext,
+                isPartiallySatisfied,
+                matchingItems
+            };
+        });
+
+        // logic gợi ý:
+        // 1. Nếu chưa đủ giá trị đơn hàng tối thiểu nhưng đã có sản phẩm thuộc combo
+        // 2. Nếu là AND: Suggest các món còn thiếu để đạt level tiếp theo
+        // 3. Nếu là OR: Suggest món đang dở dang nhất
+
+        const hasAnyMatchingItem = ruleStatuses.some(s => s.matchingQuantity > 0);
+        if (!hasAnyMatchingItem) continue;
+
+        if (operator === 'AND') {
+            const minLevel = Math.min(...ruleStatuses.map(s => s.currentLevel));
+            const nextLevel = minLevel + 1;
+            const missingRules = ruleStatuses.filter(s => s.matchingQuantity < nextLevel * s.minQty);
+
+            if (missingRules.length > 0) {
+                suggestions.push({
+                    id: combo.id,
+                    name: combo.name,
+                    description: combo.description,
+                    type: 'AND',
+                    missing: missingRules.map(s => ({
+                        name: s.rule.product_name || s.rule.category_name || s.rule.product_slug || s.rule.category_slug || 'Sản phẩm',
+                        needed: (nextLevel * s.minQty) - s.matchingQuantity,
+                        product_slug: s.rule.product_slug,
+                        category_slug: s.rule.category_slug
+                    })),
+                    rewards: combo.rewards,
+                    neededValue: !isMinOrderValueMet ? neededValue : 0
+                });
+            }
+        } else {
+            // OR logic
+            const partiallySatisfied = ruleStatuses.filter(s => s.isPartiallySatisfied);
+            if (partiallySatisfied.length > 0) {
+                // Chọn rule gần đạt nhất
+                const bestRule = partiallySatisfied.sort((a, b) => a.remainingToNext - b.remainingToNext)[0];
+                suggestions.push({
+                    id: combo.id,
+                    name: combo.name,
+                    description: combo.description,
+                    type: 'OR',
+                    missing: [{
+                        name: bestRule.rule.product_name || bestRule.rule.category_name || bestRule.rule.product_slug || bestRule.rule.category_slug || 'Sản phẩm',
+                        needed: bestRule.remainingToNext,
+                        product_slug: bestRule.rule.product_slug,
+                        category_slug: bestRule.rule.category_slug
+                    }],
+                    rewards: combo.rewards,
+                    neededValue: !isMinOrderValueMet ? neededValue : 0
+                });
+            }
+        }
+    }
+
+    return suggestions;
+}

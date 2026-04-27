@@ -97,7 +97,7 @@ export default function ContactForm() {
                     className="w-full group relative overflow-hidden bg-primary text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2 text-sm"
                 >
                     {isSubmitting ? (
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                         <>
                             <span>Gửi tin nhắn</span>

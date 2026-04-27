@@ -2,12 +2,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, Chip, CircularProgress, Divider, Grid } from '@mui/material';
-import { X as CloseIcon, User, Phone, MapPin, Truck, Calendar, FileText, ShoppingCart, Receipt, CheckCircle } from 'lucide-react';
+import { Dialog, DialogTitle, DialogContent, IconButton, Box, Typography, Chip, CircularProgress, Divider, Grid, Tooltip } from '@mui/material';
+import { X as CloseIcon, User, Phone, MapPin, Truck, Calendar, FileText, ShoppingCart, Receipt, CheckCircle, ExternalLink, History } from 'lucide-react';
 import { format } from 'date-fns';
 
 const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0);
+};
+
+const parseAddress = (address) => {
+    if (!address) return { text: 'N/A', url: null };
+    const mapMatch = address.match(/(.*?)\s*\(\s*📍?\s*Bản đồ:\s*(https:\/\/www\.google\.com\/maps[^\s)]+)\s*\)/i) || 
+                     address.match(/(.*?)\s*(https:\/\/www\.google\.com\/maps[^\s)]+)/i);
+    
+    if (mapMatch) {
+        return {
+            text: mapMatch[1].trim() || 'Vị trí trên bản đồ',
+            url: mapMatch[2].trim()
+        };
+    }
+    return { text: address, url: null };
 };
 
 const InfoRow = ({ label, value, icon: Icon }) => (
@@ -38,13 +52,14 @@ const InfoRow = ({ label, value, icon: Icon }) => (
         }}>
             {label}:
         </Typography>
-        <Typography variant="body2" sx={{ 
+        <Box sx={{ 
             fontWeight: 600, 
             color: '#111827',
-            flex: 1
+            flex: 1,
+            fontSize: '0.875rem'
         }}>
             {value}
-        </Typography>
+        </Box>
     </Box>
 );
 
@@ -167,9 +182,49 @@ export default function OrderDetailModal({ orderId, open, onClose }) {
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
                                 <InfoRow label="Mã đơn hàng" value={order.order_code} />
                                 <InfoRow label="Khách hàng" value={order.recipient_name || 'N/A'} icon={User} />
-                                <InfoRow label="SĐT" value={order.phone_number || 'N/A'} icon={Phone} />
+                                <InfoRow label="SĐT" value={
+                                    <Typography 
+                                        component="a" 
+                                        href={`tel:${order.phone_number}`}
+                                        sx={{ 
+                                            color: '#3B82F6', 
+                                            textDecoration: 'none',
+                                            fontWeight: 600,
+                                            '&:hover': { textDecoration: 'underline' }
+                                        }}
+                                    >
+                                        {order.phone_number || 'N/A'}
+                                    </Typography>
+                                } icon={Phone} />
                                 <InfoRow label="Hình thức" value={order.delivery_method === 'delivery' ? 'Giao hàng' : 'Tự đến lấy'} icon={Truck} />
-                                <InfoRow label="Địa chỉ" value={order.delivery_address || 'N/A'} icon={MapPin} />
+                                <InfoRow label="Địa chỉ" value={
+                                    (() => {
+                                        const { text, url } = parseAddress(order.delivery_address);
+                                        return (
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{text}</Typography>
+                                                {url && (
+                                                    <Tooltip title="Mở Google Maps" arrow>
+                                                        <IconButton 
+                                                            size="small" 
+                                                            component="a" 
+                                                            href={url} 
+                                                            target="_blank" 
+                                                            sx={{ 
+                                                                color: '#EF4444', 
+                                                                p: 0.5,
+                                                                bgcolor: 'rgba(239, 68, 68, 0.08)',
+                                                                '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.15)' }
+                                                            }}
+                                                        >
+                                                            <ExternalLink size={14} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
+                                            </Box>
+                                        );
+                                    })()
+                                } icon={MapPin} />
                                 <InfoRow label="Ngày giao/lấy" value={`${format(new Date(order.delivery_date), 'dd/MM/yyyy')} lúc ${order.delivery_time?.substring(0, 5) || 'N/A'}`} icon={Calendar} />
                                 <InfoRow label="Ghi chú" value={order.note || 'Không có'} icon={FileText} />
                             </Box>
@@ -332,6 +387,7 @@ export default function OrderDetailModal({ orderId, open, onClose }) {
                             borderRadius: '12px',
                             border: '1px solid #E5E7EB',
                             p: 3,
+                            mb: 2,
                             boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
                         }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -355,6 +411,65 @@ export default function OrderDetailModal({ orderId, open, onClose }) {
                                     }
                                 }}
                             />
+                        </Box>
+
+                        {/* Lịch sử cập nhật */}
+                        <Box sx={{ 
+                            bgcolor: '#FFFFFF', 
+                            borderRadius: '12px', 
+                            border: '1px solid #E5E7EB',
+                            p: 3, 
+                            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <History size={20} color="#3B82F6" />
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
+                                    Lịch sử cập nhật
+                                </Typography>
+                            </Box>
+                            <Box sx={{ position: 'relative', pl: 3 }}>
+                                {/* Timeline line */}
+                                <Box sx={{ 
+                                    position: 'absolute', 
+                                    left: '7px', 
+                                    top: '10px', 
+                                    bottom: '10px', 
+                                    width: '2px', 
+                                    bgcolor: '#E5E7EB' 
+                                }} />
+                                
+                                {order.status_history && order.status_history.length > 0 ? (
+                                    order.status_history.slice().reverse().map((log, idx) => (
+                                        <Box key={idx} sx={{ position: 'relative', mb: 2, '&:last-child': { mb: 0 } }}>
+                                            {/* Dot */}
+                                            <Box sx={{ 
+                                                position: 'absolute', 
+                                                left: '-26px', 
+                                                top: '6px', 
+                                                width: '10px', 
+                                                height: '10px', 
+                                                borderRadius: '50%', 
+                                                bgcolor: log.type === 'status' ? '#3B82F6' : '#10B981',
+                                                border: '2px solid #FFFFFF',
+                                                zIndex: 1
+                                            }} />
+                                            <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mb: 0.5 }}>
+                                                {format(new Date(log.time), 'HH:mm dd/MM/yyyy')}
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ fontWeight: 500, color: '#111827' }}>
+                                                {log.note}
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: '#374151', display: 'block' }}>
+                                                Thay đổi: <span style={{ fontWeight: 600 }}>{log.from}</span> → <span style={{ fontWeight: 600 }}>{log.to}</span>
+                                            </Typography>
+                                        </Box>
+                                    ))
+                                ) : (
+                                    <Typography variant="body2" sx={{ color: '#6B7280', fontStyle: 'italic' }}>
+                                        Chưa có lịch sử cập nhật.
+                                    </Typography>
+                                )}
+                            </Box>
                         </Box>
                     </Box>
                 )}

@@ -1,20 +1,20 @@
 // src/context/CartContext.js
 'use client';
 
-import { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { useToast } from '@/context/ToastContext'; // Import toast
 import { checkAllComboPromotions } from '@/utils/comboPromotions';
 
 // Helper function để convert category name thành slug (tương tự trong comboPromotions.js)
 function categoryNameToSlug(categoryName) {
-    if (!categoryName) return '';
-    return categoryName.toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '');
+  if (!categoryName) return '';
+  return categoryName.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
 }
 
 const CartContext = createContext();
@@ -26,6 +26,19 @@ export const CartProvider = ({ children }) => {
   // --- LOGIC CHO MINI CART VÀ ANIMATION (ĐƯỢC THÊM LẠI) ---
   const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
   const [isCartAnimating, setIsCartAnimating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const comboCheckTimeoutRef = useRef(null);
+
+  // Hàm debounce cho việc kiểm tra combo
+  const debouncedCheckComboRewards = useCallback((items) => {
+    setIsUpdating(true); // Bắt đầu quá trình cập nhật
+    if (comboCheckTimeoutRef.current) {
+      clearTimeout(comboCheckTimeoutRef.current);
+    }
+    comboCheckTimeoutRef.current = setTimeout(() => {
+      checkComboRewards(items);
+    }, 500); // Đợi 500ms sau lần click cuối cùng mới tính toán combo
+  }, []);
 
   useEffect(() => {
     const storedCart = localStorage.getItem('banhtamcodao_cart');
@@ -58,7 +71,7 @@ export const CartProvider = ({ children }) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id && !item.is_free);
       let newItems;
-      
+
       if (existingItem) {
         newItems = prevItems.map(item =>
           item.id === product.id && !item.is_free ? { ...item, quantity: item.quantity + quantity } : item
@@ -67,8 +80,8 @@ export const CartProvider = ({ children }) => {
         newItems = [...prevItems, { ...product, quantity }];
       }
 
-      // Kiểm tra và thêm combo rewards
-      checkComboRewards(newItems);
+      // Kiểm tra và thêm combo rewards (sử dụng debounce)
+      debouncedCheckComboRewards(newItems);
 
       return newItems;
     });
@@ -84,7 +97,7 @@ export const CartProvider = ({ children }) => {
       // Fetch active combo promotions
       const res = await fetch('/api/combo-promotions/active');
       const data = await res.json();
-      
+
       if (!data.success) {
         console.error('Failed to fetch combo promotions:', data.message);
         return;
@@ -106,7 +119,7 @@ export const CartProvider = ({ children }) => {
         category: item.category_name || item.category_slug
       })));
       const rewards = checkAllComboPromotions(nonFreeItems, data.comboPromotions);
-      
+
       console.log('[checkComboRewards] Calculated rewards:', rewards);
       console.log('[checkComboRewards] Reward details:', rewards.map(r => ({
         product_id: r.product_id,
@@ -115,45 +128,45 @@ export const CartProvider = ({ children }) => {
         quantity: r.quantity,
         combo_id: r.combo_promotion_id
       })));
-      
+
       // Cập nhật giỏ hàng: xóa sản phẩm tặng không còn đủ điều kiện
       // Sử dụng currentItems làm base thay vì prevItems để tránh race condition
       setCartItems(prevItems => {
         // Lấy danh sách combo_promotion_id từ rewards mới
         const validComboIds = rewards.length > 0 ? rewards.map(r => r.combo_promotion_id) : [];
-        
+
         // Bắt đầu với currentItems (đã có số lượng mới) và xóa tất cả sản phẩm tặng cũ
         // Vì chúng ta sẽ thêm lại sản phẩm tặng mới từ freeItemsToAdd
         const baseItems = currentItems.filter(item => !item.is_free);
-        
+
         // Nếu không còn rewards, chỉ trả về sản phẩm không tặng
         if (rewards.length === 0) {
           return baseItems;
         }
-        
+
         // Tạm thời giữ lại sản phẩm tặng từ prevItems nếu combo vẫn còn valid
         // (sẽ được thay thế bằng freeItemsToAdd sau)
-        const existingFreeItems = prevItems.filter(item => 
-          item.is_free && 
-          item.combo_promotion_id && 
+        const existingFreeItems = prevItems.filter(item =>
+          item.is_free &&
+          item.combo_promotion_id &&
           validComboIds.includes(item.combo_promotion_id)
         );
-        
+
         // Merge baseItems với existingFreeItems (sẽ được cập nhật sau)
         return [...baseItems, ...existingFreeItems];
       });
-      
+
       if (rewards.length === 0) {
         return; // Không có rewards, đã xóa sản phẩm tặng ở trên
       }
 
       // Fetch thông tin sản phẩm tặng và thêm vào giỏ
       const freeItemsToAdd = [];
-      
+
       for (const reward of rewards) {
         try {
           let productData = null;
-          
+
           // Tìm sản phẩm theo product_id hoặc product_slug
           if (reward.product_id) {
             // Fetch từ admin API để lấy đầy đủ thông tin
@@ -212,20 +225,20 @@ export const CartProvider = ({ children }) => {
         setCartItems(prevItems => {
           // Lấy danh sách combo_promotion_id từ rewards mới
           const validComboIds = freeItemsToAdd.map(free => free.combo_promotion_id);
-          
+
           // Bắt đầu với sản phẩm không tặng từ prevItems (đã có số lượng mới từ updateQuantity)
           const nonFreeItems = prevItems.filter(item => !item.is_free);
-          
+
           // Giữ lại sản phẩm tặng cũ từ các combo vẫn còn valid (sẽ được cập nhật sau)
-          const existingFreeItems = prevItems.filter(item => 
-            item.is_free && 
-            item.combo_promotion_id && 
+          const existingFreeItems = prevItems.filter(item =>
+            item.is_free &&
+            item.combo_promotion_id &&
             validComboIds.includes(item.combo_promotion_id)
           );
-          
+
           // Bắt đầu với danh sách sản phẩm không tặng + sản phẩm tặng cũ
           const updatedItems = [...nonFreeItems, ...existingFreeItems];
-          
+
           // Xử lý từng freeItem từ rewards
           for (const freeItem of freeItemsToAdd) {
             // Tìm sản phẩm tặng đã có trong updatedItems
@@ -233,25 +246,25 @@ export const CartProvider = ({ children }) => {
               if (!item.is_free || item.combo_promotion_id !== freeItem.combo_promotion_id) {
                 return false;
               }
-              
+
               // Match theo product_id (ưu tiên)
               if (freeItem.id && item.id === freeItem.id) {
                 return true;
               }
-              
+
               // Match theo product_slug
               if (freeItem.slug && item.slug === freeItem.slug) {
                 return true;
               }
-              
+
               // Match theo category_slug (nếu reward chỉ có category_slug)
               if (freeItem.category_slug && !freeItem.id && !freeItem.slug) {
-                if (item.category_slug === freeItem.category_slug || 
-                    (item.category_name && categoryNameToSlug(item.category_name) === freeItem.category_slug)) {
+                if (item.category_slug === freeItem.category_slug ||
+                  (item.category_name && categoryNameToSlug(item.category_name) === freeItem.category_slug)) {
                   return true;
                 }
               }
-              
+
               return false;
             });
 
@@ -260,7 +273,7 @@ export const CartProvider = ({ children }) => {
               const existingItem = updatedItems[itemIndex];
               const oldQuantity = existingItem.quantity;
               console.log(`[Combo] Updating free item: ${existingItem.name} from ${oldQuantity} to ${freeItem.quantity} (combo_id: ${freeItem.combo_promotion_id})`);
-              updatedItems[itemIndex] = { 
+              updatedItems[itemIndex] = {
                 ...freeItem, // Cập nhật với thông tin mới từ API
                 quantity: freeItem.quantity, // Số lượng mới (đã tính đúng từ combo count)
                 is_free: true,
@@ -284,15 +297,30 @@ export const CartProvider = ({ children }) => {
           return updatedItems;
         });
 
-        // Thông báo cho user (chỉ khi có sản phẩm tặng mới được thêm)
-        const currentItems = cartItems.filter(item => !item.is_free);
-        const hadFreeItems = cartItems.some(item => item.is_free);
-        if (!hadFreeItems) {
-          showToast(`🎁 Bạn đã nhận được ${freeItemsToAdd.length} phần quà từ combo!`, 'success');
+        // Tính toán thông báo quà tặng: lấy số lượng quà tặng hiện tại và mới
+        const previousFreeCount = cartItems.filter(item => item.is_free).reduce((sum, item) => sum + item.quantity, 0);
+        const newFreeCount = freeItemsToAdd.reduce((sum, item) => sum + item.quantity, 0);
+
+        if (newFreeCount > previousFreeCount) {
+          // Lấy danh sách các món quà mới được thêm vào hoặc tăng số lượng
+          const newGifts = freeItemsToAdd.filter(freeItem => {
+            const existing = cartItems.find(item => item.is_free && item.id === freeItem.id);
+            return !existing || freeItem.quantity > existing.quantity;
+          });
+          
+          if (newGifts.length > 0) {
+            const itemDetails = newGifts.map(item => `${item.quantity} ${item.name}`).join(', ');
+            showToast(`Bạn được tặng kèm ${itemDetails}`, 'success');
+          }
+        } else if (newFreeCount > 0 && previousFreeCount === 0) {
+          const itemDetails = freeItemsToAdd.map(item => `${item.quantity} ${item.name}`).join(', ');
+          showToast(`Bạn được tặng kèm ${itemDetails}`, 'success');
         }
       }
     } catch (error) {
       console.error('Error checking combo rewards:', error);
+    } finally {
+      setIsUpdating(false); // Kết thúc quá trình cập nhật
     }
   };
 
@@ -304,17 +332,14 @@ export const CartProvider = ({ children }) => {
         removedItemName = itemToRemove.name;
       }
       const newItems = prevItems.filter(item => item.id !== productId);
-      
+
       // Kiểm tra lại combo rewards sau khi xóa sản phẩm
       // Chỉ kiểm tra nếu xóa sản phẩm không phải là sản phẩm tặng
       // (Nếu xóa sản phẩm tặng thì không cần check lại vì nó không ảnh hưởng đến điều kiện)
       if (!itemToRemove?.is_free) {
-        // Sử dụng setTimeout để đảm bảo state đã được cập nhật trước khi check
-        setTimeout(() => {
-          checkComboRewards(newItems);
-        }, 50);
+        debouncedCheckComboRewards(newItems);
       }
-      
+
       return newItems;
     });
 
@@ -328,16 +353,15 @@ export const CartProvider = ({ children }) => {
       removeFromCart(productId);
       return;
     }
-    
+
     setCartItems(prevItems => {
       const updatedItems = prevItems.map(item =>
         item.id === productId ? { ...item, quantity: newQuantity } : item
       );
-      
-      // Kiểm tra lại combo rewards sau khi thay đổi số lượng
-      // Gọi async nhưng không block, nó sẽ tự cập nhật state sau
-      checkComboRewards(updatedItems);
-      
+
+      // Kiểm tra lại combo rewards sau khi thay đổi số lượng (sử dụng debounce)
+      debouncedCheckComboRewards(updatedItems);
+
       return updatedItems;
     });
   };
@@ -363,7 +387,8 @@ export const CartProvider = ({ children }) => {
     isMiniCartOpen,
     openMiniCart,
     closeMiniCart,
-    isCartAnimating
+    isCartAnimating,
+    isUpdating
   };
 
   return (

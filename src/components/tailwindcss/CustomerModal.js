@@ -126,11 +126,10 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
   };
 
   const footer = (
-    <div className="flex items-center justify-end gap-3 w-full">
+    <div className="flex items-center justify-between md:justify-end gap-2 md:gap-3 w-full">
       <Button
-        variant="outline"
         onClick={onClose}
-        className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+        className="flex-1 md:flex-none flex items-center justify-center h-10 md:h-11 !rounded-xl md:!rounded-2xl border border-gray-200 bg-gray-500 text-white hover:bg-gray-600 font-black uppercase text-[10px] md:text-[11px] tracking-widest px-2 md:px-6 transition-all whitespace-nowrap"
       >
         Hủy bỏ
       </Button>
@@ -138,7 +137,7 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
         onClick={handleSubmit}
         disabled={isSubmitting || !data.full_name}
         startIcon={isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-        className={`flex items-center justify-center h-10 !rounded-2xl shadow-xl transition-all font-black uppercase text-[11px] tracking-widest px-8 text-white ${isEditMode ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-100' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'}`}
+        className="flex-1 md:flex-none flex items-center justify-center h-10 md:h-11 !rounded-xl md:!rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[9px] md:text-[10px] tracking-widest px-2 md:px-8 shadow-md shadow-orange-100 transition-all whitespace-nowrap"
       >
         {isSubmitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật ngay' : 'Tạo tài khoản')}
       </Button>
@@ -151,18 +150,18 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
       onClose={onClose}
       size="xl"
       title={
-        <div className="flex items-center gap-4 py-1">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg rotate-3 transition-transform hover:rotate-0 ${isEditMode ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200/50' : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-200/50'}`}>
-            <UserCircle size={24} className="text-white" />
+        <div className="flex items-center gap-3 md:gap-4 py-1">
+          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg rotate-3 transition-transform hover:rotate-0 flex-shrink-0 ${isEditMode ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200/50' : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-200/50'}`}>
+            <UserCircle className="text-white w-5 h-5 md:w-6 md:h-6" />
           </div>
           <div className="flex-1 min-w-0">
-            <span className="font-black text-gray-900 text-2xl tracking-tight block uppercase">
+            <span className="font-black text-gray-900 text-lg md:text-2xl tracking-tight block uppercase truncate">
               {isEditMode ? 'Hồ sơ khách hàng' : 'Thêm thành viên mới'}
             </span>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className={`w-2 h-2 rounded-full animate-pulse ${isEditMode ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-              <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.2em]">
-                {isEditMode ? `ĐANG CHỈNH SỬA ID: #${customerToEdit?.id}` : 'THIẾT LẬP TÀI KHOẢN KHÁCH HÀNG MỚI'}
+            <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
+              <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full animate-pulse flex-shrink-0 ${isEditMode ? 'bg-blue-500' : 'bg-emerald-500'}`} />
+              <p className="text-[9px] md:text-[11px] text-gray-400 font-black uppercase tracking-widest md:tracking-[0.2em] truncate">
+                {isEditMode ? `ĐANG CHỈNH SỬA ID: #${customerToEdit?.id}` : 'THIẾT LẬP TÀI KHOẢN MỚI'}
               </p>
             </div>
           </div>
@@ -170,12 +169,12 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
       }
       footer={footer}
     >
-      <div className="space-y-10 pb-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="space-y-6 md:space-y-10 pb-2 md:pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
           
           {/* Cột trái: Thông tin định danh */}
-          <div className="space-y-10">
-            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+          <div className="space-y-6 md:space-y-10">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 border border-gray-300 shadow-md relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
               <SectionHeader icon={User} title="Thông tin cá nhân" subtitle="Họ tên và định danh tài khoản" color="#2563eb" />
               <div className="space-y-6 relative z-10">
@@ -203,7 +202,7 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 border border-gray-300 shadow-md relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
               <SectionHeader icon={Lock} title="Bảo mật & Phân quyền" subtitle="Thiết lập mật khẩu và vai trò" color="#8b5cf6" />
               <div className="space-y-6 relative z-10">
@@ -236,8 +235,8 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
           </div>
 
           {/* Cột phải: Liên lạc & Trạng thái */}
-          <div className="space-y-10">
-            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+          <div className="space-y-6 md:space-y-10">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 border border-gray-300 shadow-md relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
               <SectionHeader icon={Globe} title="Thông tin liên lạc" subtitle="Email và số điện thoại liên hệ" color="#10b981" />
               <div className="space-y-6 relative z-10">
@@ -265,10 +264,10 @@ export default function CustomerModal({ open, onClose, onSave, customerToEdit })
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
+            <div className="bg-white rounded-2xl md:rounded-3xl p-5 md:p-8 border border-gray-300 shadow-md relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
               <SectionHeader icon={Settings} title="Cấu hình tài khoản" subtitle="Trạng thái và các thiết lập khác" color="#f59e0b" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 relative z-10">
                 <div>
                   <label className="block text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2 ml-1">Trạng thái hoạt động</label>
                   <select

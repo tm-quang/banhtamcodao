@@ -13,42 +13,86 @@ import {
     Zap, Gift, UserCog, Sparkles
 } from 'lucide-react';
 
-// Menu structure với 3 sections
+// Menu structure with groups
 const menuSections = [
     {
         title: 'TỔNG QUAN',
         items: [
             { href: '/admin', icon: LayoutGrid, label: 'Dashboard' },
-            { href: '/admin/products', icon: Package, label: 'Quản lý món' },
-            { href: '/admin/categories', icon: FolderTree, label: 'Danh mục' },
-            { href: '/admin/customers', icon: Users, label: 'Khách hàng' },
-            { href: '/admin/orders', icon: ShoppingCart, label: 'Đơn hàng' },
-            { href: '/admin/analytics', icon: BarChart3, label: 'Phân tích' },
-            { href: '/admin/promotions', icon: Ticket, label: 'Khuyến mãi' },
-            { href: '/admin/flash-sales', icon: Zap, label: 'Flash Sale' },
-            { href: '/admin/combo-promotions', icon: Gift, label: 'Combo' },
+            { href: '/admin/orders', icon: ShoppingCart, label: 'Quản lý đơn hàng' },
         ]
     },
     {
-        title: 'NỘI DUNG, PHẢN HỒI',
+        title: 'SẢN PHẨM',
         items: [
             {
-                label: 'Quản lý chung',
-                icon: FileEdit,
+                label: 'Danh mục & Thực đơn',
+                icon: Package,
                 submenu: [
-                    { href: '/admin/reviews', label: 'Quản lý đánh giá' },
-                    { href: '/admin/content', label: 'Quản lý nội dung' },
+                    { href: '/admin/categories', label: 'Danh mục món', icon: FolderTree },
+                    { href: '/admin/products', label: 'Quản lý món', icon: Package },
                 ]
             }
         ]
     },
     {
-        title: 'CÀI ĐẶT',
+        title: 'KHÁCH HÀNG',
         items: [
-            { href: '/admin/customer-groups', icon: UserCog, label: 'Nhóm khách hàng' },
-            { href: '/admin/banners', icon: PictureInPicture, label: 'Banner' },
-            { href: '/admin/settings', icon: Settings, label: 'Cài đặt' },
-            { href: '/admin/help', icon: HelpCircle, label: 'Trợ giúp' },
+            {
+                label: 'Quản lý khách hàng',
+                icon: Users,
+                submenu: [
+                    { href: '/admin/customer-groups', label: 'Nhóm khách hàng', icon: UserCog },
+                    { href: '/admin/customers', label: 'Danh sách khách hàng', icon: Users },
+                ]
+            }
+        ]
+    },
+    {
+        title: 'TIẾP THỊ',
+        items: [
+            {
+                label: 'Khuyến mãi',
+                icon: Ticket,
+                submenu: [
+                    { href: '/admin/promotions', label: 'Khuyến mãi', icon: Ticket },
+                    { href: '/admin/flash-sales', label: 'Flash Sale', icon: Zap },
+                    { href: '/admin/combo-promotions', label: 'Combo', icon: Gift },
+                ]
+            }
+        ]
+    },
+    {
+        title: 'BÁO CÁO',
+        items: [
+            { href: '/admin/analytics', icon: BarChart3, label: 'Báo cáo & Thống kê' },
+        ]
+    },
+    {
+        title: 'NỘI DUNG',
+        items: [
+            {
+                label: 'Quản lý nội dung',
+                icon: FileEdit,
+                submenu: [
+                    { href: '/admin/reviews', label: 'Quản lý đánh giá', icon: Star },
+                    { href: '/admin/content', label: 'Quản lý nội dung', icon: FileEdit },
+                ]
+            }
+        ]
+    },
+    {
+        title: 'HỆ THỐNG',
+        items: [
+            {
+                label: 'Cài đặt website',
+                icon: Settings,
+                submenu: [
+                    { href: '/admin/banners', label: 'Banner', icon: PictureInPicture },
+                    { href: '/admin/help', label: 'Trợ giúp', icon: HelpCircle },
+                    { href: '/admin/settings', label: 'Cài đặt', icon: Settings },
+                ]
+            }
         ]
     }
 ];
@@ -56,18 +100,17 @@ const menuSections = [
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 // NavItem component
-const NavItem = ({ item, isActive, pathname }) => {
-    const [isOpen, setIsOpen] = React.useState(isActive || (item.submenu && item.submenu.some(sub => pathname.startsWith(sub.href))));
+const NavItem = ({ item, isActive, pathname, isOpen, onToggle }) => {
     const Icon = item.icon;
 
     if (item.submenu) {
         return (
             <li>
                 <button
-                    onClick={() => setIsOpen(!isOpen)}
+                    onClick={onToggle}
                     className={`
-                        w-full group relative flex items-center gap-3 px-4 py-2.5 mx-3 rounded-xl cursor-pointer 
-                        transition-all duration-200
+                        flex items-center gap-3 px-4 py-2.5 mx-3 rounded-xl cursor-pointer 
+                        transition-all duration-200 flex-1
                         ${isOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'}
                     `}
                 >
@@ -76,32 +119,34 @@ const NavItem = ({ item, isActive, pathname }) => {
                         className={`transition-colors flex-shrink-0 ${isOpen ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`}
                     />
                     <span className="text-sm flex-1 text-left font-medium">{item.label}</span>
-                    {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
-                
-                {isOpen && (
-                    <ul className="mt-1 ml-9 space-y-1 pr-3">
+
+                <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
+                    <ul className="ml-9 space-y-1 pr-3">
                         {item.submenu.map((sub) => {
-                            const isSubActive = pathname.startsWith(sub.href);
+                            const isSubActive = pathname === sub.href;
+                            const SubIcon = sub.icon;
                             return (
                                 <li key={sub.href}>
                                     <Link
                                         href={sub.href}
                                         className={`
-                                            block px-4 py-2 rounded-lg text-[13px] transition-all
-                                            ${isSubActive 
-                                                ? 'bg-blue-100 text-blue-700 font-bold' 
+                                            flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] transition-all
+                                            ${isSubActive
+                                                ? 'bg-blue-100 text-blue-700 font-bold'
                                                 : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
                                             }
                                         `}
                                     >
-                                        {sub.label}
+                                        {SubIcon && <SubIcon size={16} className={isSubActive ? 'text-blue-700' : 'text-gray-400'} />}
+                                        <span>{sub.label}</span>
                                     </Link>
                                 </li>
                             );
                         })}
                     </ul>
-                )}
+                </div>
             </li>
         );
     }
@@ -159,32 +204,28 @@ import React from 'react';
 
 export default function TailwindSidebar() {
     const pathname = usePathname();
+    const [openSubmenu, setOpenSubmenu] = React.useState(null);
 
     // Check if item is active
     const isItemActive = (href) => {
         if (!href) return false;
         if (href === '/admin') {
-            return pathname === '/admin' || pathname === '/dashboard';
+            return pathname === '/admin';
         }
         return pathname.startsWith(href);
     };
 
     return (
-        <aside className="w-56 h-screen bg-white border-r border-gray-200 flex flex-col hidden md:flex flex-shrink-0 shadow-lg">
+        <aside className="w-64 h-screen bg-white border-r border-gray-200 flex flex-col hidden md:flex flex-shrink-0 shadow-lg">
             {/* Logo Header */}
-            <div className="h-20 flex items-center px-6 border-b border-gray-100 bg-white">
+            <div className="h-20 flex items-center px-4 border-b border-gray-100 bg-white">
                 <Link href="/admin" className="flex items-center gap-3 group">
-                    <div className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-all transform group-hover:scale-105">
-                        <Sparkles size={22} className="text-white" />
-                    </div>
-                    <div>
-                        <h1 className="text-lg font-black text-gray-900 tracking-tighter leading-none">
-                            CÔ ĐÀO
-                        </h1>
-                        <p className="text-[10px] text-gray-400 font-bold tracking-widest mt-1 flex items-center gap-1 uppercase">
-                            <span>Admin Panel</span>
-                            <span className="w-1 h-1 bg-red-500 rounded-full animate-pulse"></span>
-                        </p>
+                    <div className="relative w-45 h-25 transition-transform duration-300 group-hover:scale-105">
+                        <img
+                            src="/images/banner-logo/banner-codao.png"
+                            alt="Bánh Tầm Cô Đào Logo"
+                            className="w-full h-full object-contain"
+                        />
                     </div>
                 </Link>
             </div>
@@ -203,10 +244,12 @@ export default function TailwindSidebar() {
                             <ul className="space-y-1">
                                 {section.items.map((item, idx) => (
                                     <NavItem
-                                        key={item.href || idx}
+                                        key={item.href || idx || item.label}
                                         item={item}
                                         isActive={isItemActive(item.href)}
                                         pathname={pathname}
+                                        isOpen={openSubmenu === item.label}
+                                        onToggle={() => setOpenSubmenu(openSubmenu === item.label ? null : item.label)}
                                     />
                                 ))}
                             </ul>
@@ -220,10 +263,10 @@ export default function TailwindSidebar() {
                 <Link
                     href="/"
                     target="_blank"
-                    className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-gray-900 hover:bg-black text-white transition-all text-xs font-bold shadow-sm"
+                    className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white transition-all text-xs font-bold shadow-sm"
                 >
                     <ExternalLink size={14} />
-                    <span>XEM WEBSITE</span>
+                    <span>VỀ TRANG CHỦ</span>
                 </Link>
             </div>
         </aside>

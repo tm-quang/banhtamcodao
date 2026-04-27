@@ -17,6 +17,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const { showToast } = useToast();
 
@@ -24,18 +25,22 @@ export default function RegisterForm({ onSwitchToLogin }) {
         e.preventDefault();
         setError('');
         setSuccess('');
+        setLoading(true);
 
         if (password !== confirmPassword) {
             setError('Mật khẩu nhập lại không khớp.');
+            setLoading(false);
             return;
         }
         if (!agreedToTerms) {
             setError('Bạn phải đồng ý với Điều khoản dịch vụ và Chính sách bảo mật.');
+            setLoading(false);
             return;
         }
 
         if (!email && !phoneNumber) {
             setError('Vui lòng nhập Email hoặc Số điện thoại.');
+            setLoading(false);
             return;
         }
 
@@ -49,6 +54,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({ message: 'Lỗi kết nối server' }));
                 setError(errorData.message || `Lỗi ${res.status}: ${res.statusText}`);
+                setLoading(false);
                 return;
             }
 
@@ -80,6 +86,8 @@ export default function RegisterForm({ onSwitchToLogin }) {
             const errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
             setError(errorMessage);
             showToast(errorMessage, 'error');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -203,9 +211,14 @@ export default function RegisterForm({ onSwitchToLogin }) {
             <div>
                 <button
                     type="submit"
-                    className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-xl hover:bg-primary/90 transition-all text-lg shadow-lg shadow-primary/20"
+                    disabled={loading}
+                    className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-xl hover:bg-primary/90 transition-all text-lg shadow-lg shadow-primary/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Đăng ký
+                    {loading ? (
+                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                        'Đăng ký'
+                    )}
                 </button>
             </div>
         </form>

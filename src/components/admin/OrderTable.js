@@ -7,7 +7,7 @@ import {
     Tooltip, alpha, InputAdornment, Stack
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-import { Eye, Edit, Search, ShoppingCart, Clock, CheckCircle, Truck, XCircle, X, Phone, Package } from 'lucide-react';
+import { Eye, Edit, Search, ShoppingCart, Clock, CheckCircle, Truck, XCircle, X, Phone, Package, MapPin } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, startOfQuarter, endOfQuarter, startOfYear, endOfYear, subDays, subWeeks, subMonths, subQuarters, subYears, isWithinInterval } from 'date-fns';
 import OrderDetailModal from './OrderDetailModal';
 import OrderEditModal from './OrderEditModal';
@@ -16,6 +16,21 @@ import { useToast } from '@/context/ToastContext';
 const formatCurrency = (amount) => {
     if (!amount) return '0đ';
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ';
+};
+
+const parseAddress = (address) => {
+    if (!address) return { text: 'N/A', url: null };
+    // Match address and google maps link
+    const mapMatch = address.match(/(.*?)\s*\(\s*📍?\s*Bản đồ:\s*(https:\/\/www\.google\.com\/maps[^\s)]+)\s*\)/i) ||
+        address.match(/(.*?)\s*(https:\/\/www\.google\.com\/maps[^\s)]+)/i);
+
+    if (mapMatch) {
+        return {
+            text: mapMatch[1].trim() || 'Vị trí trên bản đồ',
+            url: mapMatch[2].trim()
+        };
+    }
+    return { text: address, url: null };
 };
 
 // Compact Stats Badge
@@ -127,7 +142,7 @@ export default function OrderTable({ orders: initialOrders }) {
             return o.status === 'Đã hủy' || (o.status === 'Hoàn thành' && o.payment_status === 'unpaid');
         }).length;
         const totalValue = filtered.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-        
+
         return {
             total: filtered.length,
             pending: filtered.filter(o => o.status === 'Chờ xác nhận').length,
@@ -299,7 +314,19 @@ export default function OrderTable({ orders: initialOrders }) {
                         <Typography sx={{ fontWeight: 500, fontSize: '0.875rem', lineHeight: 1.2 }}>
                             {params.value || 'N/A'}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', display: 'block', lineHeight: 1.2 }}>
+                        <Typography
+                            variant="caption"
+                            component="a"
+                            href={`tel:${params.row.phone_number}`}
+                            sx={{
+                                fontSize: '0.7rem',
+                                display: 'block',
+                                lineHeight: 1.2,
+                                color: '#3b82f6',
+                                textDecoration: 'none',
+                                '&:hover': { textDecoration: 'underline' }
+                            }}
+                        >
                             {params.row.phone_number || 'N/A'}
                         </Typography>
                     </Box>
@@ -313,25 +340,50 @@ export default function OrderTable({ orders: initialOrders }) {
             minWidth: 250,
             align: 'left',
             headerAlign: 'left',
-            renderCell: (params) => (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', height: '100%', width: '100%', px: 1 }}>
-                    <Typography 
-                        sx={{ 
-                            fontSize: '0.875rem', 
-                            color: 'text.primary',
-                            textAlign: 'left',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            lineHeight: 1.3
-                        }}
-                    >
-                        {params.value || 'N/A'}
-                    </Typography>
-                </Box>
-            )
+            renderCell: (params) => {
+                const { text, url } = parseAddress(params.value);
+                return (
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, height: '100%', width: '100%', px: 1 }}>
+                        <Typography
+                            sx={{
+                                fontSize: '0.875rem',
+                                color: 'text.primary',
+                                textAlign: 'left',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                lineHeight: 1.3,
+                                flex: 1
+                            }}
+                            title={text}
+                        >
+                            {text}
+                        </Typography>
+                        {url && (
+                            <Tooltip title="Mở Google Maps" arrow>
+                                <IconButton
+                                    size="small"
+                                    component="a"
+                                    href={url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                        color: '#ef4444',
+                                        bgcolor: 'rgba(239, 68, 68, 0.08)',
+                                        '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.15)' },
+                                        width: 28,
+                                        height: 28
+                                    }}
+                                >
+                                    <MapPin size={16} />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </Box>
+                );
+            }
         },
         {
             field: 'delivery_method',
@@ -414,7 +466,7 @@ export default function OrderTable({ orders: initialOrders }) {
             align: 'center',
             headerAlign: 'center',
             renderCell: (params) => (
-                <Box 
+                <Box
                     sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}
                     onClick={(e) => openStatusMenu(e, params.row)}
                 >
@@ -450,8 +502,8 @@ export default function OrderTable({ orders: initialOrders }) {
                             <IconButton
                                 size="medium"
                                 onClick={() => setViewingOrderId(params.row.id)}
-                                sx={{ 
-                                    color: '#3b82f6', 
+                                sx={{
+                                    color: '#3b82f6',
                                     '&:hover': { bgcolor: alpha('#3b82f6', 0.1) },
                                     width: 40,
                                     height: 40,
@@ -464,8 +516,8 @@ export default function OrderTable({ orders: initialOrders }) {
                             <IconButton
                                 size="medium"
                                 onClick={() => setEditingOrder(params.row)}
-                                sx={{ 
-                                    color: '#f97316', 
+                                sx={{
+                                    color: '#f97316',
                                     '&:hover': { bgcolor: alpha('#f97316', 0.1) },
                                     width: 40,
                                     height: 40,
@@ -498,10 +550,10 @@ export default function OrderTable({ orders: initialOrders }) {
                 {/* ============================================ */}
                 {/* CHỈNH CHIỀU CAO THẺ Ở ĐÂY: p (padding) hoặc minHeight/height */}
                 {/* ============================================ */}
-                <Box sx={{ 
+                <Box sx={{
                     p: 2,
-                    borderRadius: 4, 
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
                     color: 'white',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
@@ -515,14 +567,14 @@ export default function OrderTable({ orders: initialOrders }) {
                     }
                 }}>
                     {/* Icon nền mờ */}
-                    <ShoppingCart 
-                        size={80} 
-                        className="opacity-10" 
-                        style={{ 
-                            position: 'absolute', 
-                            bottom: 0, 
-                            right: 0 
-                        }} 
+                    <ShoppingCart
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
                     />
                     {/* Icon chính ở top-left */}
                     <div className="relative z-10">
@@ -539,10 +591,10 @@ export default function OrderTable({ orders: initialOrders }) {
                     </div>
                 </Box>
                 {/* Đơn hoàn tất */}
-                <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 4, 
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                     color: 'white',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
@@ -555,14 +607,14 @@ export default function OrderTable({ orders: initialOrders }) {
                         zIndex: 10,
                     }
                 }}>
-                    <CheckCircle 
-                        size={80} 
-                        className="opacity-10" 
-                        style={{ 
-                            position: 'absolute', 
-                            bottom: 0, 
-                            right: 0 
-                        }} 
+                    <CheckCircle
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
                     />
                     <div className="relative z-10">
                         <CheckCircle size={32} className="opacity-90 mb-3" />
@@ -571,10 +623,10 @@ export default function OrderTable({ orders: initialOrders }) {
                     </div>
                 </Box>
                 {/* Đơn chờ xác nhận */}
-                <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 4, 
-                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', 
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
                     color: 'white',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
@@ -587,14 +639,14 @@ export default function OrderTable({ orders: initialOrders }) {
                         zIndex: 10,
                     }
                 }}>
-                    <Clock 
-                        size={80} 
-                        className="opacity-10" 
-                        style={{ 
-                            position: 'absolute', 
-                            bottom: 0, 
-                            right: 0 
-                        }} 
+                    <Clock
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
                     />
                     <div className="relative z-10">
                         <Clock size={32} className="opacity-90 mb-3" />
@@ -603,10 +655,10 @@ export default function OrderTable({ orders: initialOrders }) {
                     </div>
                 </Box>
                 {/* Đơn hàng chờ giao */}
-                <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 4, 
-                    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', 
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
                     color: 'white',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
@@ -619,14 +671,14 @@ export default function OrderTable({ orders: initialOrders }) {
                         zIndex: 10,
                     }
                 }}>
-                    <Truck 
-                        size={80} 
-                        className="opacity-10" 
-                        style={{ 
-                            position: 'absolute', 
-                            bottom: 0, 
-                            right: 0 
-                        }} 
+                    <Truck
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
                     />
                     <div className="relative z-10">
                         <Truck size={32} className="opacity-90 mb-3" />
@@ -635,10 +687,10 @@ export default function OrderTable({ orders: initialOrders }) {
                     </div>
                 </Box>
                 {/* Đã hủy */}
-                <Box sx={{ 
-                    p: 2, 
-                    borderRadius: 4, 
-                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 
+                <Box sx={{
+                    p: 2,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                     color: 'white',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                     position: 'relative',
@@ -651,14 +703,14 @@ export default function OrderTable({ orders: initialOrders }) {
                         zIndex: 10,
                     }
                 }}>
-                    <XCircle 
-                        size={80} 
-                        className="opacity-10" 
-                        style={{ 
-                            position: 'absolute', 
-                            bottom: 0, 
-                            right: 0 
-                        }} 
+                    <XCircle
+                        size={80}
+                        className="opacity-10"
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
                     />
                     <div className="relative z-10">
                         <XCircle size={32} className="opacity-90 mb-3" />
