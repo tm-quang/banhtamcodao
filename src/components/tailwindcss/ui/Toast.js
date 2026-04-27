@@ -46,12 +46,12 @@ export function Toast({ message, type = 'success', isVisible, onClose, duration 
 
     return (
         <div className="fixed top-4 right-4 z-[9999] animate-in slide-in-from-top-5 fade-in duration-300">
-            <div className={`${config.bg} text-white px-6 py-4 rounded-xl shadow-2xl max-w-sm flex items-center gap-3 min-w-[300px]`}>
+            <div className={`${config.bg} text-white px-3 py-3 rounded-xl shadow-md max-w-sm flex items-center gap-3 min-w-[300px]`}>
                 <Icon size={20} className={`${config.iconColor} flex-shrink-0`} />
                 <p className="flex-1 font-medium text-sm">{message}</p>
                 <button
                     onClick={onClose}
-                    className="flex-shrink-0 hover:bg-white/20 rounded-lg p-1 transition-colors"
+                    className="flex-shrink-0 hover:bg-white/20 rounded-md p-1 transition-colors"
                 >
                     <X size={16} />
                 </button>

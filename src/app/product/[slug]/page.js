@@ -15,10 +15,66 @@ import ProductTabs from '@/components/ProductTabs';
 import { StaticStarRating } from '@/components/StarRating';
 import ProductQuickActions from '@/components/ProductQuickActions';
 
+import { applyPromotions } from '@/utils/productUtils';
+import supabase from '@/lib/supabase';
+
 async function getProductDetail(slug) {
-  const res = await fetch(`http://localhost:3300/api/products/${slug}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
+  try {
+    // 0. Fetch active promos
+    const { data: activePromos } = await supabase
+      .from('combo_promotions')
+      .select('name, description, conditions, status')
+      .eq('status', 'active');
+
+    // 1. Fetch product
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('*, categories(name, slug)')
+      .eq('slug', slug)
+      .maybeSingle();
+
+    if (productError || !product) return null;
+
+    // Process product with promotions
+    const productData = applyPromotions(product, activePromos);
+
+    // 2. Fetch reviews
+    const { data: reviews, error: reviewsError } = await supabase
+      .from('product_reviews')
+      .select('*')
+      .eq('product_id', product.id)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false });
+
+    // 3. Fetch related products
+    const { data: relatedProductsRaw, error: relatedError } = await supabase
+      .from('products')
+      .select('id, name, slug, price, discount_price, image_url, categories(name)')
+      .eq('category_id', product.category_id)
+      .neq('id', product.id)
+      .eq('status', 'active')
+      .limit(8);
+
+    const relatedProducts = applyPromotions(relatedProductsRaw || [], activePromos);
+
+    // 4. Fetch images (gallery)
+    const { data: images, error: imagesError } = await supabase
+      .from('product_images')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('priority', { ascending: true });
+
+    return {
+      success: true,
+      product: productData,
+      reviews: reviews || [],
+      relatedProducts: relatedProducts || [],
+      images: images || []
+    };
+  } catch (error) {
+    console.error('Error in getProductDetail:', error);
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }) {

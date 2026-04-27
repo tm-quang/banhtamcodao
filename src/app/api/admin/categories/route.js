@@ -17,7 +17,12 @@ export async function GET() {
 
         if (error) throw error;
 
-        return NextResponse.json({ success: true, categories: rows });
+        const categoriesWithActive = rows.map(cat => ({
+            ...cat,
+            active: cat.status === 'active'
+        }));
+
+        return NextResponse.json({ success: true, categories: categoriesWithActive });
     } catch (error) {
         console.error('API Error - GET /api/admin/categories:', error);
         return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
@@ -29,11 +34,15 @@ export async function GET() {
  */
 export async function POST(request) {
     try {
-        const { name, slug, parent_id, status } = await request.json();
+        const body = await request.json();
+        const { name, slug, parent_id, status, active } = body;
         
         if (!name) {
             return NextResponse.json({ success: false, message: 'Tên danh mục là bắt buộc.' }, { status: 400 });
         }
+
+        // Use status if provided, or map from active, or default to 'active'
+        const finalStatus = status || (active === false ? 'inactive' : 'active');
 
         const { data: result, error } = await supabaseAdmin
             .from('categories')
@@ -41,20 +50,23 @@ export async function POST(request) {
                 name,
                 slug: slug || null,
                 parent_id: parent_id || null,
-                status: status || 'active'
+                status: finalStatus
             }])
             .select();
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Error creating category:', error);
+            return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+        }
 
         return NextResponse.json({ 
             success: true, 
             message: 'Tạo danh mục thành công!', 
-            categoryId: result[0].id 
+            categoryId: result?.[0]?.id 
         });
 
     } catch (error) {
         console.error('API Error - POST /api/admin/categories:', error);
-        return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
+        return NextResponse.json({ success: false, message: error.message || 'Lỗi Server' }, { status: 500 });
     }
 }

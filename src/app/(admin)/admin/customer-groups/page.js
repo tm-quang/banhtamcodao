@@ -213,29 +213,36 @@ export default function CustomerGroupsPage() {
 
   return (
     <div className="h-full flex flex-col">
+      <style jsx global>{`
+          button:focus {
+              outline: none !important;
+              box-shadow: none !important;
+              ring: 0 !important;
+          }
+      `}</style>
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-2">
         <div className="flex flex-col">
           <div className="flex items-center gap-2.5 mb-0.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
-              <Users size={18} />
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-100/50">
+              <Users size={18} fill="currentColor" />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Nhóm khách hàng</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Nhóm khách hàng</h1>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý cấp bậc và quyền lợi thành viên ({stats.total} nhóm)</p>
+          <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Quản lý cấp bậc và quyền lợi thành viên ({stats.total} nhóm)</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
             onClick={fetchGroups}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl text-gray-600 bg-gray-500 hover:bg-gray-600 font-black uppercase text-xs tracking-widest px-3 shadow-sm transition-all"
           >
             Làm mới
           </Button>
           <Button
             startIcon={<PlusCircle size={20} />}
             onClick={() => { setEditingGroup(null); setIsModalOpen(true); }}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest px-6 shadow-md shadow-orange-100 transition-all"
           >
             Thêm nhóm mới
           </Button>
@@ -243,58 +250,61 @@ export default function CustomerGroupsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-3 lg:grid-cols-3 gap-3 md:gap-4 mb-5 px-0.5">
         {loading ? (
           Array(3).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
           <>
+            {/* Tổng nhóm */}
             <div
               onClick={() => { setStatusFilter('all'); setSearchTerm(''); }}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'all' ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Users size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'all' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-blue-600' : 'z-10 bg-blue-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Users size={70} className="md:w-[110px] md:h-[110px]" fill="currentColor" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Users size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <Users size={14} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng số nhóm</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tổng số nhóm</p>
                 </div>
               </div>
             </div>
 
+            {/* Nhóm hoạt động */}
             <div
               onClick={() => setStatusFilter('active')}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Shield size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-emerald-600' : 'z-10 bg-emerald-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Shield size={70} className="md:w-[110px] md:h-[110px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Shield size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <Shield size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Nhóm hoạt động</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Hoạt động</p>
                 </div>
               </div>
             </div>
 
+            {/* Nhóm tạm tắt */}
             <div
               onClick={() => setStatusFilter('inactive')}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'ring-4 ring-amber-300 ring-offset-2' : 'shadow-amber-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Zap size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-gray-600' : 'z-10 bg-gray-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Zap size={70} className="md:w-[110px] md:h-[110px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Zap size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <Zap size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Nhóm tạm tắt</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tạm tắt</p>
                 </div>
               </div>
             </div>
@@ -310,7 +320,7 @@ export default function CustomerGroupsPage() {
               placeholder="TÌM KIẾM TÊN NHÓM, MÔ TẢ..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+              startIcon={<Search size={18} className="text-gray-600 group-focus-within:text-orange-500 transition-colors" />}
               className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
             />
           </div>
@@ -319,14 +329,14 @@ export default function CustomerGroupsPage() {
           {(searchTerm || statusFilter !== 'all') && (
             <button
               onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
-              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
+              className="flex items-center gap-2 px-3 py-3 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
               <X size={14} />
-              Xóa bộ lọc
+              Xóa lọc
             </button>
           )}
           <div className="h-8 w-px bg-gray-200" />
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredGroups.length} nhóm</span>
+          <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredGroups.length} nhóm</span>
         </div>
       </div>
 
@@ -338,7 +348,7 @@ export default function CustomerGroupsPage() {
           loading={loading}
           searchable={false}
           pageSize={25}
-          emptyStateIcon={<Users size={48} className="text-gray-400" />}
+          emptyStateIcon={<Users size={48} className="text-gray-600" />}
           emptyStateTitle="Không có nhóm khách hàng"
           emptyStateDescription="Chưa có nhóm nào để hiển thị"
         />
@@ -357,17 +367,22 @@ export default function CustomerGroupsPage() {
         open={Boolean(deletingGroup)}
         onClose={() => setDeletingGroup(null)}
         size="sm"
+        noPadding={true}
         title={
-          <div className="flex items-center gap-2 text-red-600">
-            <AlertCircle size={22} />
-            <span className="font-bold uppercase tracking-tight">Xác nhận vô hiệu hóa</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <AlertCircle size={22} className="text-red-600" />
+            </div>
+            <div>
+              <span className="font-bold text-red-600 block uppercase tracking-tight">Xác nhận vô hiệu hóa</span>
+            </div>
           </div>
         }
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex items-center justify-end gap-2 w-full px-1">
             <Button
               onClick={() => setDeletingGroup(null)}
-              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-gray-500 text-white hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
             >
               Hủy bỏ
             </Button>
@@ -380,10 +395,13 @@ export default function CustomerGroupsPage() {
           </div>
         }
       >
-        <p className="text-gray-700">
-          Bạn có chắc chắn muốn vô hiệu hóa nhóm <span className="font-black">"{deletingGroup?.name}"</span>? Các khách hàng trong nhóm này có thể bị ảnh hưởng về quyền lợi tích điểm.
-        </p>
+        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-300">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Bạn có chắc chắn muốn vô hiệu hóa nhóm <span className="font-black text-red-600">"{deletingGroup?.name}"</span>? Các khách hàng trong nhóm này có thể bị ảnh hưởng về quyền lợi tích điểm.
+          </p>
+        </div>
       </Dialog>
+
 
       {/* Alert Modal */}
       <AlertModal

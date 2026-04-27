@@ -10,12 +10,16 @@ import { supabaseAdmin } from '@/lib/supabase';
  */
 export async function PUT(request, { params }) {
     try {
-        const { id } = params;
-        const { name, slug, parent_id, status } = await request.json();
+        const { id } = await params;
+        const body = await request.json();
+        const { name, slug, parent_id, status, active } = body;
 
         if (!name) {
             return NextResponse.json({ success: false, message: 'Tên danh mục là bắt buộc.' }, { status: 400 });
         }
+
+        // Use status if provided, or map from active, or default to 'active'
+        const finalStatus = status || (active === false ? 'inactive' : 'active');
 
         const { error } = await supabaseAdmin
             .from('categories')
@@ -23,17 +27,20 @@ export async function PUT(request, { params }) {
                 name,
                 slug: slug || null,
                 parent_id: parent_id || null,
-                status: status || 'active'
+                status: finalStatus
             })
             .eq('id', id);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Supabase Error updating category:', error);
+            return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+        }
 
         return NextResponse.json({ success: true, message: 'Cập nhật danh mục thành công!' });
 
     } catch (error) {
         console.error('API Error - PUT /api/admin/categories/[id]:', error);
-        return NextResponse.json({ success: false, message: 'Lỗi Server' }, { status: 500 });
+        return NextResponse.json({ success: false, message: error.message || 'Lỗi Server' }, { status: 500 });
     }
 }
 
@@ -42,7 +49,7 @@ export async function PUT(request, { params }) {
  */
 export async function DELETE(request, { params }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         
         const { error } = await supabaseAdmin
             .from('categories')

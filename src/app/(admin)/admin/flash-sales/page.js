@@ -331,29 +331,36 @@ export default function FlashSalesPageTailwind() {
 
     return (
         <div className="h-full flex flex-col">
+            <style jsx global>{`
+                button:focus {
+                    outline: none !important;
+                    box-shadow: none !important;
+                    ring: 0 !important;
+                }
+            `}</style>
             {/* Header */}
-            <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+            <div className="flex flex-wrap items-end justify-between gap-4 mb-2">
                 <div className="flex flex-col">
                     <div className="flex items-center gap-2.5 mb-0.5">
-                        <div className="w-9 h-9 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 shadow-lg shadow-orange-100/50">
+                        <div className="w-9 h-9 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-100/50">
                             <Zap size={18} fill="currentColor" />
                         </div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Chiến dịch Giờ vàng</h1>
+                        <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Chiến dịch Giờ vàng</h1>
                     </div>
-                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý các chương trình Flash Sale ({stats.total} chương trình)</p>
+                    <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Quản lý Flash Sale & Ưu đãi chớp nhoáng ({stats.total} chương trình)</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     <Button
                         startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
                         onClick={fetchFlashSales}
-                        className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-xs tracking-widest px-6 shadow-sm transition-all active:scale-95"
+                        className="flex items-center justify-center gap-2 h-10 !rounded-2xl text-gray-600 bg-gray-500 hover:bg-gray-600 font-black uppercase text-xs tracking-widest px-3 shadow-sm transition-all"
                     >
                         Làm mới
                     </Button>
                     <Button
                         startIcon={<PlusCircle size={20} />}
                         onClick={() => { setEditingFlashSale(null); setIsModalOpen(true); }}
-                        className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest px-8 shadow-xl shadow-orange-100 transition-all active:scale-95"
+                        className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest px-6 shadow-md shadow-orange-100 transition-all"
                     >
                         Tạo Flash Sale
                     </Button>
@@ -361,75 +368,75 @@ export default function FlashSalesPageTailwind() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5 px-0.5">
                 {loading ? (
                     Array(4).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
                 ) : (
                     <>
                         <div
                             onClick={() => setStatusFilter('all')}
-                            className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'all' ? 'ring-4 ring-orange-300 ring-offset-2' : 'shadow-orange-100'}`}>
-                            <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                                <Zap size={110} fill="currentColor" />
+                            className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'all' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-blue-600' : 'z-10 bg-blue-500'}`}>
+                            <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                                <Zap size={70} className="md:w-[90px] md:h-[90px]" fill="currentColor" />
                             </div>
                             <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                                    <Zap size={20} fill="currentColor" />
+                                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                                    <Zap size={14} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
                                 </div>
                                 <div>
-                                    <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng chương trình</p>
+                                    <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                                    <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tổng cộng</p>
                                 </div>
                             </div>
                         </div>
 
                         <div
                             onClick={() => setStatusFilter('running')}
-                            className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'running' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
-                            <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                                <Clock size={110} />
+                            className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'running' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-emerald-600' : 'z-10 bg-emerald-500'}`}>
+                            <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                                <Clock size={70} className="md:w-[90px] md:h-[90px]" />
                             </div>
                             <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                                    <Clock size={20} />
+                                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                                    <Clock size={14} className="md:w-[18px] md:h-[18px]" />
                                 </div>
                                 <div>
-                                    <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.running}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đang chạy</p>
+                                    <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.running}</p>
+                                    <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Đang chạy</p>
                                 </div>
                             </div>
                         </div>
 
                         <div
                             onClick={() => setStatusFilter('active')}
-                            className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
-                            <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                                <CheckCircle size={110} />
+                            className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-indigo-600' : 'z-10 bg-indigo-500'}`}>
+                            <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                                <CheckCircle size={70} className="md:w-[90px] md:h-[90px]" />
                             </div>
                             <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                                    <CheckCircle size={20} />
+                                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                                    <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
                                 </div>
                                 <div>
-                                    <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã kích hoạt</p>
+                                    <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                                    <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Kích hoạt</p>
                                 </div>
                             </div>
                         </div>
 
                         <div
                             onClick={() => setStatusFilter('inactive')}
-                            className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'ring-4 ring-gray-300 ring-offset-2' : 'shadow-gray-100'}`}>
-                            <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                                <XCircle size={110} />
+                            className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-gray-600' : 'z-10 bg-gray-500'}`}>
+                            <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                                <XCircle size={70} className="md:w-[90px] md:h-[90px]" />
                             </div>
                             <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                                    <XCircle size={20} />
+                                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                                    <XCircle size={14} className="md:w-[18px] md:h-[18px]" />
                                 </div>
                                 <div>
-                                    <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã tạm tắt</p>
+                                    <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                                    <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tạm tắt</p>
                                 </div>
                             </div>
                         </div>
@@ -437,15 +444,15 @@ export default function FlashSalesPageTailwind() {
                 )}
             </div>
 
+            {/* Filter Row */}
             <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
-                {/* Search */}
                 <div className="flex-1 min-w-[300px]">
                     <div className="relative group">
                         <Input
                             placeholder="TÌM KIẾM CHIẾN DỊCH, NHÃN HOẶC MÔ TẢ..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-orange-500 transition-colors" />}
+                            startIcon={<Search size={18} className="text-gray-600 group-focus-within:text-orange-500 transition-colors" />}
                             className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
                         />
                     </div>
@@ -455,14 +462,14 @@ export default function FlashSalesPageTailwind() {
                     {(searchTerm || statusFilter !== 'all') && (
                         <button
                             onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
-                            className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
+                            className="flex items-center gap-2 px-3 py-3 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
                         >
                             <X size={14} />
-                            Xóa bộ lọc
+                            Xóa lọc
                         </button>
                     )}
                     <div className="h-8 w-px bg-gray-200" />
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredFlashSales.length} kết quả</span>
+                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredFlashSales.length} kết quả</span>
                 </div>
             </div>
 
@@ -474,7 +481,7 @@ export default function FlashSalesPageTailwind() {
                     loading={loading}
                     searchable={false}
                     pageSize={25}
-                    emptyStateIcon={<Zap size={48} className="text-gray-400" />}
+                    emptyStateIcon={<Zap size={48} className="text-gray-600" />}
                     emptyStateTitle="Không có Flash Sale"
                     emptyStateDescription="Chưa có chương trình Flash Sale nào được tạo."
                 />
@@ -496,17 +503,22 @@ export default function FlashSalesPageTailwind() {
                 open={deletingId !== null}
                 onClose={() => setDeletingId(null)}
                 size="sm"
+                noPadding={true}
                 title={
-                    <div className="flex items-center gap-2 text-red-600">
-                        <AlertCircle size={22} />
-                        <span className="font-bold">Xác nhận xóa</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                            <AlertCircle size={22} className="text-red-600" />
+                        </div>
+                        <div>
+                            <span className="font-bold text-red-600 block uppercase tracking-tight">Xác nhận xóa chiến dịch</span>
+                        </div>
                     </div>
                 }
                 footer={
-                    <div className="flex items-center justify-end gap-3 w-full">
+                    <div className="flex items-center justify-end gap-2 w-full px-1">
                         <Button
                             onClick={() => setDeletingId(null)}
-                            className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+                            className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-gray-500 text-white hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
                         >
                             Hủy bỏ
                         </Button>
@@ -519,10 +531,13 @@ export default function FlashSalesPageTailwind() {
                     </div>
                 }
             >
-                <p className="text-gray-700">
-                    Bạn có chắc chắn muốn xóa Flash Sale này? Hành động này không thể hoàn tác.
-                </p>
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-300">
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                        Bạn có chắc chắn muốn xóa Flash Sale này không? Hành động này không thể hoàn tác.
+                    </p>
+                </div>
             </Dialog>
+
 
             {/* Alert Modal */}
             <AlertModal

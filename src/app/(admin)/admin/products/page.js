@@ -39,12 +39,11 @@ const CategoryBadge = ({ name }) => {
 
   return (
     <div className={`
-      inline-flex items-center px-3 py-1.5 rounded-full text-md font-bold shadow-sm
-      ${isBanhTam ? 'bg-emerald-500 text-white' :
-        isDrink ? 'bg-blue-500 text-white' :
-          isMonPhu ? 'bg-emerald-500 text-white' : 'bg-amber-100 text-amber-700'}
+      inline-flex items-center px-3 py-1 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-sm border border-white/20
+      ${isBanhTam ? 'bg-emerald-600 text-white shadow-emerald-100' :
+        isDrink ? 'bg-blue-600 text-white shadow-blue-100' :
+          isMonPhu ? 'bg-indigo-600 text-white shadow-indigo-100' : 'bg-amber-500 text-white shadow-amber-100'}
     `}>
-      <span className={`w-2 h-2 rounded-full mr-2 ${isBanhTam || isDrink || isMonPhu ? 'bg-white animate-pulse' : 'bg-amber-500'}`} />
       {name}
     </div>
   );
@@ -55,14 +54,14 @@ const CategoryBadge = ({ name }) => {
  */
 const StatusBadge = ({ status }) => {
   const config = {
-    active: { label: 'Đang bán', class: 'bg-green-600 text-white' },
-    inactive: { label: 'Ngưng bán', class: 'bg-red-600 text-white' },
-    hidden: { label: 'Ẩn', class: 'bg-gray-500 text-white' },
+    active: { label: 'Đang bán', class: 'bg-green-600 text-white shadow-green-100' },
+    inactive: { label: 'Ngưng bán', class: 'bg-red-600 text-white shadow-red-100' },
+    hidden: { label: 'Ẩn', class: 'bg-gray-500 text-white shadow-gray-100' },
   };
-  const { label, class: styleClass } = config[status] || { label: status, class: 'bg-gray-400 text-white' };
+  const { label, class: styleClass } = config[status] || { label: status, class: 'bg-gray-400 text-white shadow-gray-100' };
 
   return (
-    <span className={`inline-block px-3 py-1.5 rounded-full text-md font-black tracking-tight ${styleClass}`}>
+    <span className={`inline-block px-3 py-1 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/20 ${styleClass}`}>
       {label}
     </span>
   );
@@ -72,9 +71,9 @@ const StatusBadge = ({ status }) => {
  * Hiển thị Badge "Bán chạy" (Hot)
  */
 const HotBadge = () => (
-  <div className="mt-1 flex items-center gap-1 bg-red-100 text-red-600 px-2 py-0.5 rounded-full border border-red-100 w-fit">
-    <Star size={10} fill="red" />
-    <span className="text-[10px] font-black uppercase leading-none">Bán chạy</span>
+  <div className="mt-1 flex items-center gap-1 bg-red-100 text-red-600 px-2 py-0.5 rounded-2xl border border-red-200 w-fit shadow-sm">
+    <Star size={10} fill="currentColor" />
+    <span className="text-[9px] font-black uppercase tracking-tighter leading-none">Bán chạy</span>
   </div>
 );
 
@@ -172,18 +171,18 @@ const InventoryCell = ({ product, inventory, isUpdating, onUpdate }) => {
     );
   }
 
-  const colorStyle = inventory === 0 ? 'bg-red-50 text-red-700 border-red-200' :
-    (inventory < 10 && inventory !== null) ? 'bg-amber-50 text-amber-700 border-amber-200' :
-      'bg-green-50 text-green-700 border-green-200';
+  const colorStyle = inventory === 0 ? 'bg-red-500 text-white border-red-600 shadow-red-100' :
+    (inventory < 10 && inventory !== null) ? 'bg-amber-500 text-white border-amber-600 shadow-amber-100' :
+      'bg-blue-600 text-white border-blue-700 shadow-blue-100';
 
   return (
-    <div className={`inline-flex px-3 py-1 rounded-full border text-md font-bold cursor-pointer transition-colors shadow-sm ${colorStyle}`}
+    <div className={`inline-flex px-3 py-1 rounded-2xl border text-[10px] font-black uppercase tracking-widest cursor-pointer transition-all hover:scale-105 active:scale-95 shadow-sm ${colorStyle}`}
       onClick={(e) => {
         e.stopPropagation();
         setIsEditing(true);
       }}
     >
-      {inventory !== null && inventory !== undefined ? inventory : 'Chưa có'}
+      {inventory !== null && inventory !== undefined ? `${inventory} SP` : 'N/A'}
     </div>
   );
 };
@@ -524,29 +523,36 @@ export default function ProductsPage() {
 
   return (
     <div className="h-full flex flex-col">
+      <style jsx global>{`
+          button:focus {
+              outline: none !important;
+              box-shadow: none !important;
+              ring: 0 !important;
+          }
+      `}</style>
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-2">
         <div className="flex flex-col">
           <div className="flex items-center gap-2.5 mb-0.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-100/50">
               <Package size={18} fill="currentColor" />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Quản lý món</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Quản lý món ăn</h1>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý danh sách thực đơn và tồn kho ({stats.total} món)</p>
+          <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Quản lý thực đơn và tồn kho ({stats.total} món)</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
             onClick={() => { fetchProducts(); fetchCategories(); }}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl text-gray-600 bg-gray-500 hover:bg-gray-600 font-black uppercase text-xs tracking-widest px-3 shadow-sm transition-all"
           >
             Làm mới
           </Button>
           <Button
             startIcon={<PlusCircle size={20} />}
             onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest px-6 shadow-md shadow-orange-100 transition-all"
           >
             Thêm món mới
           </Button>
@@ -555,13 +561,16 @@ export default function ProductsPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl shadow-sm">
+          <p className="text-red-700 font-bold text-sm flex items-center gap-2">
+            <AlertCircle size={18} />
+            {error}
+          </p>
         </div>
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-5 px-0.5">
         {loading ? (
           Array(6).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
@@ -569,17 +578,17 @@ export default function ProductsPage() {
             {/* Tổng món */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: '', isSpecial: null }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${(!filters.status && filters.isSpecial === null) ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Package size={110} fill="currentColor" />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${(!filters.status && filters.isSpecial === null) ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-blue-600' : 'z-10 bg-blue-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Package size={70} className="md:w-[90px] md:h-[90px]" fill="currentColor" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Package size={20} fill="currentColor" />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <Package size={14} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng món</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tổng món</p>
                 </div>
               </div>
             </div>
@@ -587,17 +596,17 @@ export default function ProductsPage() {
             {/* Đang bán */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'active', isSpecial: null }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'active' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <CheckCircle size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'active' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-emerald-600' : 'z-10 bg-emerald-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <CheckCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <CheckCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đang bán</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Đang bán</p>
                 </div>
               </div>
             </div>
@@ -605,17 +614,17 @@ export default function ProductsPage() {
             {/* Ngưng bán */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'inactive', isSpecial: null }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'inactive' ? 'ring-4 ring-gray-300 ring-offset-2' : 'shadow-gray-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <XCircle size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'inactive' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-gray-600' : 'z-10 bg-gray-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <XCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <XCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <XCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Ngưng bán</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Ngưng bán</p>
                 </div>
               </div>
             </div>
@@ -623,51 +632,51 @@ export default function ProductsPage() {
             {/* Bán chạy */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: '', isSpecial: true }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.isSpecial === true ? 'ring-4 ring-amber-300 ring-offset-2' : 'shadow-amber-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Star size={110} fill="currentColor" />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.isSpecial === true ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-orange-600' : 'z-10 bg-orange-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Star size={70} className="md:w-[90px] md:h-[90px]" fill="currentColor" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Star size={20} fill="currentColor" />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <Star size={14} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.special}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Món Hot</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.special}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Món Hot</p>
                 </div>
               </div>
             </div>
 
             {/* Sắp hết */}
             <div
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-rose-100`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <ShoppingBag size={110} />
+              className="group relative p-3 md:p-4 rounded-2xl bg-rose-500 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <ShoppingBag size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <ShoppingBag size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <ShoppingBag size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.lowStock}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Sắp hết hàng</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.lowStock}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Sắp hết</p>
                 </div>
               </div>
             </div>
 
             {/* Hết hàng */}
             <div
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-slate-100`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <AlertCircle size={110} />
+              className="group relative p-3 md:p-4 rounded-2xl bg-slate-800 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <AlertCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <AlertCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <AlertCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.outOfStock}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã hết hàng</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.outOfStock}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Đã hết</p>
                 </div>
               </div>
             </div>
@@ -675,9 +684,8 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Filter & Actions Row */}
+      {/* Filter Row */}
       <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
-        {/* Search & Selects */}
         <div className="flex flex-wrap items-center gap-4 flex-1">
           <div className="flex-1 min-w-[250px]">
             <div className="relative group">
@@ -685,7 +693,7 @@ export default function ProductsPage() {
                 placeholder="TÌM KIẾM TÊN MÓN ĂN..."
                 value={filters.name}
                 onChange={(e) => handleFilterChange('name', e.target.value)}
-                startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+                startIcon={<Search size={18} className="text-gray-600 group-focus-within:text-orange-500 transition-colors" />}
                 className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
               />
             </div>
@@ -720,14 +728,14 @@ export default function ProductsPage() {
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
+              className="flex items-center gap-2 px-3 py-3 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
               <X size={14} />
-              Xóa bộ lọc
+              Xóa lọc
             </button>
           )}
           <div className="h-8 w-px bg-gray-200" />
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredProducts.length} món</span>
+          <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredProducts.length} món</span>
         </div>
       </div>
 
@@ -739,7 +747,7 @@ export default function ProductsPage() {
           loading={loading}
           searchable={false}
           pageSize={25}
-          emptyStateIcon={<Package size={48} className="text-gray-400" />}
+          emptyStateIcon={<Package size={48} className="text-gray-600" />}
           emptyStateTitle="Không có sản phẩm"
           emptyStateDescription="Chưa có sản phẩm nào để hiển thị"
         />
@@ -759,17 +767,22 @@ export default function ProductsPage() {
         open={Boolean(deletingProduct)}
         onClose={() => setDeletingProduct(null)}
         size="sm"
+        noPadding={true}
         title={
-          <div className="flex items-center gap-2 text-red-600">
-            <AlertCircle size={22} />
-            <span className="font-bold uppercase tracking-tight">Xác nhận xóa món</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <AlertCircle size={22} className="text-red-600" />
+            </div>
+            <div>
+              <span className="font-bold text-red-600 block uppercase tracking-tight">Xác nhận xóa món</span>
+            </div>
           </div>
         }
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex items-center justify-end gap-2 w-full px-1">
             <Button
               onClick={() => setDeletingProduct(null)}
-              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-white text-gray-400 hover:text-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-gray-500 text-white hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
             >
               Hủy bỏ
             </Button>
@@ -782,9 +795,11 @@ export default function ProductsPage() {
           </div>
         }
       >
-        <p className="text-gray-700">
-          Bạn có chắc chắn muốn xóa món <span className="font-black">"{deletingProduct?.name}"</span> không? Hành động này không thể hoàn tác.
-        </p>
+        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-300">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Bạn có chắc chắn muốn xóa món <span className="font-black text-red-600">"{deletingProduct?.name}"</span> không? Hành động này không thể hoàn tác.
+          </p>
+        </div>
       </Dialog>
 
       {/* Alert Modal */}
@@ -798,5 +813,6 @@ export default function ProductsPage() {
     </div>
   );
 }
+
 
 

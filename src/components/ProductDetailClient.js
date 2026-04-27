@@ -99,8 +99,8 @@ export default function ProductDetailClient({ product, options = [] }) {
           className="flex-grow h-12 md:h-14 bg-primary text-white font-bold px-3 md:px-6 rounded-2xl hover:bg-orange-600 transition-colors shadow-lg flex items-center justify-center gap-2 text-sm md:text-base"
         >
           <Handbag size={18} className="md:w-5 md:h-5" />
-          <span className="hidden sm:inline">Thêm vào giỏ hàng</span>
-          <span className="sm:hidden">Thêm vào giỏ</span>
+          <span className="hidden sm:inline">Thêm món</span>
+          <span className="sm:hidden">Thêm món</span>
         </button>
       </div>
 

@@ -95,7 +95,7 @@ export default function ProductCard({ product }) {
             aria-label={`Đặt món ${product.name}`}
           >
             <Handbag size={22} />
-            <span>Đặt món</span>
+            <span>Thêm món</span>
           </button>
         </div>
       </div>

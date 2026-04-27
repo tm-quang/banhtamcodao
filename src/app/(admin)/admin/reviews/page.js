@@ -231,35 +231,44 @@ export default function ReviewsPage() {
 
   return (
     <div className="h-full flex flex-col">
+      <style jsx global>{`
+          button:focus {
+              outline: none !important;
+              box-shadow: none !important;
+              ring: 0 !important;
+          }
+      `}</style>
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-2">
         <div className="flex flex-col">
           <div className="flex items-center gap-2.5 mb-0.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-100/50">
               <MessageSquare size={18} />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Đánh giá từ khách</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Đánh giá từ khách</h1>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Phản hồi và đánh giá chất lượng sản phẩm ({stats.total} đánh giá)</p>
+          <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Phản hồi và đánh giá chất lượng sản phẩm ({stats.total} đánh giá)</p>
         </div>
-        <Button
-          startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
-          onClick={fetchReviews}
-          className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
-        >
-          Làm mới
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
+            onClick={fetchReviews}
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl text-gray-600 bg-gray-500 hover:bg-gray-600 font-black uppercase text-xs tracking-widest px-3 shadow-sm transition-all"
+          >
+            Làm mới
+          </Button>
+        </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
+          <p className="text-red-700 text-sm font-bold uppercase tracking-tight">{error}</p>
         </div>
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5 px-0.5">
         {loading ? (
           Array(4).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
@@ -267,17 +276,17 @@ export default function ReviewsPage() {
             {/* Tổng đánh giá */}
             <div
               onClick={() => setFilters({ rating: '', status: '', search: '' })}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${(!filters.status && !filters.rating) ? 'ring-4 ring-blue-300 ring-offset-2' : 'shadow-blue-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <MessageSquare size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${(!filters.status && !filters.rating) ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-blue-600' : 'z-10 bg-blue-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <MessageSquare size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <MessageSquare size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <MessageSquare size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng đánh giá</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tổng cộng</p>
                 </div>
               </div>
             </div>
@@ -285,17 +294,17 @@ export default function ReviewsPage() {
             {/* Chờ duyệt */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'pending' }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'pending' ? 'ring-4 ring-amber-300 ring-offset-2' : 'shadow-amber-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <Clock size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'pending' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-amber-600' : 'z-10 bg-amber-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <Clock size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <Clock size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <Clock size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.pending}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Chờ duyệt</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.pending}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Chờ duyệt</p>
                 </div>
               </div>
             </div>
@@ -303,17 +312,17 @@ export default function ReviewsPage() {
             {/* Đã duyệt */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'approved' }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'approved' ? 'ring-4 ring-emerald-300 ring-offset-2' : 'shadow-emerald-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <CheckCircle size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'approved' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-emerald-600' : 'z-10 bg-emerald-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <CheckCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <CheckCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.approved}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã duyệt</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.approved}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Đã duyệt</p>
                 </div>
               </div>
             </div>
@@ -321,17 +330,17 @@ export default function ReviewsPage() {
             {/* Đã từ chối */}
             <div
               onClick={() => setFilters(prev => ({ ...prev, status: 'rejected' }))}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'rejected' ? 'ring-4 ring-gray-300 ring-offset-2' : 'shadow-gray-100'}`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <XCircle size={110} />
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${filters.status === 'rejected' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-gray-600' : 'z-10 bg-gray-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <XCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <XCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <XCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.rejected}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Từ chối</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.rejected}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Từ chối</p>
                 </div>
               </div>
             </div>
@@ -347,7 +356,7 @@ export default function ReviewsPage() {
               placeholder="TÌM THEO TÊN KHÁCH, TÊN SẢN PHẨM..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+              startIcon={<Search size={18} className="text-gray-600 group-focus-within:text-orange-500 transition-colors" />}
               className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
             />
           </div>
@@ -356,7 +365,7 @@ export default function ReviewsPage() {
           <select
             value={filters.rating}
             onChange={(e) => setFilters(prev => ({ ...prev, rating: e.target.value }))}
-            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none transition-all cursor-pointer"
           >
             <option value="">Tất cả đánh giá</option>
             {[5, 4, 3, 2, 1].map(r => (
@@ -367,7 +376,7 @@ export default function ReviewsPage() {
           <select
             value={filters.status}
             onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
+            className="px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] uppercase tracking-widest text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none transition-all cursor-pointer"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="pending">Chờ duyệt</option>
@@ -378,14 +387,14 @@ export default function ReviewsPage() {
           {(filters.search || filters.rating || filters.status) && (
             <button
               onClick={() => setFilters({ rating: '', status: '', search: '' })}
-              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
+              className="flex items-center gap-2 px-3 py-3 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
               <X size={14} />
-              Xóa bộ lọc
+              Xóa lọc
             </button>
           )}
           <div className="h-8 w-px bg-gray-200" />
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredReviews.length} đánh giá</span>
+          <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredReviews.length} đánh giá</span>
         </div>
       </div>
 
@@ -397,7 +406,7 @@ export default function ReviewsPage() {
           loading={loading}
           searchable={false}
           pageSize={25}
-          emptyStateIcon={<MessageSquare size={48} className="text-gray-400" />}
+          emptyStateIcon={<MessageSquare size={48} className="text-gray-600" />}
           emptyStateTitle="Không có đánh giá"
           emptyStateDescription="Chưa có đánh giá nào để hiển thị"
         />
@@ -408,18 +417,22 @@ export default function ReviewsPage() {
         open={Boolean(deletingReview)}
         onClose={() => setDeletingReview(null)}
         size="sm"
+        noPadding={true}
         title={
-          <div className="flex items-center gap-2 text-red-600">
-            <AlertCircle size={22} />
-            <span className="font-bold uppercase tracking-tight">Xác nhận xóa đánh giá</span>
+          <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                  <AlertCircle size={22} className="text-red-600" />
+              </div>
+              <div>
+                  <span className="font-bold text-red-600 block uppercase tracking-tight">Xác nhận xóa đánh giá</span>
+              </div>
           </div>
         }
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex items-center justify-end gap-2 w-full px-1">
             <Button
-              variant="outline"
               onClick={() => setDeletingReview(null)}
-              className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-gray-500 text-white hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
             >
               Hủy bỏ
             </Button>
@@ -432,10 +445,13 @@ export default function ReviewsPage() {
           </div>
         }
       >
-        <p className="text-gray-700">
-          Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác.
-        </p>
+        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-300">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Bạn có chắc chắn muốn xóa đánh giá này không? Hành động này không thể hoàn tác.
+          </p>
+        </div>
       </Dialog>
+
     </div>
   );
 }

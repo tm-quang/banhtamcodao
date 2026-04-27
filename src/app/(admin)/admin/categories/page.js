@@ -203,29 +203,36 @@ export default function CategoriesPage() {
 
   return (
     <div className="h-full flex flex-col">
+      <style jsx global>{`
+          button:focus {
+              outline: none !important;
+              box-shadow: none !important;
+              ring: 0 !important;
+          }
+      `}</style>
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4 mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-2">
         <div className="flex flex-col">
           <div className="flex items-center gap-2.5 mb-0.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shadow-lg shadow-blue-100/50">
+            <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-100/50">
               <FolderTree size={18} />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">Danh mục sản phẩm</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Danh mục sản phẩm</h1>
           </div>
-          <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.15em] ml-0.5">Quản lý phân loại thực đơn ({stats.total} danh mục)</p>
+          <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Quản lý phân loại thực đơn ({stats.total} danh mục)</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             startIcon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
             onClick={fetchCategories}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl border border-gray-200 text-gray-500 bg-gray-500 hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 shadow-sm transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl text-gray-600 bg-gray-500 hover:bg-gray-600 font-black uppercase text-xs tracking-widest px-3 shadow-sm transition-all"
           >
             Làm mới
           </Button>
           <Button
             startIcon={<PlusCircle size={20} />}
             onClick={() => { setEditingCategory(null); setIsModalOpen(true); }}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-[11px] tracking-widest px-8 shadow-xl shadow-blue-100 transition-all active:scale-95"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest px-6 shadow-md shadow-orange-100 transition-all"
           >
             Thêm danh mục
           </Button>
@@ -234,13 +241,16 @@ export default function CategoriesPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl shadow-sm">
+          <p className="text-red-700 font-bold text-sm flex items-center gap-2">
+            <AlertCircle size={18} />
+            {error}
+          </p>
         </div>
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 mb-6">
+      <div className="grid grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4 mb-5 px-0.5">
         {loading ? (
           Array(6).fill(0).map((_, i) => <SkeletonStatsCard key={i} />)
         ) : (
@@ -248,68 +258,68 @@ export default function CategoriesPage() {
             {/* Tổng danh mục */}
             <div
               onClick={() => setSearchTerm('')}
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-blue-100`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <FolderTree size={110} />
+              className="group relative p-3 md:p-4 rounded-2xl bg-blue-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10 border-2 border-blue-600">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <FolderTree size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <FolderTree size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <FolderTree size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Tổng danh mục</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tổng danh mục</p>
                 </div>
               </div>
             </div>
 
             {/* Hoạt động */}
             <div
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-emerald-100`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <CheckCircle size={110} />
+              className="group relative p-3 md:p-4 rounded-2xl bg-emerald-500 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <CheckCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <CheckCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <CheckCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Hoạt động</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.active}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Hoạt động</p>
                 </div>
               </div>
             </div>
 
             {/* Đã tắt */}
             <div
-              className={`group relative p-5 rounded-[28px] bg-gradient-to-br from-gray-500 to-gray-700 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 shadow-gray-100`}>
-              <div className="absolute -right-4 -bottom-4 opacity-15 group-hover:scale-110 transition-transform duration-700">
-                <XCircle size={110} />
+              className="group relative p-3 md:p-4 rounded-2xl bg-gray-500 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                <XCircle size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                  <XCircle size={20} />
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                  <XCircle size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
-                  <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">Đã tắt</p>
+                  <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.inactive}</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Đã tắt</p>
                 </div>
               </div>
             </div>
 
             {/* Placeholders */}
             {[1, 2, 3].map(i => (
-              <div key={i} className="group relative p-5 rounded-[28px] bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-2xl overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 opacity-40">
-                <div className="absolute -right-4 -bottom-4 opacity-15">
-                  <Star size={110} />
+              <div key={i} className="group relative p-3 md:p-4 rounded-2xl bg-blue-500 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10 opacity-40">
+                <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
+                  <Star size={70} className="md:w-[90px] md:h-[90px]" />
                 </div>
                 <div className="relative z-10 flex flex-col h-full justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-inner">
-                    <Star size={20} />
+                  <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
+                    <Star size={14} className="md:w-[18px] md:h-[18px]" />
                   </div>
                   <div>
-                    <p className="text-3xl font-black mb-0.5 tabular-nums tracking-tighter">0</p>
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] opacity-80">PLACEHOLDER</p>
+                    <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">0</p>
+                    <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">DỰ PHÒNG</p>
                   </div>
                 </div>
               </div>
@@ -326,7 +336,7 @@ export default function CategoriesPage() {
               placeholder="TÌM KIẾM TÊN DANH MỤC..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              startIcon={<Search size={18} className="text-gray-400 group-focus-within:text-blue-500 transition-colors" />}
+              startIcon={<Search size={18} className="text-gray-600 group-focus-within:text-orange-500 transition-colors" />}
               className="!rounded-2xl border-gray-200 bg-gray-50/50 font-bold uppercase tracking-tight focus:bg-white transition-all pl-12"
             />
           </div>
@@ -335,14 +345,14 @@ export default function CategoriesPage() {
           {searchTerm && (
             <button
               onClick={() => setSearchTerm('')}
-              className="flex items-center gap-2 px-4 py-2 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
+              className="flex items-center gap-2 px-3 py-3 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
               <X size={14} />
               Xóa lọc
             </button>
           )}
           <div className="h-8 w-px bg-gray-200" />
-          <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredCategories.length} kết quả</span>
+          <span className="text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] pr-2">Hiển thị {filteredCategories.length} kết quả</span>
         </div>
       </div>
 
@@ -354,7 +364,7 @@ export default function CategoriesPage() {
           loading={loading}
           searchable={false}
           pageSize={25}
-          emptyStateIcon={<FolderTree size={48} className="text-gray-400" />}
+          emptyStateIcon={<FolderTree size={48} className="text-gray-600" />}
           emptyStateTitle="Không có danh mục"
           emptyStateDescription="Chưa có danh mục nào để hiển thị"
         />
@@ -374,18 +384,22 @@ export default function CategoriesPage() {
         open={Boolean(deletingCategory)}
         onClose={() => setDeletingCategory(null)}
         size="sm"
+        noPadding={true}
         title={
-          <div className="flex items-center gap-2 text-red-600">
-            <AlertCircle size={22} />
-            <span className="font-bold uppercase tracking-tight">Xác nhận xóa danh mục</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <AlertCircle size={22} className="text-red-600" />
+            </div>
+            <div>
+              <span className="font-bold text-red-600 block uppercase tracking-tight">Xác nhận xóa danh mục</span>
+            </div>
           </div>
         }
         footer={
-          <div className="flex items-center justify-end gap-3 w-full">
+          <div className="flex items-center justify-end gap-2 w-full px-1">
             <Button
-              variant="outline"
               onClick={() => setDeletingCategory(null)}
-              className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+              className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 bg-gray-500 text-white hover:bg-gray-600 font-black uppercase text-[11px] tracking-widest px-6 transition-all"
             >
               Hủy bỏ
             </Button>
@@ -398,9 +412,11 @@ export default function CategoriesPage() {
           </div>
         }
       >
-        <p className="text-gray-700">
-          Bạn có chắc chắn muốn xóa danh mục <span className="font-black">"{deletingCategory?.name}"</span> không? Hành động này không thể hoàn tác.
-        </p>
+        <div className="p-4 bg-gray-50 rounded-2xl border border-gray-300">
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Bạn có chắc chắn muốn xóa danh mục <span className="font-black text-red-600">"{deletingCategory?.name}"</span> không? Hành động này không thể hoàn tác.
+          </p>
+        </div>
       </Dialog>
 
       {/* Alert Modal */}

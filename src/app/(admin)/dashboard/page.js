@@ -134,8 +134,8 @@ const StatusBadge = ({ status }) => {
     const IconComponent = config.icon;
 
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border ${config.bg} ${config.text} ${config.border} backdrop-blur-md`}>
-            <IconComponent size={12} strokeWidth={3} />
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold border ${config.bg} ${config.text} ${config.border} backdrop-blur-md whitespace-nowrap`}>
+            <IconComponent size={10} className="sm:size-[12px]" strokeWidth={3} />
             {status.toUpperCase()}
         </span>
     );
@@ -248,33 +248,36 @@ export default function DashboardPage() {
             <div className="absolute bottom-0 left-0 -z-10 w-[600px] h-[600px] bg-green-100/30 rounded-full blur-[140px]"></div>
 
             {/* Header / Filter Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 px-1 sm:px-0">
                 <div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-1">Tổng quan Dashboard</h1>
-                    <p className="text-sm text-gray-500 font-medium">Quản lý nội dung</p>
+                    <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight mb-1">Tổng quan Dashboard</h1>
+                    <p className="text-xs sm:text-sm text-gray-500 font-medium">Quản lý nội dung hệ thống</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white/70 backdrop-blur-md border border-gray-200/50 rounded-2xl text-sm font-semibold text-gray-700 hover:bg-white transition-all shadow-sm">
-                        <SlidersHorizontal size={16} />
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
+                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white/70 backdrop-blur-md border border-gray-200/50 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-white transition-all shadow-sm">
+                        <SlidersHorizontal size={14} className="sm:size-4" />
                         Bộ lọc
                     </button>
 
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-white/70 backdrop-blur-md border border-gray-200/50 rounded-2xl text-sm font-semibold text-gray-700 hover:bg-white transition-all shadow-sm">
-                        <Calendar size={16} />
-                        Tháng này
-                        <ChevronDown size={14} className="text-gray-400" />
+                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-white/70 backdrop-blur-md border border-gray-200/50 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 hover:bg-white transition-all shadow-sm">
+                        <Calendar size={14} className="sm:size-4" />
+                        <span>Tháng này</span>
+                        <ChevronDown size={12} className="text-gray-400" />
                     </button>
 
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-2xl text-sm font-bold hover:shadow-lg hover:shadow-green-500/30 transition-all active:scale-95 shadow-md">
+                    <button className="hidden sm:flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-2xl text-sm font-bold hover:shadow-lg hover:shadow-green-500/30 transition-all active:scale-95 shadow-md">
                         <Download size={16} />
                         Xuất PDF
+                    </button>
+                    <button className="sm:hidden flex items-center justify-center w-10 h-10 bg-green-600 text-white rounded-xl shadow-md">
+                        <Download size={18} />
                     </button>
                 </div>
             </div>
 
             {/* Stat Cards Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
                 <StatCard
                     title="Đơn hàng tháng"
                     value={dataLoading ? '...' : `${kpiStats.monthlyOrders?.value || 0}`}
@@ -328,8 +331,8 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <div className="flex flex-col flex-1">
-                                <div className="relative flex items-center justify-center py-4">
-                                    <Box sx={{ position: 'relative', width: 220, height: 220 }}>
+                                <div className="relative flex items-center justify-center py-4 flex-1">
+                                    <Box sx={{ position: 'relative', width: '100%', maxWidth: 220, height: 220, mx: 'auto' }}>
                                         <PieChart
                                             series={[{
                                                 data: categoryDistribution.length > 0
@@ -344,7 +347,7 @@ export default function DashboardPage() {
                                                 outerRadius: 100,
                                                 paddingAngle: 4,
                                                 cornerRadius: 12,
-                                                cx: 110,
+                                                cx: 105,
                                                 cy: 110,
                                             }]}
                                             width={220}
@@ -352,8 +355,8 @@ export default function DashboardPage() {
                                             slotProps={{ legend: { hidden: true } }}
                                         />
                                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Tổng cộng</span>
-                                            <span className="text-3xl font-black text-gray-900">{totalOrders}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tổng cộng</span>
+                                            <span className="text-2xl font-black text-gray-900">{totalOrders}</span>
                                         </div>
                                     </Box>
                                 </div>
@@ -453,12 +456,12 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                             ) : (
-                                <Box sx={{ width: '100%', height: 300 }}>
+                                <Box sx={{ width: '100%', height: 320, mt: 2 }}>
                                     <BarChart
                                         xAxis={[{
                                             scaleType: 'band',
                                             data: days.map(d => `${d}`),
-                                            tickLabelStyle: { fontSize: 9, fill: '#9ca3af', fontWeight: 700 },
+                                            tickLabelStyle: { fontSize: 8, fill: '#9ca3af', fontWeight: 700 },
                                             categoryGapRatio: 0.4,
                                             barGapRatio: 0.1
                                         }]}
@@ -466,13 +469,13 @@ export default function DashboardPage() {
                                             {
                                                 id: 'revenueAxis',
                                                 scaleType: 'linear',
-                                                tickLabelStyle: { fontSize: 10, fill: '#10b981', fontWeight: 700 },
+                                                tickLabelStyle: { fontSize: 9, fill: '#10b981', fontWeight: 700 },
                                                 valueFormatter: (v) => `${v}K`
                                             },
                                             {
                                                 id: 'ordersAxis',
                                                 scaleType: 'linear',
-                                                tickLabelStyle: { fontSize: 10, fill: '#3b82f6', fontWeight: 700 }
+                                                tickLabelStyle: { fontSize: 9, fill: '#3b82f6', fontWeight: 700 }
                                             }
                                         ]}
                                         series={[
@@ -489,9 +492,9 @@ export default function DashboardPage() {
                                                 valueFormatter: (v) => `${v || 0} đơn`
                                             }
                                         ]}
-                                        width={chartWidth > 0 ? chartWidth : 700}
-                                        height={300}
-                                        margin={{ left: 50, right: 50, top: 20, bottom: 30 }}
+                                        width={chartWidth > 0 ? chartWidth : undefined}
+                                        height={320}
+                                        margin={{ left: 45, right: 45, top: 10, bottom: 40 }}
                                         slotProps={{ legend: { hidden: true } }}
                                         sx={{
                                             '& .MuiBarElement-root': { rx: 4, ry: 4, transition: 'all 0.3s' },
@@ -589,9 +592,11 @@ export default function DashboardPage() {
                                         xAxis={[{
                                             scaleType: 'point',
                                             data: revenueTrend.map(item => item.date),
+                                            tickLabelStyle: { fontSize: 8, fill: '#9ca3af', fontWeight: 700 },
                                         }]}
+                                        width={chartWidth > 0 ? (chartWidth * 0.65) : undefined}
                                         height={250}
-                                        margin={{ left: 50, right: 20, top: 20, bottom: 30 }}
+                                        margin={{ left: 45, right: 20, top: 20, bottom: 30 }}
                                         slotProps={{
                                             legend: { hidden: true },
                                         }}
@@ -603,6 +608,8 @@ export default function DashboardPage() {
                                                 fill: 'url(#revenue-gradient)',
                                                 fillOpacity: 0.1,
                                             },
+                                            '& .MuiChartsAxis-line': { stroke: 'transparent' },
+                                            '& .MuiChartsAxis-tick': { stroke: '#f3f4f6' },
                                         }}
                                     >
                                         <defs>
@@ -665,18 +672,23 @@ export default function DashboardPage() {
                                         series={[{
                                             data: topProducts.map(item => item.sold),
                                             color: '#f59e0b',
+                                            valueFormatter: (v) => `${v} món`
                                         }]}
                                         yAxis={[{
                                             scaleType: 'band',
                                             data: topProducts.map(item => item.name),
+                                            tickLabelStyle: { fontSize: 8, fontWeight: 700, fill: '#4b5563' }
                                         }]}
+                                        width={chartWidth > 0 ? (chartWidth * 0.3) : undefined}
                                         height={250}
-                                        margin={{ left: 100, right: 20, top: 10, bottom: 30 }}
+                                        margin={{ left: 80, right: 20, top: 10, bottom: 30 }}
                                         slotProps={{ legend: { hidden: true } }}
                                         sx={{
                                             '.MuiBarElement-root': {
-                                                rx: 8,
-                                            }
+                                                rx: 4,
+                                            },
+                                            '& .MuiChartsAxis-line': { stroke: 'transparent' },
+                                            '& .MuiChartsAxis-tick': { stroke: '#f3f4f6' },
                                         }}
                                     />
                                 </div>
@@ -709,7 +721,7 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
-                        <div className="flex-1 overflow-auto max-h-[400px] scrollbar-hide">
+                        <div className="flex-1 overflow-y-auto max-h-[400px] scrollbar-hide">
                             {dataLoading ? (
                                 [1, 2, 3, 4, 5].map(i => (
                                     <div key={i} className="px-5 py-3 flex items-center gap-4">
@@ -771,24 +783,24 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
-                        <div className="flex-1 overflow-auto scrollbar-hide">
-                            <TableContainer>
-                                <Table size="small">
+                        <div className="flex-1 overflow-x-auto scrollbar-hide">
+                            <TableContainer sx={{ minWidth: 500, '&::-webkit-scrollbar': { display: 'none' } }}>
+                                <Table size="small" stickyHeader>
                                     <TableHead>
-                                        <TableRow sx={{ '& th': { borderBottom: '1px solid #f3f4f6', py: 2.5 } }}>
+                                        <TableRow sx={{ '& th': { borderBottom: '1px solid #f3f4f6', py: 2.5, bgcolor: 'transparent' } }}>
                                             <TableCell sx={{ fontWeight: 800, color: '#9ca3af', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', pl: 3 }}>
                                                 Mã Đơn
                                             </TableCell>
                                             <TableCell sx={{ fontWeight: 800, color: '#9ca3af', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                                                 Trạng Thái
                                             </TableCell>
-                                            <TableCell sx={{ fontWeight: 800, color: '#9ca3af', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                            <TableCell className="hidden sm:table-cell" sx={{ fontWeight: 800, color: '#9ca3af', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                                                 Thời Gian
                                             </TableCell>
                                             <TableCell sx={{ fontWeight: 800, color: '#9ca3af', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'right' }}>
                                                 Tổng Tiền
                                             </TableCell>
-                                            <TableCell sx={{ width: 60, pr: 3 }}></TableCell>
+                                            <TableCell sx={{ width: 50, pr: 3 }}></TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -830,7 +842,7 @@ export default function DashboardPage() {
                                                     <TableCell>
                                                         <StatusBadge status={order.status || 'Hoàn thành'} />
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className="hidden sm:table-cell">
                                                         <div className="flex flex-col">
                                                             <span className="text-gray-900 text-xs font-bold">
                                                                 {formatDate(order.created_at) || 'Hôm nay'}

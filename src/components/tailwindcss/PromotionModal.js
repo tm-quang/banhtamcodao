@@ -1,39 +1,14 @@
-/**
- * PromotionModal component với Tailwind CSS - Premium Edition
- */
-'use client';
 import { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
-import { Ticket, X, Percent, DollarSign, Calendar, CheckCircle, Loader2, Sparkles, ShieldCheck, Tag, Zap, Clock, TrendingDown, Truck } from 'lucide-react';
+import { Ticket, Percent, Sparkles, Tag, Clock, CheckCircle, Loader2, Truck } from 'lucide-react';
 import { format } from 'date-fns';
 
 const formatDateForInput = (date) => {
     if (!date) return '';
     return format(new Date(date), "yyyy-MM-dd'T'HH:mm");
 };
-
-const SectionHeader = ({ icon: Icon, title, color = '#2563eb', subtitle }) => (
-    <div className="flex flex-col gap-1 mb-5 mt-8 first:mt-2">
-        <div className="flex items-center gap-3">
-            <div
-                className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm transition-transform hover:scale-110 duration-300"
-                style={{
-                    backgroundColor: `${color}15`,
-                    border: `1px solid ${color}30`,
-                    boxShadow: `0 4px 12px ${color}10`
-                }}
-            >
-                <Icon size={20} style={{ color }} />
-            </div>
-            <div>
-                <span className="text-[13px] font-black text-gray-800 uppercase tracking-wider block">{title}</span>
-                {subtitle && <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter">{subtitle}</p>}
-            </div>
-        </div>
-    </div>
-);
 
 export default function PromotionModal({ open, onClose, onSave, promotionToEdit }) {
     const [data, setData] = useState({});
@@ -70,21 +45,21 @@ export default function PromotionModal({ open, onClose, onSave, promotionToEdit 
     };
 
     const footer = (
-        <div className="flex items-center justify-end gap-3 w-full">
+        <div className="flex items-center justify-end gap-2 w-full px-1">
             <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+                className="h-9 !rounded-xl px-5 font-bold text-[10px] shadow-sm uppercase tracking-widest"
             >
                 Hủy bỏ
             </Button>
             <Button
                 onClick={handleSave}
                 disabled={isSubmitting}
-                startIcon={isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-                className={`flex items-center justify-center h-10 !rounded-2xl shadow-xl transition-all font-black uppercase text-[11px] tracking-widest px-8 text-white ${isEditMode ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-100' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'}`}
+                className={`flex items-center justify-center gap-2 h-9 !rounded-xl px-7 font-black text-[10px] uppercase tracking-widest text-white shadow-md transition-all ${isEditMode ? 'bg-blue-600 hover:bg-blue-700 shadow-blue-100' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100'}`}
             >
-                {isSubmitting ? 'Đang lưu...' : (isEditMode ? 'Cập nhật ngay' : 'Kích hoạt ngay')}
+                {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                {isSubmitting ? 'Đang lưu...' : (isEditMode ? 'Lưu thay đổi' : 'Kích hoạt ngay')}
             </Button>
         </div>
     );
@@ -94,136 +69,161 @@ export default function PromotionModal({ open, onClose, onSave, promotionToEdit 
             open={open}
             onClose={onClose}
             size="xl"
+            noPadding={true}
             title={
-                <div className="flex items-center gap-4 py-1">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg rotate-3 transition-transform hover:rotate-0 ${isEditMode ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-200/50' : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-200/50'}`}>
-                        <Ticket size={24} className="text-white" fill="currentColor" />
+                <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isEditMode ? 'bg-blue-500/10' : 'bg-emerald-500/10'}`}>
+                        <Ticket size={22} className={isEditMode ? 'text-blue-600' : 'text-emerald-600'} />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <span className="font-black text-gray-900 text-2xl tracking-tight block">
+                        <span className="font-bold text-gray-900 block">
                             {isEditMode ? 'Chỉnh sửa ưu đãi' : 'Tạo mã giảm giá'}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <div className={`w-2 h-2 rounded-full animate-pulse ${isEditMode ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                            <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.2em]">
-                                {isEditMode ? `ĐANG CẬP NHẬT MÃ: ${promotionToEdit?.promo_code}` : 'THIẾT LẬP CHƯƠNG TRÌNH KHUYẾN MÃI MỚI'}
-                            </p>
-                        </div>
+                        <p className="text-xs text-gray-600 font-medium">
+                            {isEditMode ? `Đang cập nhật mã: ${promotionToEdit?.promo_code}` : 'Thiết lập chương trình khuyến mãi mới'}
+                        </p>
                     </div>
                 </div>
             }
             footer={footer}
         >
-            <div className="space-y-10 pb-4">
-                {/* Section 1: Thông tin cơ bản */}
-                <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-                    <SectionHeader icon={Tag} title="Thông tin định danh" subtitle="Mã nhận diện và tên chương trình" color="#2563eb" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                        <Input
-                            label="Mã khuyến mãi"
-                            name="promo_code"
-                            value={data.promo_code || ''}
-                            onChange={handleChange}
-                            placeholder="VD: BANHTAM50"
-                            required
-                            className="!rounded-2xl border-gray-300 focus:border-blue-500 font-black text-blue-600 uppercase bg-gray-50/30 py-4 shadow-inner"
-                        />
-                        <Input
-                            label="Tên chương trình"
-                            name="title"
-                            value={data.title || ''}
-                            onChange={handleChange}
-                            placeholder="VD: Giảm 50% đơn đầu tiên"
-                            required
-                            className="!rounded-2xl border-gray-300 font-black bg-gray-50/30 py-4 shadow-inner"
-                        />
-                    </div>
-                </div>
+            <div className="space-y-6 md:space-y-8 max-h-[75vh] overflow-y-auto px-1 custom-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    {/* Column 1: Thông tin định danh & Thời gian */}
+                    <div className="space-y-4 md:space-y-6">
+                        {/* Section: Thông tin định danh */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Tag size={18} className="text-blue-600" />
+                                <span className="text-sm font-black uppercase text-gray-700">Thông tin định danh</span>
+                            </div>
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Mã khuyến mãi *</label>
+                                    <Input
+                                        name="promo_code"
+                                        value={data.promo_code || ''}
+                                        onChange={handleChange}
+                                        placeholder="VD: BANHTAM50"
+                                        className="bg-white font-bold text-blue-600 uppercase"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Tên chương trình *</label>
+                                    <Input
+                                        name="title"
+                                        value={data.title || ''}
+                                        onChange={handleChange}
+                                        placeholder="VD: Giảm 50% đơn đầu tiên"
+                                        className="bg-white"
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
-                {/* Section 2: Giá trị giảm & Điều kiện */}
-                <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-                    <SectionHeader icon={Sparkles} title="Giá trị & Điều kiện" subtitle="Mức giảm và ngưỡng áp dụng" color="#10b981" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                        <div>
-                            <label className="block text-[10px] font-black text-emerald-600 uppercase tracking-[0.15em] mb-3 ml-1">Hình thức ưu đãi</label>
-                            <div className="relative group/select">
-                                <select
-                                    name="discount_type"
-                                    value={data.discount_type || 'percent'}
-                                    onChange={handleChange}
-                                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl font-black text-gray-700 focus:ring-4 focus:ring-emerald-50/50 focus:border-emerald-500 outline-none transition-all appearance-none cursor-pointer shadow-inner"
-                                >
-                                    <option value="percent">Giảm theo phần trăm (%)</option>
-                                    <option value="fixed">Số tiền cố định (VNĐ)</option>
-                                    <option value="free_shipping">Miễn phí vận chuyển</option>
-                                </select>
+                        {/* Section: Thời gian hiệu lực */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Clock size={18} className="text-amber-500" />
+                                <span className="text-sm font-black uppercase text-gray-700">Thời gian hiệu lực</span>
                             </div>
-                        </div>
-                        <div className="relative group/input">
-                            <Input
-                                label="Giá trị ưu đãi"
-                                name="discount_value"
-                                type="number"
-                                value={data.discount_value || ''}
-                                onChange={handleChange}
-                                placeholder={data.discount_type === 'percent' ? 'VD: 50' : 'VD: 50000'}
-                                required
-                                className="!rounded-2xl border-gray-300 font-black text-emerald-600 bg-gray-50/30 text-2xl py-4 shadow-inner pr-12"
-                            />
-                            <div className="absolute bottom-5 right-4 opacity-40 group-focus-within/input:opacity-100 transition-opacity text-emerald-500">
-                                {data.discount_type === 'percent' ? <Percent size={20} /> : (data.discount_type === 'free_shipping' ? <Truck size={20} /> : <span className="font-black">₫</span>)}
-                            </div>
-                        </div>
-                        <Input
-                            label="Đơn hàng tối thiểu"
-                            name="min_order_value"
-                            type="number"
-                            value={data.min_order_value || ''}
-                            onChange={handleChange}
-                            placeholder="VD: 100000"
-                            className="!rounded-2xl border-gray-300 font-black bg-gray-50/30 py-4 shadow-inner"
-                            suffix={<span className="text-[10px] font-black text-gray-300 uppercase mr-3">VNĐ</span>}
-                        />
-                        <div>
-                            <label className="block text-[10px] font-black text-blue-600 uppercase tracking-[0.15em] mb-3 ml-1">Trạng thái mã</label>
-                            <div className="relative group/select">
-                                <select
-                                    name="status"
-                                    value={data.status || 'active'}
-                                    onChange={handleChange}
-                                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl font-black text-gray-700 focus:ring-4 focus:ring-blue-50/50 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer shadow-inner"
-                                >
-                                    <option value="active">Đang kích hoạt</option>
-                                    <option value="inactive">Đang tạm ngưng</option>
-                                </select>
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Bắt đầu</label>
+                                    <Input
+                                        name="start_date"
+                                        type="datetime-local"
+                                        value={data.start_date || ''}
+                                        onChange={handleChange}
+                                        className="bg-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Kết thúc</label>
+                                    <Input
+                                        name="end_date"
+                                        type="datetime-local"
+                                        value={data.end_date || ''}
+                                        onChange={handleChange}
+                                        className="bg-white text-red-600"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Section 3: Thời gian áp dụng */}
-                <div className="bg-white rounded-3xl p-8 border border-gray-300 shadow-md relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-                    <SectionHeader icon={Clock} title="Thời gian hiệu lực" subtitle="Lịch trình triển khai ưu đãi" color="#f59e0b" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
-                        <Input
-                            label="Ngày bắt đầu hiệu lực"
-                            name="start_date"
-                            type="datetime-local"
-                            value={data.start_date || ''}
-                            onChange={handleChange}
-                            className="!rounded-2xl border-gray-300 font-black bg-gray-50/30 py-4 shadow-inner"
-                        />
-                        <Input
-                            label="Ngày kết thúc ưu đãi"
-                            name="end_date"
-                            type="datetime-local"
-                            value={data.end_date || ''}
-                            onChange={handleChange}
-                            className="!rounded-2xl border-gray-300 font-black bg-gray-50/30 py-4 shadow-inner text-red-600"
-                        />
+                    {/* Column 2: Giá trị & Điều kiện */}
+                    <div className="space-y-4 md:space-y-6">
+                        {/* Section: Giá trị ưu đãi */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Sparkles size={18} className="text-emerald-500" />
+                                <span className="text-sm font-black uppercase text-gray-700">Giá trị & Điều kiện</span>
+                            </div>
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Hình thức ưu đãi</label>
+                                    <select
+                                        name="discount_type"
+                                        value={data.discount_type || 'percent'}
+                                        onChange={handleChange}
+                                        className="w-full rounded-xl border border-gray-200 p-2.5 text-sm font-bold bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                                    >
+                                        <option value="percent">Giảm theo phần trăm (%)</option>
+                                        <option value="fixed">Số tiền cố định (VNĐ)</option>
+                                        <option value="free_shipping">Miễn phí vận chuyển</option>
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Giá trị giảm *</label>
+                                        <div className="relative">
+                                            <Input
+                                                name="discount_value"
+                                                type="number"
+                                                value={data.discount_value || ''}
+                                                onChange={handleChange}
+                                                placeholder={data.discount_type === 'percent' ? 'VD: 50' : 'VD: 50000'}
+                                                className="bg-white font-bold text-emerald-600 pr-8"
+                                            />
+                                            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                                                {data.discount_type === 'percent' ? <Percent size={14} /> : (data.discount_type === 'free_shipping' ? <Truck size={14} /> : <span className="text-[10px] font-black">VNĐ</span>)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Đơn tối thiểu</label>
+                                        <div className="relative">
+                                            <Input
+                                                name="min_order_value"
+                                                type="number"
+                                                value={data.min_order_value || ''}
+                                                onChange={handleChange}
+                                                placeholder="VD: 100000"
+                                                className="bg-white pr-8"
+                                            />
+                                            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+                                                <span className="text-[10px] font-black">VNĐ</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-3 border-t border-gray-200">
+                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Trạng thái mã</label>
+                                    <select
+                                        name="status"
+                                        value={data.status || 'active'}
+                                        onChange={handleChange}
+                                        className="w-full rounded-xl border border-gray-200 p-2.5 text-sm font-bold bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    >
+                                        <option value="active">Đang kích hoạt</option>
+                                        <option value="inactive">Đang tạm ngưng</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

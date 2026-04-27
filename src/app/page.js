@@ -23,61 +23,56 @@ const MenuSection = dynamicImport(() => import('@/components/MenuSection'), {
   ssr: true
 });
 
-/**
- * Helper function để lấy base URL
- * @returns {string} Base URL của API
- */
-function getBaseUrl() {
-  // Trong server-side (build time), cần absolute URL
-  if (typeof window === 'undefined') {
-    // Server-side: sử dụng env variable hoặc Vercel URL
-    if (process.env.NEXT_PUBLIC_API_URL) {
-      return process.env.NEXT_PUBLIC_API_URL;
-    }
-    if (process.env.VERCEL_URL) {
-      return `https://${process.env.VERCEL_URL}`;
-    }
-    // Fallback cho local development
-    return 'http://localhost:3300';
+import supabase from '@/lib/supabase';
+
+import { applyPromotions } from '@/utils/productUtils';
+
+async function getActivePromos() {
+  try {
+    const { data: promos } = await supabase
+      .from('combo_promotions')
+      .select('name, description, conditions, status')
+      .eq('status', 'active');
+    return promos || [];
+  } catch (error) {
+    console.error('Error fetching active promos:', error);
+    return [];
   }
-  // Client-side: sử dụng window.location
-  return process.env.NEXT_PUBLIC_API_URL || window.location.origin;
 }
 
-async function getFeaturedProducts() {
+async function getFeaturedProducts(activePromos) {
   try {
-    const baseUrl = getBaseUrl();
-    const res = await fetch(`${baseUrl}/api/products/featured`, {
-      next: { revalidate: 300 } // Revalidate every 5 minutes
-    });
-    if (!res.ok) { 
-      console.error('Failed to fetch featured products:', res.status);
-      return []; 
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('*, categories(name, slug)')
+      .eq('is_special', true)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error in getFeaturedProducts:', error.message || error);
+      throw error;
     }
-    const data = await res.json();
-    return data.products || [];
+    return applyPromotions(products, activePromos);
   } catch (error) {
     console.error('Error fetching featured products:', error);
     return [];
   }
 }
 
-/**
- * Hàm mới để lấy tất cả sản phẩm
- * @returns {Promise<Array>} Danh sách tất cả sản phẩm
- */
-async function getAllProducts() {
+async function getAllProducts(activePromos) {
   try {
-    const baseUrl = getBaseUrl();
-    const res = await fetch(`${baseUrl}/api/products`, {
-      next: { revalidate: 300 } // Revalidate every 5 minutes
-    });
-    if (!res.ok) { 
-      console.error('Failed to fetch products:', res.status);
-      return []; 
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('*, categories(name, slug)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error in getAllProducts:', error.message || error);
+      throw error;
     }
-    const data = await res.json();
-    return data.products || [];
+    return applyPromotions(products, activePromos);
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
@@ -86,16 +81,16 @@ async function getAllProducts() {
 
 async function getCategories() {
   try {
-    const baseUrl = getBaseUrl();
-    const res = await fetch(`${baseUrl}/api/categories`, {
-      next: { revalidate: 300 }
-    });
-    if (!res.ok) { 
-      console.error('Failed to fetch categories:', res.status);
-      return []; 
+    const { data: categories, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error in getCategories:', error.message || error);
+      throw error;
     }
-    const data = await res.json();
-    return data.categories || [];
+    return categories || [];
   } catch (error) {
     console.error('Error fetching categories:', error);
     return [];
@@ -126,10 +121,13 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  /** Lấy đồng thời 2 loại dữ liệu */
+  /** Lấy danh sách khuyến mãi combo đang hoạt động */
+  const activePromos = await getActivePromos();
+
+  /** Lấy đồng thời các loại dữ liệu */
   const [featuredProducts, allProducts, categories] = await Promise.all([
-    getFeaturedProducts(),
-    getAllProducts(),
+    getFeaturedProducts(activePromos),
+    getAllProducts(activePromos),
     getCategories()
   ]);
 

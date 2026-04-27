@@ -27,18 +27,9 @@ export async function GET() {
 
         if (error) {
             console.error('[Combo API] Supabase error:', error);
-            // Kiểm tra xem có phải lỗi "relation does not exist" không
-            if (error.message && error.message.includes('does not exist')) {
-                return NextResponse.json({
-                    success: false,
-                    message: 'Bảng combo_promotions chưa được tạo. Vui lòng chạy migration SQL.',
-                    comboPromotions: [],
-                    error: 'TABLE_NOT_EXISTS'
-                }, { status: 500 });
-            }
             return NextResponse.json({
                 success: false,
-                message: 'Lỗi khi lấy combo promotions',
+                message: error.message || 'Lỗi khi lấy combo promotions',
                 comboPromotions: [],
                 error: error.message
             }, { status: 500 });

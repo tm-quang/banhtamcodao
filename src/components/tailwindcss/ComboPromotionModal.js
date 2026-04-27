@@ -1,39 +1,14 @@
-/**
- * ComboPromotionModal component với Tailwind CSS - Premium Edition
- */
-'use client';
 import { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
-import { Gift, X, Calendar, CheckCircle, Loader2, Plus, Trash2, Info, LayoutList, Trophy, Settings, AlertCircle, ChevronRight, ChevronLeft, Target, Sparkles, Clock, Layers, MousePointer2 } from 'lucide-react';
+import { Gift, Calendar, CheckCircle, Loader2, Plus, Trash2, Info, LayoutList, Trophy, Settings, AlertCircle, ChevronRight, ChevronLeft, Target, Sparkles, Clock, Layers, MousePointer2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const formatDateForInput = (date) => {
     if (!date) return '';
     return format(new Date(date), "yyyy-MM-dd'T'HH:mm");
 };
-
-const SectionHeader = ({ icon: Icon, title, color = '#2563eb', subtitle }) => (
-    <div className="flex flex-col gap-1 mb-5 mt-8 first:mt-2">
-        <div className="flex items-center gap-3">
-            <div
-                className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-md transition-transform hover:scale-110 duration-300"
-                style={{
-                    backgroundColor: `${color}15`,
-                    border: `1px solid ${color}30`,
-                    boxShadow: `0 4px 12px ${color}10`
-                }}
-            >
-                <Icon size={20} style={{ color }} />
-            </div>
-            <div>
-                <span className="text-[13px] font-black text-gray-800 uppercase tracking-wider block">{title}</span>
-                {subtitle && <p className="text-[11px] text-gray-400 font-bold uppercase tracking-tighter">{subtitle}</p>}
-            </div>
-        </div>
-    </div>
-);
 
 export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit, categories = [], products = [] }) {
     const [data, setData] = useState({});
@@ -181,48 +156,47 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
     };
 
     const tabs = [
-        { id: 0, label: 'Thông tin chung', icon: Info, color: 'blue' },
-        { id: 1, label: 'Điều kiện áp dụng', icon: Target, color: 'amber' },
-        { id: 2, label: 'Phần thưởng', icon: Trophy, color: 'emerald' },
+        { id: 0, label: 'Thông tin chung', icon: Info },
+        { id: 1, label: 'Điều kiện', icon: Target },
+        { id: 2, label: 'Phần thưởng', icon: Trophy },
     ];
 
     const footer = (
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between w-full px-1">
             <div className="flex items-center gap-2">
                 {activeTab > 0 && (
                     <Button
                         onClick={() => setActiveTab(activeTab - 1)}
-                        className="flex items-center justify-center h-10 !rounded-2xl border border-gray-200 text-gray-500 hover:text-gray-900 bg-white font-black uppercase text-[11px] tracking-widest px-4 transition-all"
-                        startIcon={<ChevronLeft size={18} />}
+                        className="h-9 !rounded-xl px-3 font-bold text-[10px] uppercase text-gray-600 bg-gray-100 hover:bg-gray-200 whitespace-nowrap"
+                        startIcon={<ChevronLeft size={14} />}
                     >
                         Quay lại
                     </Button>
                 )}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 md:gap-2">
                 <Button
                     variant="outline"
                     onClick={onClose}
-                    className="flex items-center justify-center h-10 !rounded-2xl font-black uppercase text-[11px] tracking-widest px-6 transition-all"
+                    className="h-9 !rounded-xl px-3 font-bold text-[10px] shadow-sm uppercase whitespace-nowrap"
                 >
                     Hủy bỏ
                 </Button>
                 {activeTab < tabs.length - 1 ? (
                     <Button
                         onClick={() => setActiveTab(activeTab + 1)}
-                        className="flex items-center justify-center h-10 !rounded-2xl bg-slate-900 hover:bg-black text-white shadow-lg shadow-gray-200 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
-                        endIcon={<ChevronRight size={18} />}
+                        className="flex items-center justify-center gap-1 h-9 !rounded-xl px-3 font-black text-[10px] uppercase text-white bg-slate-800 hover:bg-slate-900 shadow-md transition-all whitespace-nowrap"
                     >
-                        Tiếp theo
+                        Tiếp theo <ChevronRight size={14} />
                     </Button>
                 ) : (
                     <Button
                         onClick={handleSave}
                         disabled={isSubmitting}
-                        startIcon={isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-                        className="flex items-center justify-center h-10 !rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-200 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
+                        className="flex items-center justify-center gap-1.5 h-9 !rounded-xl px-4 font-black text-[10px] uppercase text-white shadow-md transition-all bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
                     >
-                        {isSubmitting ? 'Đang xử lý...' : (isEditMode ? 'Cập nhật ngay' : 'Thêm mới combo')}
+                        {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                        {isSubmitting ? 'Đang xử lý...' : (isEditMode ? 'Lưu thay đổi' : 'Tạo combo')}
                     </Button>
                 )}
             </div>
@@ -234,37 +208,28 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
             open={open}
             onClose={onClose}
             size="xl"
+            noPadding={true}
             title={
-                <div className="flex items-center gap-4 py-1">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-100 rotate-3 transition-transform hover:rotate-0">
-                        <Sparkles size={24} className="text-white" />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <Sparkles size={22} className="text-blue-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <span className="font-black text-gray-900 text-xl tracking-tight block">
+                        <span className="font-bold text-gray-900 block truncate">
                             {isEditMode ? 'Chỉnh sửa Combo' : 'Tạo Combo mới'}
                         </span>
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest">
-                                {isEditMode ? `ĐANG CẬP NHẬT: ${comboToEdit?.name}` : 'THIẾT LẬP CHƯƠNG TRÌNH ƯU ĐÃI THÔNG MINH'}
-                            </p>
-                        </div>
+                        <p className="text-xs text-gray-600 font-medium truncate">
+                            {isEditMode ? `Đang cập nhật: ${comboToEdit?.name}` : 'Thiết lập chương trình ưu đãi'}
+                        </p>
                     </div>
                 </div>
             }
             footer={footer}
         >
-            <div className="space-y-8 pb-4">
-                {/* Modern Tabs Navigation */}
-                <div className="flex items-center p-1.5 bg-gray-100/60 rounded-2xl border border-gray-200/50 backdrop-blur-sm relative overflow-hidden">
-                    <div
-                        className="absolute top-1.5 bottom-1.5 transition-all duration-500 ease-out rounded-[18px] bg-white shadow-md border border-gray-300"
-                        style={{
-                            left: `${(activeTab * 100) / tabs.length}%`,
-                            width: `${100 / tabs.length}%`,
-                            zIndex: 0
-                        }}
-                    />
+            <div className="space-y-6 min-h-[90vh] overflow-y-auto px-1 custom-scrollbar">
+
+                {/* Tabs Navigation */}
+                <div className="flex items-center p-1 bg-gray-100 rounded-xl border border-gray-200 overflow-x-auto">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -272,114 +237,129 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`relative z-10 flex-1 flex items-center justify-center gap-3 px-4 py-3.5 rounded-[18px] transition-all duration-500 ${isActive
-                                    ? 'text-gray-900'
-                                    : 'text-gray-400 hover:text-gray-600 font-bold'
-                                    }`}
+                                className={`flex-1 flex items-center justify-center gap-1.5 md:gap-2 px-2 md:px-4 py-2.5 rounded-lg transition-all whitespace-nowrap ${isActive ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                <Icon size={18} className={isActive ? 'text-blue-600 scale-110 transition-transform' : 'opacity-60'} />
-                                <span className={`text-[13px] tracking-tight uppercase ${isActive ? 'font-black' : 'font-bold'}`}>{tab.label}</span>
+                                <Icon size={14} className={isActive ? '' : 'opacity-70'} />
+                                <span className={`text-[10px] md:text-[11px] uppercase tracking-wide ${isActive ? 'font-black' : 'font-bold'}`}>{tab.label}</span>
                             </button>
                         );
                     })}
                 </div>
 
-                <div className="min-h-[450px]">
+                <div className="min-h-[350px]">
                     {/* Tab 0: General Info */}
                     {activeTab === 0 && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
-                            <div className="bg-white rounded-[32px] p-1 border border-gray-300 shadow-md">
-                                <div className="p-6">
-                                    <SectionHeader icon={Info} title="Thông tin chương trình" subtitle="Tên gọi và mô tả chi tiết" color="#2563eb" />
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="md:col-span-2">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+
+                            {/* Column 1 */}
+                            <div className="space-y-4 md:space-y-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Info size={18} className="text-blue-600" />
+                                        <span className="text-sm font-black uppercase text-gray-700">Thông tin chương trình</span>
+                                    </div>
+                                    <div className="space-y-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Tên combo *</label>
                                             <Input
-                                                label="Tên combo chương trình"
                                                 name="name"
                                                 value={data.name || ''}
                                                 onChange={handleChange}
                                                 placeholder="VD: Combo Buffet 299k tặng Coca"
                                                 required
-                                                className="!rounded-2xl border-gray-200 focus:border-blue-500 font-black text-lg bg-gray-50/30 py-4"
+                                                className="bg-white font-bold"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Trạng thái</label>
-                                            <div className="relative group">
-                                                <select
-                                                    name="status"
-                                                    value={data.status || 'active'}
-                                                    onChange={handleChange}
-                                                    className="w-full px-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-2xl font-black text-gray-700 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
-                                                >
-                                                    <option value="active">Đang hoạt động</option>
-                                                    <option value="inactive">Tạm dừng áp dụng</option>
-                                                </select>
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-600 transition-colors">
-                                                    <ChevronRight size={18} className="rotate-90" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="md:col-span-3">
-                                            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2.5 ml-1">Mô tả quyền lợi hiển thị cho khách</label>
+                                            <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Mô tả quyền lợi</label>
                                             <textarea
                                                 name="description"
                                                 value={data.description || ''}
                                                 onChange={handleChange}
                                                 rows={3}
-                                                className="w-full px-5 py-4 bg-gray-50/50 border border-gray-200 rounded-2xl text-md font-bold text-gray-600 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all outline-none resize-none shadow-inner"
-                                                placeholder="Khách hàng sẽ nhìn thấy mô tả này trên ứng dụng..."
+                                                className="w-full rounded-xl border border-gray-200 p-2.5 text-sm font-medium bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                                                placeholder="Khách hàng sẽ nhìn thấy mô tả này..."
                                             />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="bg-white rounded-[32px] p-6 border border-gray-300 shadow-md relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16" />
-                                    <SectionHeader icon={Clock} title="Thời gian hiệu lực" subtitle="Lịch trình triển khai" color="#10b981" />
-                                    <div className="space-y-5">
-                                        <Input
-                                            label="Bắt đầu từ"
-                                            name="start_date"
-                                            type="datetime-local"
-                                            value={data.start_date || ''}
-                                            onChange={handleChange}
-                                            className="!rounded-2xl border-gray-200 font-bold bg-gray-50/30"
-                                        />
-                                        <Input
-                                            label="Kết thúc vào"
-                                            name="end_date"
-                                            type="datetime-local"
-                                            value={data.end_date || ''}
-                                            onChange={handleChange}
-                                            className="!rounded-2xl border-gray-200 font-bold bg-gray-50/30 text-red-500"
-                                        />
+                            {/* Column 2 */}
+                            <div className="space-y-4 md:space-y-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Clock size={18} className="text-emerald-500" />
+                                        <span className="text-sm font-black uppercase text-gray-700">Thời gian & Hiệu lực</span>
+                                    </div>
+                                    <div className="space-y-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Bắt đầu *</label>
+                                                <Input
+                                                    name="start_date"
+                                                    type="datetime-local"
+                                                    value={data.start_date || ''}
+                                                    onChange={handleChange}
+                                                    className="bg-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Kết thúc *</label>
+                                                <Input
+                                                    name="end_date"
+                                                    type="datetime-local"
+                                                    value={data.end_date || ''}
+                                                    onChange={handleChange}
+                                                    className="bg-white text-red-600"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Trạng thái</label>
+                                            <select
+                                                name="status"
+                                                value={data.status || 'active'}
+                                                onChange={handleChange}
+                                                className="w-full rounded-xl border border-gray-200 p-2.5 text-sm font-bold bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                            >
+                                                <option value="active">Đang hoạt động</option>
+                                                <option value="inactive">Tạm dừng</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="bg-white rounded-[32px] p-6 border border-gray-300 shadow-md relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full -mr-16 -mt-16" />
-                                    <SectionHeader icon={Settings} title="Cấu hình nâng cao" subtitle="Độ ưu tiên & giá trị" color="#6366f1" />
-                                    <div className="space-y-5">
-                                        <Input
-                                            label="Độ ưu tiên hệ thống"
-                                            name="priority"
-                                            type="number"
-                                            value={data.priority || 0}
-                                            onChange={handleChange}
-                                            min={0}
-                                            className="!rounded-2xl border-gray-200 font-bold bg-gray-50/30"
-                                        />
-                                        <Input
-                                            label="Đơn hàng tối thiểu (VNĐ)"
-                                            name="min_order_value"
-                                            type="number"
-                                            value={data.min_order_value || 0}
-                                            onChange={handleChange}
-                                            min={0}
-                                            className="!rounded-2xl border-gray-200 font-black text-blue-600 bg-gray-50/30 text-lg"
-                                        />
+
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Settings size={18} className="text-indigo-500" />
+                                        <span className="text-sm font-black uppercase text-gray-700">Cấu hình nâng cao</span>
+                                    </div>
+                                    <div className="space-y-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Độ ưu tiên</label>
+                                                <Input
+                                                    name="priority"
+                                                    type="number"
+                                                    value={data.priority || 0}
+                                                    onChange={handleChange}
+                                                    min={0}
+                                                    className="bg-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Đơn tối thiểu (VNĐ)</label>
+                                                <Input
+                                                    name="min_order_value"
+                                                    type="number"
+                                                    value={data.min_order_value || 0}
+                                                    onChange={handleChange}
+                                                    min={0}
+                                                    className="bg-white font-bold text-blue-600"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -388,110 +368,86 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
 
                     {/* Tab 1: Conditions */}
                     {activeTab === 1 && (
-                        <div className="space-y-8 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-[28px] border border-amber-100 flex gap-4 shadow-md relative overflow-hidden group">
-                                <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                                    <Target size={120} className="text-amber-500" />
-                                </div>
-                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md shrink-0 border border-amber-200/50">
-                                    <AlertCircle className="text-amber-500" size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-black text-amber-900 uppercase tracking-tight mb-0.5">Xác định điều kiện nhận quà</p>
-                                    <p className="text-[13px] font-medium text-amber-800/80 leading-relaxed">
-                                        Thiết lập chính xác những sản phẩm khách hàng cần mua để kích hoạt combo này. Bạn có thể kết hợp nhiều quy tắc khác nhau.
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="bg-white p-6 rounded-[28px] border border-gray-300 shadow-md">
-                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Kiểu kích hoạt</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {['quantity', 'products', 'category'].map((type) => (
-                                            <button
-                                                key={type}
-                                                onClick={() => setData({ ...data, condition_type: type })}
-                                                className={`px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-tight transition-all ${data.condition_type === type
-                                                    ? 'bg-amber-100 text-amber-700 border-2 border-amber-200'
-                                                    : 'bg-gray-50 text-gray-400 border-2 border-transparent hover:bg-gray-100'}`}
+                        <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Target size={18} className="text-amber-500" />
+                                        <span className="text-sm font-black uppercase text-gray-700">Điều kiện áp dụng</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-300">
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Kiểu kích hoạt</label>
+                                            <select
+                                                value={data.condition_type || 'quantity'}
+                                                onChange={(e) => setData({ ...data, condition_type: e.target.value })}
+                                                className="w-full rounded-xl border border-gray-200 p-2.5 text-sm font-bold bg-white focus:border-amber-500 outline-none"
                                             >
-                                                {type === 'quantity' ? 'Số lượng' : type === 'products' ? 'Sản phẩm' : 'Danh mục'}
-                                            </button>
-                                        ))}
+                                                <option value="quantity">Số lượng</option>
+                                                <option value="products">Sản phẩm</option>
+                                                <option value="category">Danh mục</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Logic kiểm tra</label>
+                                            <select
+                                                value={data.condition_operator || 'AND'}
+                                                onChange={(e) => setData({ ...data, condition_operator: e.target.value })}
+                                                className="w-full rounded-xl border border-gray-200 p-2.5 text-sm font-bold bg-white focus:border-amber-500 outline-none"
+                                            >
+                                                <option value="AND">Và (Tất cả)</option>
+                                                <option value="OR">Hoặc (Bất kỳ)</option>
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="bg-white p-6 rounded-[28px] border border-gray-300 shadow-md">
-                                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Logic kiểm tra</label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {['AND', 'OR'].map((op) => (
-                                            <button
-                                                key={op}
-                                                onClick={() => setData({ ...data, condition_operator: op })}
-                                                className={`px-4 py-3 rounded-2xl text-xs font-black uppercase tracking-tight transition-all ${data.condition_operator === op
-                                                    ? 'bg-blue-100 text-blue-700 border-2 border-blue-200'
-                                                    : 'bg-gray-50 text-gray-400 border-2 border-transparent hover:bg-gray-100'}`}
-                                            >
-                                                {op === 'AND' ? 'Và (Tất cả)' : 'Hoặc (Bất kỳ)'}
-                                            </button>
-                                        ))}
+
+                                <div className="space-y-3 lg:col-span-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <Layers size={18} className="text-amber-500" />
+                                            <span className="text-sm font-black uppercase text-gray-700">Danh sách quy tắc</span>
+                                        </div>
+                                        <span className="text-[10px] font-black text-gray-500 uppercase">{conditionRules.length} Quy tắc</span>
                                     </div>
-                                </div>
-                            </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between px-2">
-                                    <SectionHeader icon={Layers} title="Danh sách quy tắc" subtitle="Yêu cầu mua hàng cơ sở" color="#f59e0b" />
-                                    <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{conditionRules.length} QUY TẮC</span>
-                                </div>
-                                {conditionRules.map((rule, index) => (
-                                    <div key={index} className="p-8 rounded-3xl bg-white border border-gray-300 shadow-md relative group transition-all hover:shadow-md hover:border-amber-200 overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-                                        <button
-                                            onClick={() => removeConditionRule(index)}
-                                            className="absolute top-4 right-4 w-10 h-10 bg-white border border-red-50 text-red-400 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white shadow-lg z-10"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {conditionRules.map((rule, index) => (
+                                            <div key={index} className="p-3 bg-gray-50 rounded-2xl border border-gray-300 relative group">
+                                                <button
+                                                    onClick={() => removeConditionRule(index)}
+                                                    className="absolute top-2 right-2 w-7 h-7 bg-white border border-red-100 text-red-500 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
 
-                                        <div className="space-y-8 relative z-10">
-                                            <div className="flex items-center justify-between p-5 bg-gray-50/50 rounded-2xl border border-gray-300 shadow-inner">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="relative inline-flex items-center cursor-pointer">
+                                                <div className="space-y-3 mt-1">
+                                                    <div className="flex items-center gap-2">
                                                         <input
                                                             type="checkbox"
                                                             id={`all-${index}`}
                                                             checked={rule.apply_to_all || false}
                                                             onChange={(e) => updateConditionRule(index, 'apply_to_all', e.target.checked)}
-                                                            className="sr-only peer"
+                                                            className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500"
                                                         />
-                                                        <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                                        <label htmlFor={`all-${index}`} className="text-[11px] font-bold text-gray-700 cursor-pointer">Áp dụng cho toàn bộ Menu</label>
                                                     </div>
-                                                    <label htmlFor={`all-${index}`} className="text-[13px] font-black text-gray-700 cursor-pointer uppercase tracking-tight">Áp dụng cho toàn bộ Menu</label>
-                                                </div>
-                                                {rule.apply_to_all && <Sparkles size={18} className="text-amber-400 animate-pulse" />}
-                                            </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
-                                                {!rule.apply_to_all && (
-                                                    <>
-                                                        <div>
-                                                            <label className="block text-[10px] font-black text-amber-600 uppercase tracking-[0.15em] mb-3 ml-1">Chọn danh mục</label>
-                                                            <div className="relative group/select">
+                                                    {!rule.apply_to_all && (
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Danh mục</label>
                                                                 <select
                                                                     value={rule.category_slug || ''}
                                                                     onChange={(e) => updateConditionRule(index, 'category_slug', e.target.value)}
-                                                                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl text-sm font-black focus:ring-4 focus:ring-amber-50 focus:border-amber-400 outline-none shadow-inner appearance-none cursor-pointer"
+                                                                    className="w-full rounded-xl border border-gray-200 p-2 text-sm bg-white focus:border-amber-500 outline-none"
                                                                 >
                                                                     <option value="">-- Mọi danh mục --</option>
                                                                     {categories.map(cat => <option key={cat.id} value={cat.slug}>{cat.name}</option>)}
                                                                 </select>
-                                                                <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-amber-400 group-hover/select:text-amber-600 transition-colors" />
                                                             </div>
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-[10px] font-black text-amber-600 uppercase tracking-[0.15em] mb-3 ml-1">Sản phẩm yêu cầu</label>
-                                                            <div className="relative group/select">
+                                                            <div>
+                                                                <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Sản phẩm</label>
                                                                 <select
                                                                     value={rule.product_slug || rule.product_id || ''}
                                                                     onChange={(e) => {
@@ -499,97 +455,78 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
                                                                         if (p) { updateConditionRule(index, 'product_slug', p.slug); updateConditionRule(index, 'product_id', p.id); }
                                                                         else { updateConditionRule(index, 'product_slug', ''); updateConditionRule(index, 'product_id', ''); }
                                                                     }}
-                                                                    className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl text-sm font-black focus:ring-4 focus:ring-amber-50 focus:border-amber-400 outline-none shadow-inner appearance-none cursor-pointer"
+                                                                    className="w-full rounded-xl border border-gray-200 p-2 text-sm bg-white focus:border-amber-500 outline-none"
                                                                 >
                                                                     <option value="">-- Món bất kỳ --</option>
                                                                     {products.map(p => <option key={p.id} value={p.slug}>{p.name}</option>)}
                                                                 </select>
-                                                                <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-amber-400 group-hover/select:text-amber-600 transition-colors" />
                                                             </div>
                                                         </div>
-                                                    </>
-                                                )}
-                                                <div className={rule.apply_to_all ? "md:col-span-3" : ""}>
-                                                    <Input
-                                                        label="Số lượng cần mua"
-                                                        type="number"
-                                                        value={rule.min_quantity || ''}
-                                                        onChange={(e) => updateConditionRule(index, 'min_quantity', e.target.value)}
-                                                        min={1}
-                                                        className="!rounded-2xl border-gray-300 font-black text-amber-600 bg-gray-50/30 text-lg shadow-inner"
-                                                        suffix={<span className="text-[10px] font-black text-gray-300 uppercase mr-2">Món</span>}
-                                                    />
+                                                    )}
+                                                    <div>
+                                                        <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Số lượng cần mua</label>
+                                                        <Input
+                                                            type="number"
+                                                            value={rule.min_quantity || ''}
+                                                            onChange={(e) => updateConditionRule(index, 'min_quantity', e.target.value)}
+                                                            min={1}
+                                                            className="bg-white font-bold text-amber-600"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        ))}
                                     </div>
-                                ))}
-                                <button
-                                    onClick={addConditionRule}
-                                    className="w-full py-10 border-2 border-dashed border-gray-200 rounded-3xl hover:border-amber-400 hover:bg-amber-50/30 transition-all group relative overflow-hidden"
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-b from-white/0 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex flex-col items-center gap-3 relative z-10">
-                                        <div className="w-14 h-14 rounded-[20px] bg-gray-100 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-all group-hover:scale-110 group-hover:rotate-6 shadow-md">
-                                            <Plus size={28} />
-                                        </div>
-                                        <span className="text-xs font-black text-gray-400 uppercase tracking-[0.25em] group-hover:text-amber-600 transition-colors">Thêm quy tắc điều kiện</span>
-                                    </div>
-                                </button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={addConditionRule}
+                                        className="w-full mt-3 h-10 border-dashed border-2 text-amber-600 border-amber-200 hover:bg-amber-50 uppercase font-black text-[10px]"
+                                        startIcon={<Plus size={16} />}
+                                    >
+                                        Thêm quy tắc mới
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     )}
 
                     {/* Tab 2: Rewards */}
                     {activeTab === 2 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-6 duration-500">
-                            <div className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-[28px] border border-emerald-100 flex gap-4 shadow-md relative overflow-hidden group">
-                                <div className="absolute -right-4 -top-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                                    <Trophy size={120} className="text-emerald-500" />
+                        <div className="space-y-4 md:space-y-6 animate-in fade-in slide-in-from-right-2 duration-300">
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <Gift size={18} className="text-emerald-500" />
+                                        <span className="text-sm font-black uppercase text-gray-700">Phần thưởng quà tặng</span>
+                                    </div>
+                                    <span className="text-[10px] font-black text-gray-500 uppercase">{rewardProducts.length} Quà</span>
                                 </div>
-                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shadow-md shrink-0 border border-emerald-200/50">
-                                    <Sparkles className="text-emerald-500" size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-black text-emerald-900 uppercase tracking-tight mb-0.5">Thiết lập quà tặng ưu đãi</p>
-                                    <p className="text-[13px] font-medium text-emerald-800/80 leading-relaxed">
-                                        Chọn các sản phẩm sẽ được tặng miễn phí cho khách hàng khi họ thỏa mãn điều kiện combo. Chúc mừng khách hàng bằng những món quà tuyệt vời!
-                                    </p>
-                                </div>
-                            </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between px-2">
-                                    <SectionHeader icon={Gift} title="Danh sách quà tặng" subtitle="Sản phẩm miễn phí kèm theo" color="#10b981" />
-                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{rewardProducts.length} PHẦN QUÀ</span>
-                                </div>
-                                {rewardProducts.map((product, index) => (
-                                    <div key={index} className="p-8 rounded-3xl bg-white border border-gray-300 shadow-md relative group transition-all hover:shadow-md hover:border-emerald-200 hover:-translate-y-0.5 overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-                                        <button
-                                            onClick={() => removeRewardProduct(index)}
-                                            className="absolute top-4 right-4 w-10 h-10 bg-white border border-red-50 text-red-400 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-500 hover:text-white shadow-lg z-10"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end relative z-10">
-                                            <div>
-                                                <label className="block text-[10px] font-black text-emerald-600 uppercase tracking-[0.15em] mb-3 ml-1">Danh mục quà</label>
-                                                <div className="relative group/select">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {rewardProducts.map((product, index) => (
+                                        <div key={index} className="p-3 bg-gray-50 rounded-2xl border border-gray-300 relative group">
+                                            <button
+                                                onClick={() => removeRewardProduct(index)}
+                                                className="absolute top-2 right-2 w-7 h-7 bg-white border border-red-100 text-red-500 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+
+                                            <div className="space-y-3 mt-1">
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Danh mục quà</label>
                                                     <select
                                                         value={product.category_slug || ''}
                                                         onChange={(e) => updateRewardProduct(index, 'category_slug', e.target.value)}
-                                                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl text-sm font-black focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none shadow-inner appearance-none cursor-pointer"
+                                                        className="w-full rounded-xl border border-gray-200 p-2 text-sm bg-white focus:border-emerald-500 outline-none"
                                                     >
                                                         <option value="">-- Mọi danh mục --</option>
                                                         {categories.map(cat => <option key={cat.id} value={cat.slug}>{cat.name}</option>)}
                                                     </select>
-                                                    <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-emerald-400 group-hover/select:text-emerald-600 transition-colors" />
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-[10px] font-black text-emerald-600 uppercase tracking-[0.15em] mb-3 ml-1">Sản phẩm tặng</label>
-                                                <div className="relative group/select">
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">Sản phẩm tặng</label>
                                                     <select
                                                         value={product.product_slug || product.product_id || ''}
                                                         onChange={(e) => {
@@ -597,40 +534,35 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
                                                             if (p) { updateRewardProduct(index, 'product_slug', p.slug); updateRewardProduct(index, 'product_id', p.id); }
                                                             else { updateRewardProduct(index, 'product_slug', ''); updateRewardProduct(index, 'product_id', ''); }
                                                         }}
-                                                        className="w-full px-5 py-4 bg-gray-50/50 border border-gray-300 rounded-2xl text-sm font-black focus:ring-4 focus:ring-emerald-50 focus:border-emerald-400 outline-none shadow-inner appearance-none cursor-pointer"
+                                                        className="w-full rounded-xl border border-gray-200 p-2 text-sm bg-white focus:border-emerald-500 outline-none"
                                                     >
                                                         <option value="">-- Chọn món tặng --</option>
                                                         {products.map(p => <option key={p.id} value={p.slug}>{p.name}</option>)}
                                                     </select>
-                                                    <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 rotate-90 text-emerald-400 group-hover/select:text-emerald-600 transition-colors" />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-black uppercase text-gray-500 mb-1 block">SL quà tặng</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={product.quantity_per_combo || ''}
+                                                        onChange={(e) => updateRewardProduct(index, 'quantity_per_combo', e.target.value)}
+                                                        min={1}
+                                                        className="bg-white font-bold text-emerald-600"
+                                                    />
                                                 </div>
                                             </div>
-                                            <div className="relative group/input">
-                                                <Input
-                                                    label="SL quà tặng"
-                                                    type="number"
-                                                    value={product.quantity_per_combo || ''}
-                                                    onChange={(e) => updateRewardProduct(index, 'quantity_per_combo', e.target.value)}
-                                                    min={1}
-                                                    className="!rounded-2xl border-gray-300 font-black text-emerald-600 text-xl !bg-gray-50/50 group-hover/input:border-emerald-300 transition-colors pr-12"
-                                                />
-                                                <div className="absolute bottom-4 right-4 text-[10px] font-black text-emerald-300 uppercase tracking-widest pointer-events-none">Món</div>
-                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                                <button
+                                    ))}
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="outline"
                                     onClick={addRewardProduct}
-                                    className="w-full py-10 border-2 border-dashed border-gray-200 rounded-3xl hover:border-emerald-400 hover:bg-emerald-50/30 transition-all group relative overflow-hidden"
+                                    className="w-full mt-3 h-10 border-dashed border-2 text-emerald-600 border-emerald-200 hover:bg-emerald-50 uppercase font-black text-[10px]"
+                                    startIcon={<Plus size={16} />}
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-b from-white/0 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="flex flex-col items-center gap-3 relative z-10">
-                                        <div className="w-14 h-14 rounded-[20px] bg-gray-100 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-all group-hover:scale-110 group-hover:rotate-6 shadow-md">
-                                            <Plus size={28} />
-                                        </div>
-                                        <span className="text-xs font-black text-gray-400 uppercase tracking-[0.25em] group-hover:text-emerald-600 transition-colors">Thêm phần thưởng mới</span>
-                                    </div>
-                                </button>
+                                    Thêm phần thưởng mới
+                                </Button>
                             </div>
                         </div>
                     )}
@@ -639,4 +571,3 @@ export default function ComboPromotionModal({ open, onClose, onSave, comboToEdit
         </Dialog>
     );
 }
-

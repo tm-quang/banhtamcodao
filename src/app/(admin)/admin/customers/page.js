@@ -36,30 +36,30 @@ const MembershipBadge = ({ level }) => {
   if (!level) return <span className="text-gray-400">—</span>;
 
   const levelLower = level.toLowerCase();
-  let style = "bg-gray-500 text-white";
+  let style = "bg-gray-500 text-white shadow-gray-100";
   let icon = null;
   let label = level;
 
   if (levelLower.includes('mới') || levelLower.includes('new')) {
-    style = "bg-slate-600 text-white";
-    icon = <UserCheck size={14} className="mr-1.5" />;
-    label = "Khách hàng mới";
+    style = "bg-slate-600 text-white shadow-slate-100";
+    icon = <UserCheck size={12} className="mr-1.5" />;
+    label = "Thành viên mới";
   } else if (levelLower.includes('thân thiết') || levelLower.includes('loyal') || levelLower.includes('regular')) {
-    style = "bg-emerald-600 text-white";
-    icon = <Star size={14} className="mr-1.5" />;
-    label = "Thân thiết";
+    style = "bg-emerald-600 text-white shadow-emerald-100";
+    icon = <Star size={12} className="mr-1.5" />;
+    label = "Thành viên thân thiết";
   } else if (levelLower.includes('vip') || levelLower.includes('premium')) {
-    style = "bg-red-600 text-white";
-    icon = <Crown size={14} className="mr-1.5" />;
+    style = "bg-red-600 text-white shadow-red-100";
+    icon = <Crown size={12} className="mr-1.5" />;
     label = "Khách hàng VIP";
   } else if (levelLower.includes('diamond') || levelLower.includes('kim cương')) {
-    style = "bg-purple-600 text-white";
-    icon = <Sparkles size={14} className="mr-1.5 animate-pulse" />;
+    style = "bg-purple-600 text-white shadow-purple-100";
+    icon = <Sparkles size={12} className="mr-1.5 animate-pulse" />;
     label = "Kim cương";
   }
 
   return (
-    <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-tight shadow-sm ${style}`}>
+    <div className={`inline-flex items-center px-3 py-1 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-md border border-white/20 ${style}`}>
       {icon}
       {label}
     </div>
@@ -72,9 +72,9 @@ const MembershipBadge = ({ level }) => {
 const CustomerStatusBadge = ({ status }) => {
   const isActive = status === 'active';
   return (
-    <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-black uppercase tracking-tight shadow-sm ${isActive ? 'bg-green-600 text-white' : 'bg-gray-500 text-white'
+    <span className={`inline-block px-3 py-1 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-md border border-white/20 ${isActive ? 'bg-green-600 text-white shadow-green-100' : 'bg-gray-500 text-white shadow-gray-100'
       }`}>
-      {isActive ? 'Hoạt động' : 'Tắt'}
+      {isActive ? 'Hoạt động' : 'Đã tắt'}
     </span>
   );
 };
@@ -356,6 +356,13 @@ export default function CustomersPage() {
 
   return (
     <div className="h-full flex flex-col">
+      <style jsx global>{`
+          button:focus {
+              outline: none !important;
+              box-shadow: none !important;
+              ring: 0 !important;
+          }
+      `}</style>
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-2">
         <div className="flex flex-col">
@@ -363,9 +370,9 @@ export default function CustomersPage() {
             <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-100/50">
               <Users size={18} fill="currentColor" />
             </div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Quản lý Khách hàng</h1>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-2">Quản lý khách hàng</h1>
           </div>
-          <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Danh sách khách hàng ({stats.total} khách hàng)</p>
+          <p className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.15em] ml-0.5">Danh sách thành viên và chi tiêu ({stats.total} khách hàng)</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -376,9 +383,9 @@ export default function CustomersPage() {
             Làm mới
           </Button>
           <Button
-            startIcon={<PlusCircle size={16} />}
+            startIcon={<PlusCircle size={20} />}
             onClick={() => { setEditingCustomer(null); setIsModalOpen(true); }}
-            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-[10px] tracking-widest px-6 shadow-md shadow-orange-100 transition-all"
+            className="flex items-center justify-center gap-2 h-10 !rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black uppercase text-xs tracking-widest px-6 shadow-md shadow-orange-100 transition-all"
           >
             Thêm khách hàng
           </Button>
@@ -387,8 +394,11 @@ export default function CustomersPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">{error}</p>
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-2xl shadow-sm">
+          <p className="text-red-700 font-bold text-sm flex items-center gap-2">
+            <AlertCircle size={18} />
+            {error}
+          </p>
         </div>
       )}
 
@@ -401,30 +411,30 @@ export default function CustomersPage() {
             {/* Tổng khách hàng */}
             <div
               onClick={() => setStatusFilter('')}
-              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${!statusFilter ? 'z-20 scale-[1.02] shadow-xl ring-2 ring-white ring-offset-2 ring-offset-blue-600 bg-blue-600' : 'z-10 bg-blue-500'}`}>
-              <div className="absolute -right-2 -bottom-2 opacity-15 group-hover:scale-110 transition-transform duration-700">
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${!statusFilter ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-blue-600' : 'z-10 bg-blue-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
                 <Users size={70} className="md:w-[90px] md:h-[90px]" fill="currentColor" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-inner">
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
                   <Users size={14} className="md:w-[18px] md:h-[18px]" fill="currentColor" />
                 </div>
                 <div>
                   <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{stats.total}</p>
-                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight">Tổng khách</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Tổng khách</p>
                 </div>
               </div>
             </div>
 
-            {/* Đang hoạt động */}
+            {/* Hoạt động */}
             <div
               onClick={() => setStatusFilter('active')}
-              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'z-20 scale-[1.02] shadow-xl ring-2 ring-white ring-offset-2 ring-offset-emerald-600 bg-emerald-600' : 'z-10 bg-emerald-500'}`}>
-              <div className="absolute -right-2 -bottom-2 opacity-15 group-hover:scale-110 transition-transform duration-700">
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'active' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-emerald-600' : 'z-10 bg-emerald-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
                 <UserCheck size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-inner">
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
                   <UserCheck size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
@@ -437,12 +447,12 @@ export default function CustomersPage() {
             {/* Đã tắt */}
             <div
               onClick={() => setStatusFilter('inactive')}
-              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'z-20 scale-[1.02] shadow-xl ring-2 ring-white ring-offset-2 ring-offset-gray-600 bg-gray-600' : 'z-10 bg-gray-500'}`}>
-              <div className="absolute -right-2 -bottom-2 opacity-15 group-hover:scale-110 transition-transform duration-700">
+              className={`group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 ${statusFilter === 'inactive' ? 'z-20 scale-[1.02] shadow-xl border-2 border-white bg-gray-600' : 'z-10 bg-gray-500'}`}>
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
                 <UserX size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-inner">
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
                   <UserX size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
@@ -453,12 +463,12 @@ export default function CustomersPage() {
             </div>
 
             {/* Tổng đơn */}
-            <div className="group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10 bg-indigo-600">
-              <div className="absolute -right-2 -bottom-2 opacity-15 group-hover:scale-110 transition-transform duration-700">
+            <div className="group relative p-3 md:p-4 rounded-2xl bg-indigo-600 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
                 <TrendingUp size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-inner">
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
                   <TrendingUp size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
@@ -469,17 +479,17 @@ export default function CustomersPage() {
             </div>
 
             {/* Tổng chi tiêu */}
-            <div className="group relative p-3 md:p-4 rounded-2xl text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10 bg-amber-500 border-2 border-orange-400">
-              <div className="absolute -right-2 -bottom-2 opacity-15 group-hover:scale-110 transition-transform duration-700">
+            <div className="group relative p-3 md:p-4 rounded-2xl bg-amber-500 text-white shadow-md overflow-hidden cursor-pointer transition-all duration-500 hover:scale-[1.02] hover:-translate-y-1 z-10 border-2 border-amber-500">
+              <div className="absolute -right-3 -bottom-3 opacity-15 group-hover:scale-110 transition-transform duration-700">
                 <DollarSign size={70} className="md:w-[90px] md:h-[90px]" />
               </div>
               <div className="relative z-10 flex flex-col h-full justify-between">
-                <div className="w-7 h-7 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-2 md:mb-3 shadow-inner">
+                <div className="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-3 shadow-inner">
                   <DollarSign size={14} className="md:w-[18px] md:h-[18px]" />
                 </div>
                 <div>
                   <p className="text-xl md:text-3xl font-black mb-0.5 tabular-nums tracking-tighter">{formatCurrency(stats.totalSpent).replace('đ', '')}</p>
-                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Doanh số (VNĐ)</p>
+                  <p className="text-[10px] md:text-[15px] font-black uppercase tracking-tight opacity-90">Doanh số</p>
                 </div>
               </div>
             </div>
@@ -517,7 +527,7 @@ export default function CustomersPage() {
               className="flex items-center gap-2 px-3 py-3 text-[11px] font-black text-red-500 hover:text-red-600 bg-red-50 rounded-xl transition-all active:scale-95 uppercase tracking-widest"
             >
               <X size={14} />
-              Xóa
+              Xóa lọc
             </button>
           )}
           <div className="h-8 w-px bg-gray-200" />
@@ -559,7 +569,7 @@ export default function CustomersPage() {
               <AlertCircle size={22} className="text-red-600" />
             </div>
             <div>
-              <span className="font-bold text-red-600 block">Xác nhận xóa khách</span>
+              <span className="font-bold text-red-600 block uppercase tracking-tight">Xác nhận xóa khách</span>
             </div>
           </div>
         }
@@ -575,7 +585,7 @@ export default function CustomersPage() {
               onClick={confirmDelete}
               className="flex items-center justify-center h-10 !rounded-2xl bg-red-600 hover:bg-red-700 text-white shadow-xl shadow-red-100 font-black uppercase text-[11px] tracking-widest px-8 transition-all"
             >
-              Xác nhận
+              Xác nhận xóa
             </Button>
           </div>
         }
@@ -598,3 +608,4 @@ export default function CustomersPage() {
     </div>
   );
 }
+

@@ -110,9 +110,9 @@ const Toast = ({ toast, onRemove, index, total }) => {
                     zIndex,
                 }}
             >
-                <div className={`bg-white backdrop-blur-md shadow-md rounded-xl w-80 overflow-hidden border border-white ${style.glow}`}>
-                    <div className={`flex items-center gap-2 p-2 ${style.iconBg}/40 border-b border-gray-100`}>
-                        <div className={`p-1.5 rounded-3xl ${style.iconBg} ${style.iconAnim}`}>
+                <div className={`bg-white backdrop-blur-md shadow-md rounded-xl w-full overflow-hidden border border-gray-100 ${style.glow}`}>
+                    <div className={`flex items-center gap-2 p-2 md:py-2 md:px-3 ${style.bg} border-b ${style.border}`}>
+                        <div className={`p-1.5 md:p-2 rounded-3xl ${style.iconBg} ${style.iconAnim}`}>
                             <Icon className={style.iconColor} size={18} />
                         </div>
                         <p className="flex-grow text-[14px] font-bold text-gray-800">{message}</p>
@@ -120,7 +120,7 @@ const Toast = ({ toast, onRemove, index, total }) => {
                             <X size={16} className="text-gray-400" />
                         </button>
                     </div>
-                    <div className="p-2 flex gap-3">
+                    <div className="p-2 md:p-3 flex gap-3">
                         <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 shadow-md border border-gray-100">
                             <Image
                                 src={product.image_url || '/placeholder.jpg'}
@@ -130,11 +130,11 @@ const Toast = ({ toast, onRemove, index, total }) => {
                             />
                         </div>
                         <div className="flex-1 flex flex-col justify-center min-w-0">
-                            <p className="font-bold text-gray-900 text-[14px] line-clamp-1">{product.name}</p>
+                            <p className="font-bold text-gray-900 text-[14px] md:text-[16px] line-clamp-1">{product.name}</p>
                             <Link
                                 href="/cart"
                                 onClick={handleRemove}
-                                className="mt-1 text-primary text-[12px] font-bold hover:underline flex items-center gap-1"
+                                className="mt-1 text-primary text-[12px] md:text-[13px] font-bold hover:underline flex items-center gap-1"
                             >
                                 Xem giỏ hàng →
                             </Link>
@@ -159,12 +159,12 @@ const Toast = ({ toast, onRemove, index, total }) => {
                 zIndex,
             }}
         >
-            <div className={`flex items-center ${style.bg} backdrop-blur-md border ${style.border} shadow-md rounded-xl p-2 min-w-[320px] overflow-hidden relative ${style.glow}`}>
+            <div className={`flex items-center ${style.bg} backdrop-blur-md border ${style.border} shadow-md rounded-xl p-2 md:p-2.5 min-w-[320px] overflow-hidden relative ${style.glow}`}>
                 <div className={`flex-shrink-0 w-7 h-7 rounded-3xl ${style.iconBg} flex items-center justify-center ${style.iconAnim} shadow-sm`}>
                     <Icon size={18} className={style.iconColor} />
                 </div>
                 <div className="flex-grow px-4">
-                    <p className="text-xs font-bold text-gray-800">{message}</p>
+                    <p className="text-xs md:text-[13px] font-bold text-gray-800">{message}</p>
                 </div>
                 <button
                     onClick={handleRemove}
@@ -187,7 +187,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
     const visibleToasts = toasts.slice(-MAX_TOASTS);
 
     return (
-        <div className="fixed top-10 right-5 z-[9999] w-80">
+        <div className="fixed top-14 right-5 z-[9999] w-80 md:w-[350px]">
             <div className="relative" style={{ height: visibleToasts.length > 0 ? 'auto' : 0 }}>
                 {visibleToasts.map((toast, index) => (
                     <Toast
