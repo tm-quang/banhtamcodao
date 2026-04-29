@@ -5,12 +5,13 @@
 import { Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 import HeroSection from '@/components/HeroSection';
-import Features from '@/components/Features';
+import Services from '@/components/Services';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
 import AboutSection from '@/components/AboutSection';
 import Testimonials from '@/components/Testimonials';
 import PromotionSection from '@/components/PromotionSection';
 import CategoryHighlights from '@/components/CategoryHighlights';
+import HomeSearchBar from '@/components/HomeSearchBar';
 
 /** Lazy load các component nặng */
 const FeaturedSlider = dynamicImport(() => import('@/components/FeaturedSlider'), {
@@ -183,7 +184,7 @@ export default async function HomePage() {
       <HeroSection />
 
       <AnimateOnScroll>
-        <Features />
+        <Services />
       </AnimateOnScroll>
 
       {/* Promotion Section */}
@@ -192,9 +193,11 @@ export default async function HomePage() {
       </AnimateOnScroll>
 
       {/* Category Highlights */}
+      {/* 
       <AnimateOnScroll>
         <CategoryHighlights />
-      </AnimateOnScroll>
+      </AnimateOnScroll> 
+      */}
 
       {/* Section Món Nổi Bật (Slider) - Commented out for now */}
       {/* <section className="section-spacing" aria-label="Món nổi bật" style={{ backgroundColor: '#F0F2F5' }}>

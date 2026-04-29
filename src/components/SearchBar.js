@@ -22,6 +22,44 @@ export default function SearchBar({ className = '', isContactPage = false }) {
   const abortRef = useRef(null);
   const cacheRef = useRef(new Map());
 
+  const [currentPlaceholder, setCurrentPlaceholder] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const placeholders = [
+      "Bánh Tằm Bì...",
+      "Bánh Tằm Bì Xíu Mại...",
+      "Trà tắc hạt chia..."
+    ];
+
+    const currentText = placeholders[placeholderIndex];
+    const typingSpeed = isDeleting ? 40 : 80;
+    const delay = !isDeleting && charIndex === currentText.length
+      ? 2000
+      : isDeleting && charIndex === 0
+        ? 500
+        : typingSpeed;
+
+    const timeoutId = setTimeout(() => {
+      if (!isDeleting && charIndex < currentText.length) {
+        setCurrentPlaceholder(currentText.slice(0, charIndex + 1));
+        setCharIndex(prev => prev + 1);
+      } else if (isDeleting && charIndex > 0) {
+        setCurrentPlaceholder(currentText.slice(0, charIndex - 1));
+        setCharIndex(prev => prev - 1);
+      } else if (!isDeleting && charIndex === currentText.length) {
+        setIsDeleting(true);
+      } else if (isDeleting && charIndex === 0) {
+        setIsDeleting(false);
+        setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+      }
+    }, delay);
+
+    return () => clearTimeout(timeoutId);
+  }, [charIndex, isDeleting, placeholderIndex]);
+
   const performSearch = useCallback(async (searchQuery) => {
     // Use in-memory cache to avoid refetching while typing
     const cached = cacheRef.current.get(searchQuery);
@@ -190,7 +228,7 @@ export default function SearchBar({ className = '', isContactPage = false }) {
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                   onFocus={() => setIsOpen(true)}
-                  placeholder="Tìm kiếm món ăn..."
+                  placeholder={currentPlaceholder || "Tìm kiếm món..."}
                   className="w-full pl-9 pr-9 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />

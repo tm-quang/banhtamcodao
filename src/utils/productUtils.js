@@ -3,6 +3,8 @@
  * @file src/utils/productUtils.js
  */
 
+export const preferredCategoryOrder = ['Bánh Tằm', 'Món Phụ', 'Thức Uống', 'Trà Sữa', 'Ăn Vặt'];
+
 /**
  * Áp dụng thông tin khuyến mãi combo vào danh sách sản phẩm
  * @param {Array} products - Danh sách sản phẩm
@@ -52,11 +54,26 @@ export function applyPromotions(products, activePromos) {
       promotion_text: promotion_text
     };
     
-    // Clean up internal objects if needed
-    // delete processedItem.categories;
-    
     return processedItem;
   });
+
+  if (Array.isArray(products)) {
+    result.sort((a, b) => {
+      const orderIndex = (name) => {
+        if (!name) return Number.MAX_SAFE_INTEGER;
+        const normalized = name.toLowerCase().trim();
+        const index = preferredCategoryOrder.findIndex(item => item.toLowerCase() === normalized);
+        return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+      };
+
+      const ai = orderIndex(a.category_name);
+      const bi = orderIndex(b.category_name);
+
+      if (ai !== bi) return ai - bi;
+
+      return (a.name || '').localeCompare(b.name || '', 'vi');
+    });
+  }
 
   return Array.isArray(products) ? result : result[0];
 }

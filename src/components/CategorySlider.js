@@ -46,7 +46,7 @@ export default function CategorySlider({ categories, activeCategory, onSelectCat
                         },
                         768: {
                             slidesPerView: 'auto',
-                            spaceBetween: 20,
+                            spaceBetween: 40,
                             slidesOffsetBefore: 0,
                             slidesOffsetAfter: 0,
                         },
@@ -84,21 +84,6 @@ export default function CategorySlider({ categories, activeCategory, onSelectCat
                             </button>
                         </SwiperSlide>
                     ))}
-
-                    {/* "View All" Button as the last slide */}
-                    <SwiperSlide className="!w-auto !flex-shrink-0 !mr-4 md:!mr-0">
-                        <Link
-                            href="/menu"
-                            className="cursor-pointer relative group flex flex-col items-center shadow-md justify-center w-28 h-32 rounded-2xl bg-orange-50 border-2 border-orange-500 hover:border-orange-300 hover:shadow-lg transition-all duration-300"
-                        >
-                            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md mb-2 group-hover:scale-110 transition-transform">
-                                <ArrowRight className="text-[#FF6F30] w-8 h-8" />
-                            </div>
-                            <span className="text-base font-bold text-center px-1 text-[#FF6F30]">
-                                Xem tất cả
-                            </span>
-                        </Link>
-                    </SwiperSlide>
                 </Swiper>
             </div>
         </div>

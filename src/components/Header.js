@@ -33,6 +33,46 @@ const Header = () => {
   const mobileSearchAbortRef = useRef(null);
   const mobileSearchCacheRef = useRef(new Map());
 
+  const [currentPlaceholder, setCurrentPlaceholder] = useState('');
+  const [placeholderIndex, setPlaceholderIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const placeholders = [
+      "Tìm kiếm món ngon...",
+      "Bánh Tằm Bì thơm béo...",
+      "Bánh Tằm Bì Xíu Mại...",
+      "Xíu Mại trứng muối...",
+      "Trà tắc hạt chia..."
+    ];
+    
+    const currentText = placeholders[placeholderIndex];
+    const typingSpeed = isDeleting ? 40 : 80;
+    const delay = !isDeleting && charIndex === currentText.length 
+      ? 2000 
+      : isDeleting && charIndex === 0 
+        ? 500 
+        : typingSpeed;
+
+    const timeoutId = setTimeout(() => {
+      if (!isDeleting && charIndex < currentText.length) {
+        setCurrentPlaceholder(currentText.slice(0, charIndex + 1));
+        setCharIndex(prev => prev + 1);
+      } else if (isDeleting && charIndex > 0) {
+        setCurrentPlaceholder(currentText.slice(0, charIndex - 1));
+        setCharIndex(prev => prev - 1);
+      } else if (!isDeleting && charIndex === currentText.length) {
+        setIsDeleting(true);
+      } else if (isDeleting && charIndex === 0) {
+        setIsDeleting(false);
+        setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+      }
+    }, delay);
+
+    return () => clearTimeout(timeoutId);
+  }, [charIndex, isDeleting, placeholderIndex]);
+
   /**
    * Các trang có header trong suốt khi chưa cuộn: trang chủ, menu (có hero), contact (có background image)
    */
@@ -168,12 +208,12 @@ const Header = () => {
    */
   const isContactPage = pathname === '/contact';
   const textColorClass = 'text-black'; // Thống nhất dùng chữ đen cho tất cả các trang
-  const bgClass = isTransparentPage && !isScrolled ? 'bg-transparent' : 'bg-[#FFFBF7]';
+  const bgClass = isTransparentPage && !isScrolled ? 'bg-transparent' : 'bg-[#FFF5EB]/90 backdrop-blur-md';
   /**
    * Shadow: khi có nền dùng shadow nhẹ, khi trong suốt không có shadow
    */
-  const shadowClass = bgClass === 'bg-transparent' ? '' : 'shadow-sm';
-  const headerClass = `fixed top-0 w-full z-50 ${textColorClass} transition-colors duration-500 ease-in-out ${bgClass} ${shadowClass} h-14 md:h-16`;
+  const shadowClass = bgClass === 'bg-transparent' ? '' : '';
+  const headerClass = `fixed top-0 w-full z-50 ${textColorClass} transition-all duration-500 ease-in-out ${bgClass} ${shadowClass} h-14 md:h-16`;
 
   const navLinks = [
     { href: '/', label: 'Trang chủ', icon: Home },
@@ -330,10 +370,22 @@ const Header = () => {
     <>
       <header className={headerClass} ref={headerRef}>
         <div className="page-container flex h-full justify-between items-center">
+
+          {/* Mobile Menu Icon - Left */}
+          {!isMobileSearchOpen && (
+            <div className="flex md:hidden items-center w-10 flex-shrink-0">
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="cursor-pointer hover:text-primary transition-colors w-10 h-10 flex items-center justify-start relative z-[110] text-inherit">
+                <div className={`transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : 'rotate-0'}`}>
+                  {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </div>
+              </button>
+            </div>
+          )}
+
           {/* Logo hoặc Search Field trên mobile */}
           <div
             ref={mobileSearchContainerRef}
-            className={`relative w-48 transition-all duration-300 ${isMobileSearchOpen ? 'flex-1 mr-2' : ''}`}
+            className={`relative transition-all duration-300 ${isMobileSearchOpen ? 'flex-1 w-full z-10' : 'flex-1 flex justify-center md:flex-none md:justify-start md:w-48'}`}
           >
             {isMobileSearchOpen ? (
               <div className="w-full">
@@ -350,7 +402,7 @@ const Header = () => {
                           setIsMobileSearchDropdownOpen(true);
                         }
                       }}
-                      placeholder="Tìm kiếm món ăn..."
+                      placeholder={currentPlaceholder || "Tìm kiếm món ăn..."}
                       className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                     />
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -416,7 +468,7 @@ const Header = () => {
                       <div className="border-t border-gray-200 p-2 bg-gray-50">
                         <button
                           onClick={handleMobileSearchSubmit}
-                          className="w-full text-center py-2 text-sm text-primary font-medium hover:bg-orange-50 rounded-lg transition-colors"
+                          className="w-full text-center py-2 text-sm text-primary font-medium hover:bg-orange-50 rounded-lg transition-colors "
                         >
                           Xem tất cả kết quả cho &quot;{mobileSearchQuery}&quot;
                         </button>
@@ -426,10 +478,19 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              <Link href="/">
+              <Link href="/" className="flex items-center justify-center md:justify-start">
+                {/* Mobile Logo */}
                 <img
-                  src="https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png"
-                  alt="Bánh Tằm Cô Đào Logo" width={200} height={40}
+                  src="/images/banner-logo/banhtamcodao-logo.png"
+                  alt="Bánh Tằm Cô Đào Logo"
+                  className="h-20 w-auto object-contain md:hidden drop-shadow-sm mt-8"
+                  loading="eager"
+                />
+                {/* Desktop Logo */}
+                <img
+                  src="/images/banner-logo/banhtamcodao-logo.png"
+                  alt="Bánh Tằm Cô Đào Logo"
+                  className="hidden md:block h-24 w-auto drop-shadow-sm mt-12"
                   loading="eager"
                 />
               </Link>
@@ -457,41 +518,22 @@ const Header = () => {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3 px-1">
-            <div className="hidden md:block">
-              <SearchBar isContactPage={isContactPage} />
-            </div>
-            {/* Search icon trên mobile */}
-            {!isMobileSearchOpen && (
-              <button
-                onClick={handleMobileSearchToggle}
-                className="md:hidden hover:text-primary transition-colors w-10 h-10 flex items-center justify-center text-inherit"
-                aria-label="Mở tìm kiếm"
-              >
-                <Search size={24} />
-              </button>
-            )}
-            <Link
-              href="/wishlist"
-              className="md:hidden hover:text-primary transition-colors w-10 h-10 flex items-center justify-center relative text-inherit"
-              aria-label={`Danh sách yêu thích, ${wishlistCount} sản phẩm`}
-            >
-              <Heart size={24} className={isWishlistAnimating ? 'animate-wishlist-bounce' : ''} />
-              {isClient && wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1 border border-white leading-none">
-                  {wishlistCount > 99 ? '99+' : wishlistCount}
-                </span>
-              )}
-            </Link>
+          <div className={`flex items-center justify-end px-1 gap-2 md:gap-3 ${isMobileSearchOpen ? 'hidden md:flex' : 'w-10 md:w-auto flex-shrink-0'}`}>
+            {/* Đã xóa SearchBar desktop và Search icon mobile */}
+            {/* Hotline hiển thị bên phải icon giỏ hàng trên desktop */}
 
-            <div className="relative">
+            <div className="hidden md:block text-base font-bold text-gray-800 ml-2">
+              <span className="text-primary font-lobster text-[28px]">Hotline: </span> <a href="tel:0933960788" className="font-lobster hover:text-primary transition-colors font-sans text-[24px]">0933 960 788</a>
+            </div>
+
+            <div className="relative ml-5">
               <button
                 onClick={handleCartIconClick}
                 className={`cursor-pointer relative hover:text-primary transition-colors p-1 hidden md:inline-flex text-inherit ${isCartAnimating ? 'animate-cart-bounce' : ''}`}
                 aria-label={`Mở xem nhanh giỏ hàng, ${totalItems} sản phẩm`}
                 style={{ transformOrigin: 'center' }}
               >
-                <Handbag size={24} />
+                <Handbag size={28} />
                 {isClient && totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1 border border-white leading-none">
                     {totalItems > 99 ? '99+' : totalItems}
@@ -500,14 +542,16 @@ const Header = () => {
               </button>
             </div>
 
+
+
             <div className="relative hidden md:block">
               {user ? (
                 <button onClick={handleUserMenuToggle} className="cursor-pointer hover:text-primary transition-colors p-1 text-inherit">
-                  <UserIcon size={24} />
+                  <UserIcon size={28} />
                 </button>
               ) : (
                 <Link href="/login" className="hover:text-primary transition-colors p-1 text-inherit">
-                  <UserIcon size={24} />
+                  <UserIcon size={28} />
                 </Link>
               )}
 
@@ -550,12 +594,6 @@ const Header = () => {
                 </div>
               )}
             </div>
-
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="cursor-pointer md:hidden hover:text-primary transition-colors w-10 h-10 flex items-center justify-center relative z-[110] text-inherit">
-              <div className={`transition-transform duration-300 ease-in-out ${isMenuOpen ? 'rotate-180' : 'rotate-0'}`}>
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </div>
-            </button>
           </div>
         </div>
       </header>

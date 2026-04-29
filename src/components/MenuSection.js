@@ -29,7 +29,21 @@ export default function MenuSection({ products, categoriesList = [] }) {
 
         const productCategoryNames = Object.keys(categoryMap);
         const categoryNamesFromApi = categoriesList.map((item) => item.name);
-        const allCategoryNames = Array.from(new Set([...categoryNamesFromApi, ...productCategoryNames])).filter(Boolean).sort();
+        const preferredCategoryOrder = ['Bánh Tằm', 'Món Phụ', 'Thức Uống', 'Trà Sữa', 'Ăn Vặt'];
+        const orderIndex = (name) => {
+            if (!name) return Number.MAX_SAFE_INTEGER;
+            const normalized = name.toLowerCase().trim();
+            const index = preferredCategoryOrder.findIndex(item => item.toLowerCase() === normalized);
+            return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+        };
+        const allCategoryNames = Array.from(new Set([...categoryNamesFromApi, ...productCategoryNames]))
+            .filter(Boolean)
+            .sort((a, b) => {
+                const ai = orderIndex(a);
+                const bi = orderIndex(b);
+                if (ai !== bi) return ai - bi;
+                return a.localeCompare(b, 'vi');
+            });
 
         const normalizedMap = {};
         allCategoryNames.forEach((name) => {
@@ -76,15 +90,31 @@ export default function MenuSection({ products, categoriesList = [] }) {
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center section-spacing text-center bg-slate-50 rounded-2xl border-2 border-dashed border-gray-300">
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center rounded-3xl max-w-2xl mx-auto my-8 relative">
+                    {/* Decorative background gradients */}
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl transition-colors duration-500"></div>
+                    <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-100/30 rounded-full blur-2xl"></div>
+
                     <div className="relative mb-6">
-                        <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-primary/30 to-primary/5 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                            <PackageSearch className="w-10 h-10 md:w-12 md:h-12 text-primary/60" strokeWidth={1.5} />
+                        <div className="w-24 h-24 bg-gradient-to-br from-primary to-orange-400 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30 relative z-10">
+                            <PackageSearch className="w-12 h-12 text-white" strokeWidth={1.5} />
                         </div>
-                        <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary/30 rounded-full animate-pulse"></div>
+                        {/* Soft glowing rings behind the icon */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/10 rounded-full animate-pulse z-0"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-orange-100/40 rounded-full animate-ping z-0" style={{ animationDuration: '3s' }}></div>
                     </div>
-                    <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">Chưa có món ăn nào trong danh mục này</h3>
-                    <p className="text-gray-600 text-sm md:text-base max-w-md px-4">Vui lòng chọn danh mục khác hoặc quay lại sau nhé!</p>
+
+                    <h3 className="text-xl font-bold text-gray-800 mb-3 font-roboto">Chưa có món trong mục này</h3>
+                    <p className="text-gray-500 text-base max-w-md mb-8 leading-relaxed">
+                        Vui lòng chọn danh mục khác hoặc quay lại sau nhé!
+                    </p>
+
+                    <button
+                        onClick={() => setActiveCategory('Tất cả')}
+                        className="relative z-10 px-8 py-3 bg-gradient-to-r from-primary to-orange-500 text-white font-bold rounded-full shadow-lg hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2"
+                    >
+                        Xem tất cả món ăn
+                    </button>
                 </div>
             )}
 

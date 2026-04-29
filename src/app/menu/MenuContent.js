@@ -11,7 +11,7 @@ import CategorySlider from '@/components/CategorySlider';
 import HeroSection from '@/components/HeroSection';
 import MenuFilters from '@/components/MenuFilters';
 import { useSearchParams } from 'next/navigation';
-import { Star } from 'lucide-react';
+import { Star, PackageSearch } from 'lucide-react';
 
 /** Lazy load ProductCard để tối ưu hiệu suất */
 const ProductCard = dynamic(() => import('@/components/ProductCard'), {
@@ -68,14 +68,16 @@ export default function MenuContent() {
                 if (data.success) {
                     const preferredOrder = ['Bánh Tằm', 'Món Phụ', 'Thức Uống', 'Trà Sữa', 'Ăn Vặt'];
                     const orderIndex = (name) => {
-                        const i = preferredOrder.indexOf(name);
-                        return i === -1 ? Number.MAX_SAFE_INTEGER : i;
+                        if (!name) return Number.MAX_SAFE_INTEGER;
+                        const normalized = name.toLowerCase().trim();
+                        const index = preferredOrder.findIndex(item => item.toLowerCase() === normalized);
+                        return index === -1 ? Number.MAX_SAFE_INTEGER : index;
                     };
                     const sorted = (data.categories || []).slice().sort((a, b) => {
                         const ai = orderIndex(a.name);
                         const bi = orderIndex(b.name);
                         if (ai !== bi) return ai - bi;
-                        return a.name.localeCompare(b.name);
+                        return (a.name || '').localeCompare(b.name || '', 'vi');
                     });
                     setCategories(sorted);
                 }
@@ -191,15 +193,30 @@ export default function MenuContent() {
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-16">
-                        <p className="text-gray-600 text-lg">
-                            Không tìm thấy sản phẩm nào trong danh mục này.
+                    <div className="flex flex-col items-center justify-center py-16 px-6 text-center bg-white/60 backdrop-blur-md rounded-3xl border border-orange-100 shadow-xl max-w-2xl mx-auto my-8 relative overflow-hidden group hover:shadow-2xl transition-all duration-500">
+                        {/* Decorative background gradients */}
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors duration-500"></div>
+                        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-100/30 rounded-full blur-2xl"></div>
+
+                        <div className="relative mb-6">
+                            <div className="w-24 h-24 bg-gradient-to-br from-primary to-orange-400 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/30 relative z-10">
+                                <PackageSearch className="w-12 h-12 text-white" strokeWidth={1.5} />
+                            </div>
+                            {/* Soft glowing rings behind the icon */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/10 rounded-full animate-pulse z-0"></div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-orange-100/40 rounded-full animate-ping z-0" style={{ animationDuration: '3s' }}></div>
+                        </div>
+
+                        <h3 className="text-2xl font-bold text-gray-800 mb-3 font-roboto">Không tìm thấy sản phẩm nào trong danh mục này</h3>
+                        <p className="text-gray-500 text-base max-w-md mb-8 leading-relaxed">
+                            Vui lòng chọn danh mục khác hoặc quay lại sau nhé!
                         </p>
+                        
                         <button
-                            onClick={() => setActiveCategory('')}
-                            className="mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors"
+                            onClick={() => setActiveCategory('Tất cả')}
+                            className="relative z-10 px-8 py-3 bg-gradient-to-r from-primary to-orange-500 text-white font-bold rounded-full shadow-lg hover:shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2"
                         >
-                            Xem tất cả
+                            Xem tất cả món ăn
                         </button>
                     </div>
                 )}

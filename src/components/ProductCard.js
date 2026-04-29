@@ -29,7 +29,7 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden group transition-all duration-300 hover:-translate-y-0.5 flex flex-col h-full shadow-md hover:shadow-md border border-gray-200">
+    <div className="bg-white rounded-3xl overflow-hidden group transition-all duration-300 flex flex-col h-full border border-gray-100 hover:scale-105 hover:border-primary/50 shadow-md">
       {/* Ảnh */}
       <Link href={`/product/${product.slug}`} className="block flex-shrink-0 w-full relative overflow-hidden aspect-square">
         <img

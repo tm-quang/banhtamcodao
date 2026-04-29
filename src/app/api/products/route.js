@@ -134,6 +134,28 @@ export async function GET(request) {
         promotion_text: promotion_text // Trường mới thêm vào
       };
     });
+    const preferredCategoryOrder = ['Bánh Tằm', 'Món Phụ', 'Thức Uống', 'Trà Sữa', 'Ăn Vặt'];
+    
+    products.sort((a, b) => {
+      const orderIndex = (name) => {
+        if (!name) return Number.MAX_SAFE_INTEGER;
+        const normalized = name.toLowerCase().trim();
+        const index = preferredCategoryOrder.findIndex(item => item.toLowerCase() === normalized);
+        return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+      };
+
+      const ai = orderIndex(a.category_name);
+      const bi = orderIndex(b.category_name);
+
+      if (ai !== bi) return ai - bi;
+
+      // Cùng category thì mới áp dụng sort theo filter
+      if (sort === 'price') {
+        return isAscending ? a.price - b.price : b.price - a.price;
+      } else {
+        return (a.name || '').localeCompare(b.name || '', 'vi');
+      }
+    });
 
     return NextResponse.json({ success: true, products }, {
       headers: {

@@ -7,7 +7,10 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Star, Truck, ArrowRight } from 'lucide-react';
+import { Star, Truck, ArrowRight, Search, SlidersHorizontal } from 'lucide-react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import HomeSearchBar from './HomeSearchBar';
 
 const slides = [
   {
@@ -37,9 +40,20 @@ export default function HeroSection({
   subtitle
 }) {
   const displaySlides = customSlides || slides;
+  const [searchQuery, setSearchQuery] = useState('');
+  const router = useRouter();
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/menu?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push(`/menu`);
+    }
+  };
 
   return (
-    <section className={`relative w-full ${heightClass} overflow-hidden flex items-center pt-32 pb-12 md:pt-40 md:pb-16 lg:pt-32 lg:pb-20`}>
+    <section className={`relative w-full ${heightClass} flex items-center pt-32 pb-12 md:pt-40 md:pb-16 lg:pt-32 lg:pb-20`}>
       {/* Background decorative elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-orange-100/50 blur-3xl"></div>
@@ -54,38 +68,30 @@ export default function HeroSection({
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="flex flex-col items-center lg:items-start text-center lg:text-left order-1 lg:order-1"
+            className="relative z-30 flex flex-col items-center lg:items-start text-center lg:text-left order-1 lg:order-1"
           >
             {/* Headline */}
-            <h1 className="font-lobster text-4xl md:text-6xl lg:text-7xl text-gray-900 leading-tight mb-3 md:mb-6">
+            <h1 className="font-lobster text-4xl md:text-6xl lg:text-6xl text-gray-900 leading-tight mb-3 md:mb-2">
               {title ? title : (
                 <>
-                  Đánh thức <br />
-                  <span className="text-primary font-lobster">vị giác</span> với <span className="text-gray-900 font-lobster">Bánh Tằm Cô Đào</span>
+                  Món ngon <br />
+                  <span className="text-primary font-lobster">Chuẩn vị</span>
                 </>
               )}
             </h1>
 
-            {/* Description */}
-            <p className="text-gray-600 text-base md:text-xl max-w-lg mb-5 md:mb-8 leading-relaxed">
-              {subtitle ? subtitle : "Tận hưởng món ngon chuẩn vị. Giao hàng tận nơi."}
-            </p>
+            {/* Banner logo above search bar - Desktop only */}
+            <div className="hidden lg:block mb-6 max-w-xl">
+              <img
+                src="/images/banner-logo/banner-codao.png"
+                alt="Bánh Tằm Cô Đào Banner"
+                className="w-full h-auto object-contain"
+              />
+            </div>
 
-            {/* Buttons */}
-            <div className="flex flex-wrap justify-center lg:justify-start gap-3 md:gap-4 mb-6 md:mb-10">
-              <Link
-                href="/menu"
-                className="px-6 py-3 md:px-8 md:py-4 bg-primary text-white font-bold rounded-full shadow-lg shadow-orange-500/30 hover:bg-orange-600 hover:scale-105 transition-all duration-300 flex items-center gap-2 text-sm md:text-base"
-              >
-                Đặt món ngay
-              </Link>
-              <Link
-                href="/menu"
-                className="px-6 py-3 md:px-8 md:py-4 bg-white text-gray-700 font-bold rounded-full shadow-md border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 flex items-center gap-2 group text-sm md:text-base"
-              >
-                Xem Menu
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
+            {/* Search Bar thay thế Buttons */}
+            <div className="flex justify-center lg:justify-start mb-6 md:mb-10 w-full">
+              <HomeSearchBar className="max-w-xl" />
             </div>
           </motion.div>
 
