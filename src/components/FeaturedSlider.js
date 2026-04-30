@@ -72,7 +72,7 @@ export default function FeaturedSlider({ products }) {
           className="!pb-4"
         >
           {products.map((product) => (
-            <SwiperSlide key={product.id}>
+            <SwiperSlide key={product.id} className="!h-auto flex flex-col">
               <ProductCard product={product} />
             </SwiperSlide>
           ))}

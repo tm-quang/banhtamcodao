@@ -4,6 +4,7 @@
  */
 import { NextResponse } from 'next/server';
 import supabase from '@/lib/supabase';
+import { validateCartItems } from '@/utils/cartValidation';
 
 /**
  * Tạo mã đơn hàng tự động theo format: DH-YYMM####
@@ -80,7 +81,16 @@ export async function POST(request) {
             delivery_time
         } = body;
 
-        // Validation
+        // Final validation before processing order
+        const validationResult = await validateCartItems(items_list);
+        if (!validationResult.success) {
+            return NextResponse.json(
+                { success: false, message: validationResult.message },
+                { status: 400 }
+            );
+        }
+
+        // Basic validation
         if (!phone_number || !recipient_name || !total_amount || !items_list) {
             return NextResponse.json(
                 { success: false, message: 'Thiếu thông tin bắt buộc' },

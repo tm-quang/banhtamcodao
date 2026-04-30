@@ -104,7 +104,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                     onChange={(e) => setFullName(e.target.value)}
                     required
                     placeholder="Họ tên"
-                    className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
+                    className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
                 />
             </div>
 
@@ -119,7 +119,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     required
                     placeholder="Số điện thoại"
-                    className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
+                    className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
                 />
             </div>
 
@@ -133,7 +133,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email"
-                    className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
+                    className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
                 />
             </div>
 
@@ -146,7 +146,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
                     required
-                    className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50 appearance-none"
+                    className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50 appearance-none"
                 >
                     <option value="">Giới tính</option>
                     <option value="Nam">Nam</option>
@@ -165,7 +165,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     placeholder="Mật khẩu đăng nhập"
-                    className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 focus:border-primary transition-all bg-gray-50/50"
+                    className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 focus:border-primary transition-all bg-gray-50/50"
                 />
             </div>
 
@@ -180,7 +180,7 @@ export default function RegisterForm({ onSwitchToLogin }) {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     placeholder="Xác nhận mật khẩu"
-                    className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
+                    className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
                 />
             </div>
 
@@ -205,14 +205,14 @@ export default function RegisterForm({ onSwitchToLogin }) {
                 </label>
             </div>
 
-            {error && <p className="text-sm text-red-600 text-center py-2 px-4 bg-red-50 rounded-xl">{error}</p>}
-            {success && <p className="text-sm text-green-600 text-center py-2 px-4 bg-green-50 rounded-xl">{success}</p>}
+            {error && <p className="text-sm text-red-600 text-center py-2 px-4 bg-red-50 rounded-3xl">{error}</p>}
+            {success && <p className="text-sm text-green-600 text-center py-2 px-4 bg-green-50 rounded-3xl">{success}</p>}
 
             <div>
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-xl hover:bg-primary/90 transition-all text-lg shadow-lg shadow-primary/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-3xl hover:bg-primary/90 transition-all text-lg shadow-lg shadow-primary/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {loading ? (
                         <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -42,7 +42,7 @@ export default function WishlistPage() {
 
   if (!isLoaded) {
     return (
-      <div className="page-container pt-24 pb-8">
+      <div className="page-container pt-28 md:pt-36 pb-8">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded-2xl w-1/3 mb-8"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -56,9 +56,9 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="page-container pt-24 pb-8">
+    <div className="page-container pt-28 md:pt-36 pb-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm mb-6">
+      <nav className="flex items-center gap-2 text-sm lg:text-base mb-6">
         <Link
           href="/"
           className="flex items-center gap-1 text-gray-500 hover:text-primary transition-colors"

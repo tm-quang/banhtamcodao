@@ -65,7 +65,7 @@ export default function OrderCard({ order }) {
     const createdAt = format(new Date(order.order_time), 'HH:mm, dd/MM/yyyy', { locale: vi });
 
     return (
-        <div className={`rounded-2xl border border-gray-200 bg-white shadow-md transition hover:shadow-lg ${theme.border}`}>
+        <div className={`rounded-xl border border-gray-200 bg-white shadow-md transition hover:shadow-lg ${theme.border}`}>
             <button
                 onClick={() => setIsOpen((prev) => !prev)}
                 className="flex w-full flex-col gap-3 px-4 py-4 text-left sm:flex-row sm:items-center sm:gap-6"

@@ -103,7 +103,7 @@ export default function OrderLookupPage() {
 
     return (
         <div className="bg-gray-50 min-h-screen">
-            <div className="container mx-auto px-4 pt-24 pb-12">
+            <div className="container mx-auto px-4 pt-28 md:pt-36 pb-12">
                 <div className="max-w-2xl mx-auto text-center">
                     <h1 className="text-4xl font-lobster text-secondary mb-4">
                         Tra Cứu Đơn Hàng

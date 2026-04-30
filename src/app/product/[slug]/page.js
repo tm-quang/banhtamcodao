@@ -152,11 +152,11 @@ export default async function ProductDetailPage({ params }) {
     : null;
 
   return (
-    <div className="pt-20 md:pt-24 pb-8 md:pb-16">
+    <div className="pt-28 md:pt-36 pb-8 md:pb-16">
       <div className="page-container">
         {/* Breadcrumb - Đồng bộ với cart/checkout */}
         <nav className="mb-4 md:mb-6">
-          <ol className="flex items-center gap-2 text-sm flex-wrap">
+          <ol className="flex items-center gap-2 text-sm lg:text-base flex-wrap">
             <li>
               <Link
                 href="/"
@@ -178,7 +178,7 @@ export default async function ProductDetailPage({ params }) {
         </nav>
 
         {/* Product Main Section */}
-        <div className="bg-white p-4 sm:p-4 md:p-6 rounded-2xl shadow-md mb-6 md:mb-8">
+        <div className="bg-white p-4 sm:p-4 md:p-6 rounded-3xl shadow-md mb-6 md:mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
             {/* Product Gallery */}
             <div className="relative">
@@ -234,7 +234,7 @@ export default async function ProductDetailPage({ params }) {
         <ProductTabs />
 
         {/* Product Description Section */}
-        <div id="product-description" className="bg-white p-4 sm:p-4 md:p-6 rounded-2xl shadow-md mb-6 md:mb-8">
+        <div id="product-description" className="bg-white p-4 sm:p-4 md:p-6 rounded-3xl shadow-md mb-6 md:mb-8">
           <div className="border-b pb-3 md:pb-4 mb-3 md:mb-4">
             <h2 className="text-lg sm:text-xl md:text-2xl font-medium text-secondary">
               Thông tin chi tiết
@@ -254,7 +254,7 @@ export default async function ProductDetailPage({ params }) {
         )}
 
         {/* Reviews Section */}
-        <div id="reviews" className="bg-white p-4 sm:p-4 md:p-6 rounded-2xl shadow-md mb-6 md:mb-8">
+        <div id="reviews" className="bg-white p-4 sm:p-4 md:p-6 rounded-3xl shadow-md mb-6 md:mb-8">
           <ReviewSection productId={product.id} reviews={reviews} />
         </div>
 

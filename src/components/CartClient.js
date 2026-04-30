@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowRight, Gift, Sparkles, X, Loader2, Handbag, Truck, CheckCircle2, Shield, Zap, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, Trash2, Plus, Minus, ArrowRight, Gift, Sparkles, X, Loader2, Truck, CheckCircle2, Shield, Zap, AlertTriangle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getPromotionSuggestions } from '@/utils/comboPromotions';
 
@@ -134,7 +134,7 @@ export default function CartClient() {
                 <div className="max-w-lg mx-auto text-center section-spacing px-4 py-12 md:py-20">
                     <div className="relative inline-block mb-8">
                         <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/10 to-orange-100 flex items-center justify-center mx-auto">
-                            <Handbag className="w-16 h-16 text-primary/60" />
+                            <ShoppingCart className="w-16 h-16 text-primary/60" />
                         </div>
                         <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
                             <Sparkles className="w-6 h-6 text-gray-400" />
@@ -150,7 +150,7 @@ export default function CartClient() {
                         href="/menu"
                         className="inline-flex items-center gap-3 bg-primary text-white font-semibold py-4 px-8 rounded-xl text-lg shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] transition-all duration-300"
                     >
-                        <ShoppingBag className="w-5 h-5" />
+                        <ShoppingCart className="w-5 h-5" />
                         Khám phá thực đơn
                         <ArrowRight className="w-5 h-5" />
                     </Link>
@@ -163,7 +163,7 @@ export default function CartClient() {
                         <div className="px-5 md:px-6 py-5">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shadow-inner">
-                                    <Handbag className="w-6 h-6 text-primary" />
+                                    <ShoppingCart className="w-6 h-6 text-primary" />
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-bold text-gray-900">Sản phẩm trong giỏ hàng</h2>

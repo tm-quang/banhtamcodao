@@ -16,7 +16,7 @@ const tabs = [
 ];
 
 const AccountLayoutSkeleton = () => (
-    <div className="min-h-screen pt-20 sm:pt-24">
+    <div className="min-h-screen pt-28 md:pt-36">
         <div className="mx-auto w-full max-w-[1100px] px-2 sm:px-6">
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2 px-1">
@@ -60,7 +60,7 @@ export default function AccountLayout({ children }) {
     }
 
     return (
-        <div className="min-h-screen pt-20 sm:pt-24 pb-10">
+        <div className="min-h-screen pt-28 md:pt-36 pb-10">
             <div className="mx-auto w-full max-w-[1100px] px-2 sm:px-6">
                 <div className="flex flex-col gap-6">
                     {/* Header */}

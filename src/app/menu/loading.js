@@ -6,7 +6,7 @@ import ProductCardSkeleton from '@/components/ProductCardSkeleton';
 
 export default function MenuLoading() {
   return (
-    <div className="container mx-auto px-4 pt-24 pb-8">
+    <div className="container mx-auto px-4 pt-28 md:pt-36 pb-8">
       <h1 className="text-4xl font-lobster text-center text-primary mb-8">
         Thực đơn của chúng tôi
       </h1>

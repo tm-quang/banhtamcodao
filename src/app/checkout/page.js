@@ -14,10 +14,10 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
       {/* Hero Section */}
-      <div className="pt-20 pb-6 md:pb-8">
+      <div className="pt-28 md:pt-36 pb-6 md:pb-8">
         <div className="page-container">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm mb-6">
+          <nav className="flex items-center gap-2 text-sm lg:text-base mb-6">
             <Link
               href="/"
               className="flex items-center gap-1 text-gray-500 hover:text-primary transition-colors"

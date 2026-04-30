@@ -28,7 +28,7 @@ const Footer = () => {
     fetchSettings();
   }, []);
 
-  const bgImageUrl = "https://res.cloudinary.com/dgoe8cra8/image/upload/v1759424775/tn7vyqy47q58kaoi2neg.jpg";
+  const bgImageUrl = "/images/background/f_bg.png";
 
   const siteName = settings?.general?.site_name || "Bánh Tằm Cô Đào";
   const address = settings?.contact?.address || "Tổ 4, Khu phố 1, Đặc Khu Phú Quốc, An Giang";
@@ -41,20 +41,45 @@ const Footer = () => {
   const logoUrl = settings?.general?.logo_url || "https://res.cloudinary.com/dz2rvqcve/image/upload/v1759398964/banner-codao_wrpcll.png";
 
   return (
-    <footer className="relative bg-[#0a0a0a] text-white overflow-hidden border-t border-white/5">
+    <footer className="relative text-white overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-orange-900/10 rounded-full blur-[100px] translate-y-1/2"></div>
-        <Image
-          src={bgImageUrl}
-          alt="Footer texture"
-          fill
-          className="object-cover opacity-[0.03] grayscale"
+
+        {/* Desktop Wave */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1440 320"
+          className="absolute inset-0 w-full h-full pointer-events-none hidden md:block"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#0a0a0a"
+            d="M0,64 C480,128,720,0,1440,64 L1440,320 L0,320 Z"
+          />
+        </svg>
+
+        {/* Mobile Wave */}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1440 320"
+          className="absolute inset-0 w-full h-full pointer-events-none block md:hidden"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#0a0a0a"
+            d="M0,32 C480,64,960,16,1440,32 L1440,320 L0,320 Z"
+          />
+        </svg>
+
+        {/* Ví dụ chèn ảnh họa tiết không nền (PNG) */}
+        <img
+          src="/images/banner-logo/banhtamcodao-logo.png"
+          alt="Họa tiết trang trí"
+          className="absolute bottom-0 left-12 bottom-24 w-[350px] h-auto opacity-10 object-contain select-none"
         />
       </div>
 
-      <div className="relative page-container pt-8 pb-6">
+      <div className="relative page-container pt-32 md:pt-48 pb-6">
         {/* Main Grid Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
 

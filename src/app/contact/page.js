@@ -2,6 +2,7 @@
  * Contact page component - REDESIGNED PREMIUM UI (COMPACT)
  * @file src/app/contact/page.js
  */
+import Image from 'next/image';
 import { MapPin, Clock, Mail, Phone, ExternalLink } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
 import AnimateOnScroll from '@/components/AnimateOnScroll';
@@ -26,9 +27,9 @@ const ContactCard = ({ icon, title, text, href, target, rel, delay, isZalo }) =>
         <AnimateOnScroll delay={delay}>
             <Component
                 {...props}
-                className={`flex items-start gap-4 p-4 bg-white rounded-2xl shadow-md border border-gray-300 hover:shadow-lg transition-all duration-300 w-full ${href ? 'cursor-pointer group' : ''}`}
+                className={`flex items-start gap-4 p-4 bg-white/80 backdrop-blur-sm rounded-3xl shadow-md border border-gray-300 hover:shadow-lg transition-all duration-300 w-full ${href ? 'cursor-pointer group' : ''}`}
             >
-                <div className={`w-12 h-12 flex-shrink-0 rounded-2xl transition-all duration-300 shadow-inner flex items-center justify-center ${isZalo ? 'p-0 overflow-hidden' : 'bg-primary-50 text-primary p-2.5 group-hover:bg-primary group-hover:text-white'}`}>
+                <div className={`w-12 h-12 flex-shrink-0 rounded-3xl transition-all duration-300 shadow-inner flex items-center justify-center ${isZalo ? 'p-0 overflow-hidden' : 'bg-primary-50 text-primary p-2.5 group-hover:bg-primary group-hover:text-white'}`}>
                     {icon}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -50,18 +51,39 @@ const ContactCard = ({ icon, title, text, href, target, rel, delay, isZalo }) =>
 export default function ContactPage() {
     return (
         <div className="min-h-screen pt-32 md:pt-32 pb-8 overflow-x-hidden">
-            {/* Decorative Background */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[60px] -translate-y-1/2 translate-x-1/4"></div>
-                <div className="absolute bottom-0 left-0 w-[250px] h-[250px] bg-orange-200/10 rounded-full blur-[50px] translate-y-1/2 -translate-x-1/4"></div>
+            {/* Wavy Background Decoration */}
+            <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                {/* Bottom Wave */}
+                <div className="absolute bottom-0 left-0 w-full">
+                    <svg viewBox="0 0 1440 320" preserveAspectRatio="none" className="w-full h-[300px] md:h-[500px]">
+                        <path
+                            fill="#0a0a0a"
+                            d="M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+                        ></path>
+                    </svg>
+                </div>
+
+                {/* Floating Blobs for extra depth */}
+                <div className="absolute top-1/4 -left-20 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[80px]"></div>
+                <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] bg-orange-200/20 rounded-full blur-[100px]"></div>
             </div>
 
             <div className="relative z-10 page-container">
                 {/* Header Section */}
                 <div className="text-center mb-6 md:mb-10">
                     <AnimateOnScroll>
-                        <h1 className="text-3xl md:text-5xl font-lobster text-secondary mb-2">Kết Nối Với Bánh Tằm Cô Đào</h1>
-                        <p className="text-gray-500 max-w-lg mx-auto text-sm md:text-base leading-relaxed">
+                        <div className="flex flex-col items-center justify-center mb-4">
+                            <h2 className="text-xl md:text-3xl font-lobster text-secondary font-medium mb-2">Kết Nối Với</h2>
+                            <Image
+                                src="/images/banner-logo/banner-codao.png"
+                                alt="Bánh Tằm Cô Đào"
+                                width={400}
+                                height={120}
+                                className="h-auto w-[280px] md:w-[450px] drop-shadow-sm"
+                                priority
+                            />
+                        </div>
+                        <p className="text-gray-500 max-w-lg mx-auto text-sm md:text-base leading-relaxed mt-2">
                             Phản hồi của bạn đều là động lực để chúng tôi hoàn thiện hơn.
                         </p>
                     </AnimateOnScroll>
@@ -121,8 +143,8 @@ export default function ContactPage() {
 
                 {/* Map Section */}
                 <AnimateOnScroll delay={0.6}>
-                    <div className="bg-white p-1.5 md:p-2 rounded-2xl shadow-md border border-gray-300 overflow-hidden">
-                        <div className="relative h-[250px] md:h-[450px] rounded-2xl overflow-hidden">
+                    <div className="bg-white/50 backdrop-blur-sm p-1.5 md:p-2 rounded-3xl shadow-md border border-gray-300 overflow-hidden">
+                        <div className="relative h-[250px] md:h-[450px] rounded-3xl overflow-hidden">
                             <iframe
                                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1651.9437857602882!2d104.0132411408792!3d10.016312219051363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a797296fe8b0bf%3A0xb69bf20b76e4bd4d!2zQsOhbmggVOG6sW0gQ8O0IMSQw6Bv!5e0!3m2!1svi!2s!4v1777008611214!5m2!1svi!2s"
                                 width="100%"
@@ -135,8 +157,14 @@ export default function ContactPage() {
                             ></iframe>
 
                             {/* Map Info Overlay - Desktop only */}
-                            <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm p-3 rounded-xl shadow-md max-w-[220px] hidden md:block border border-gray-100">
-                                <h4 className="font-bold text-gray-900 text-[12px] mb-0.5">Bánh Tằm Cô Đào</h4>
+                            <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm p-3 rounded-3xl shadow-md max-w-[220px] hidden md:block border border-gray-100">
+                                <Image
+                                    src="/images/banner-logo/banner-codao.png"
+                                    alt="Bánh Tằm Cô Đào"
+                                    width={120}
+                                    height={40}
+                                    className="h-auto w-[100px] mb-2"
+                                />
                                 <p className="text-gray-500 text-[10px] mb-2 leading-tight">
                                     Tổ 4, Khu Phố 1, Đặc Khu Phú Quốc, An Giang
                                 </p>
@@ -144,7 +172,7 @@ export default function ContactPage() {
                                     href="https://maps.app.goo.gl/p12e1QCGrBVdpR1TA"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center bg-primary text-white text-[9px] font-bold px-2.5 py-1.5 rounded-lg hover:bg-orange-600 transition-colors"
+                                    className="inline-flex items-center justify-center bg-primary text-white text-[9px] font-bold px-2.5 py-1.5 rounded-3xl hover:bg-orange-600 transition-colors"
                                 >
                                     Chỉ đường
                                 </a>
@@ -155,8 +183,15 @@ export default function ContactPage() {
 
                 {/* Footer Note */}
                 <div className="mt-8 text-center">
-                    <p className="text-gray-400 text-[10px]">
-                        &copy; {new Date().getFullYear()} Bánh Tằm Cô Đào.
+                    <p className="text-gray-400 text-[10px] flex items-center justify-center gap-1">
+                        &copy; {new Date().getFullYear()}
+                        <Image
+                            src="/images/banner-logo/banner-codao.png"
+                            alt="Bánh Tằm Cô Đào"
+                            width={60}
+                            height={20}
+                            className="h-auto w-[50px] opacity-70 grayscale hover:grayscale-0 transition-all"
+                        />
                     </p>
                 </div>
             </div>

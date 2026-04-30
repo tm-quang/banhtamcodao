@@ -33,7 +33,7 @@ export default function ContactForm() {
     };
 
     return (
-        <div className="bg-white/95 backdrop-blur-md p-5 md:p-7 rounded-2xl shadow-md w-full border border-gray-300">
+        <div className="bg-white/95 backdrop-blur-md p-5 md:p-7 rounded-3xl shadow-md w-full border border-gray-300">
             <div className="mb-6">
                 <h2 className="text-3xl md:text-2xl font-lobster text-secondary mb-1">Gửi tin nhắn</h2>
                 <div className="w-20 h-0.5 bg-primary rounded-full"></div>
@@ -54,7 +54,7 @@ export default function ContactForm() {
                         required
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-10 pr-3 text-sm text-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full bg-gray-50 border border-gray-300 rounded-3xl py-3 pl-10 pr-3 text-sm text-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         placeholder="Họ và tên"
                     />
                 </div>
@@ -70,7 +70,7 @@ export default function ContactForm() {
                         required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-10 pr-3 text-sm text-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                        className="w-full bg-gray-50 border border-gray-300 rounded-3xl py-3 pl-10 pr-3 text-sm text-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         placeholder="Email"
                     />
                 </div>
@@ -86,7 +86,7 @@ export default function ContactForm() {
                         rows="3"
                         value={formData.message}
                         onChange={handleInputChange}
-                        className="w-full bg-gray-50 border border-gray-200 rounded-2xl py-3 pl-10 pr-3 text-sm text-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+                        className="w-full bg-gray-50 border border-gray-300 rounded-3xl py-3 pl-10 pr-3 text-sm text-secondary focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
                         placeholder="Nội dung tin nhắn..."
                     ></textarea>
                 </div>
@@ -94,7 +94,7 @@ export default function ContactForm() {
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full group relative overflow-hidden bg-primary text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2 text-sm"
+                    className="w-full group relative overflow-hidden bg-primary text-white font-bold py-3 px-6 rounded-3xl transition-all shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-2 text-sm"
                 >
                     {isSubmitting ? (
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

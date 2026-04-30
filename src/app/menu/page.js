@@ -16,7 +16,7 @@ function MenuLoading() {
   return (
     <div className="pb-8">
       {/* Hero placeholder */}
-      <div className="h-[55vh] min-h-[360px] bg-gray-200 animate-pulse" />
+      <div className="min-h-[500px] lg:min-h-[600px] bg-gray-200 animate-pulse" />
 
       {/* Explore indicator skeleton */}
       <div className="-mt-10 mb-10 flex flex-col items-center justify-center">

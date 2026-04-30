@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, SquareMenu, Handbag, FileText, User } from 'lucide-react';
+import { Home, SquareMenu, ShoppingCart, FileText, User } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function MobileBottomNav() {
@@ -26,7 +26,7 @@ export default function MobileBottomNav() {
   const navItems = [
     { id: 'home', name: 'Trang chủ', href: '/', icon: Home },
     { id: 'menu', name: 'Menu', href: '/menu', icon: SquareMenu },
-    { id: 'cart', name: 'Giỏ hàng', href: '/cart', icon: Handbag, isCart: true },
+    { id: 'cart', name: 'Giỏ hàng', href: '/cart', icon: ShoppingCart, isCart: true },
     { id: 'orders', name: 'Đơn hàng', href: '/order-tracking', icon: FileText },
     { id: 'account', name: 'Tài khoản', href: '/account', icon: User },
   ];

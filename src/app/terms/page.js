@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen pt-24 pb-12 px-4">
+        <div className="min-h-screen pt-28 md:pt-36 pb-12 px-4">
             <div className="max-w-3xl mx-auto">
                 <Link href="#" className="inline-flex items-center gap-2 text-primary hover:underline mb-6">
                     <ArrowLeft size={18} />

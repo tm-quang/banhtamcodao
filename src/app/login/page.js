@@ -29,8 +29,8 @@ function LoginFormFallback() {
 export default function LoginPage() {
     return (
         <div className="min-h-screen flex items-center justify-center px-1.5 pt-6 pb-8 bg-gray-50/30">
-            <div className="w-full max-w-md p-4 sm:p-8 space-y-6 bg-white rounded-xl shadow-md border border-gray-300">
-                <h2 className="text-3xl font-bold text-center text-secondary">
+            <div className="w-full max-w-md p-4 sm:p-8 space-y-6 bg-white rounded-3xl shadow-md border border-gray-300">
+                <h2 className="text-2xl font-bold text-center text-secondary mt-2">
                     Đăng nhập
                 </h2>
 

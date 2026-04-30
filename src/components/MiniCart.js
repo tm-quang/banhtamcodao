@@ -4,7 +4,7 @@
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X, Trash2, Handbag, AlertTriangle, Gift } from 'lucide-react';
+import { X, Trash2, ShoppingCart, AlertTriangle, Gift } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const formatCurrency = (amount) => {
@@ -88,12 +88,12 @@ export default function MiniCart({ isOpen, onClose }) {
 
             {/* Popup Mini Cart - Compact */}
             <div
-                className={`fixed top-14 right-5 md:top-16 md:right-96 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-white rounded-t-2xl rounded-b-2xl shadow-2xl z-[100] flex flex-col transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
+                className={`fixed top-14 right-5 md:top-16 md:right-96 w-80 md:w-96 max-w-[calc(100vw-2rem)] bg-white rounded-t-3xl rounded-b-3xl shadow-2xl z-[100] flex flex-col transition-all duration-300 ease-in-out ${isOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'}`}
             >
                 {/* Arrow pointing up */}
                 <div className="absolute -top-2 right-8 w-4 h-4 bg-white transform rotate-45 border-l border-t border-gray-200"></div>
                 {/* Header */}
-                <div className="flex justify-between items-center rounded-t-2xl p-4 border-b border-gray-200 bg-white flex-shrink-0">
+                <div className="flex justify-between items-center rounded-t-3xl p-4 border-b border-gray-200 bg-white flex-shrink-0">
                     <h2 className="text-xl font-bold text-gray-900">
                         Giỏ hàng của bạn
                     </h2>
@@ -111,8 +111,8 @@ export default function MiniCart({ isOpen, onClose }) {
                         {/* Danh sách sản phẩm - Compact */}
                         <div className="max-h-64 overflow-y-auto p-3 space-y-2">
                             {cartItems.map(item => (
-                                <div key={`${item.id}-${item.is_free ? 'free' : 'paid'}-${item.combo_promotion_id || ''}`} className="flex gap-2 items-center p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <div className="relative w-12 h-12 rounded-md overflow-hidden border border-gray-200 flex-shrink-0">
+                                <div key={`${item.id}-${item.is_free ? 'free' : 'paid'}-${item.combo_promotion_id || ''}`} className="flex gap-2 items-center p-2 rounded-xl hover:bg-gray-100 hover:rounded-3xl transition-colors">
+                                    <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0">
                                         <Image
                                             src={item.image_url}
                                             alt={item.name}
@@ -138,8 +138,9 @@ export default function MiniCart({ isOpen, onClose }) {
                                     {!item.is_free && (
                                         <button
                                             onClick={() => handleDeleteClick(item.id)}
-                                            className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
+                                            className="p-2 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-100 transition-all flex-shrink-0"
                                             aria-label="Xóa sản phẩm"
+                                            title='Xóa món'
                                         >
                                             <Trash2 size={18} />
                                         </button>
@@ -149,7 +150,7 @@ export default function MiniCart({ isOpen, onClose }) {
                         </div>
 
                         {/* Footer với tổng và nút */}
-                        <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-3 flex-shrink-0 rounded-b-2xl">
+                        <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-3 flex-shrink-0 rounded-b-3xl">
                             <div className="flex justify-between items-center">
                                 <span className="text-xl font-semibold text-gray-700">Tạm tính:</span>
                                 <span className="text-xl font-bold text-red-500">{formatCurrency(subtotal)}</span>
@@ -158,14 +159,14 @@ export default function MiniCart({ isOpen, onClose }) {
                                 <Link
                                     href="/cart"
                                     onClick={onClose}
-                                    className="flex-1 text-center bg-white border border-primary text-primary text-base font-semibold py-3 px-4 rounded-xl hover:bg-primary hover:text-white transition-colors"
+                                    className="flex-1 text-center bg-white border border-primary text-primary text-base font-semibold py-3 px-4 rounded-3xl hover:bg-primary hover:text-white transition-colors"
                                 >
                                     Xem giỏ hàng
                                 </Link>
                                 <Link
                                     href="/checkout"
                                     onClick={onClose}
-                                    className="flex-1 text-center bg-primary border border-primary text-white text-base font-semibold py-3 px-4 rounded-xl hover:bg-white hover:text-primary transition-colors"
+                                    className="flex-1 text-center bg-primary border border-primary text-white text-base font-semibold py-3 px-4 rounded-3xl hover:bg-white hover:text-primary transition-colors"
                                 >
                                     Thanh toán
                                 </Link>
@@ -175,7 +176,7 @@ export default function MiniCart({ isOpen, onClose }) {
                 ) : (
                     <div className="flex flex-col items-center justify-center text-center p-6">
                         <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4 shadow-md">
-                            <Handbag className="w-12 h-12 text-gray-400" />
+                            <ShoppingCart className="w-12 h-12 text-gray-400" />
                         </div>
                         <p className="text-sm text-gray-500 mb-4">Giỏ hàng của bạn đang trống.</p>
                         {/* Đường kẻ ngang dưới dòng chữ */}
@@ -183,13 +184,13 @@ export default function MiniCart({ isOpen, onClose }) {
                         <div className="flex gap-2 w-full">
                             <button
                                 disabled
-                                className="flex-1 text-center bg-gray-200 text-gray-500 text-sm font-semibold py-2.5 px-4 rounded-lg opacity-50 cursor-not-allowed pointer-events-none"
+                                className="flex-1 text-center bg-gray-200 text-gray-500 text-base font-semibold py-3 px-4 rounded-3xl opacity-50 cursor-not-allowed pointer-events-none"
                             >
                                 Xem giỏ hàng
                             </button>
                             <button
                                 disabled
-                                className="flex-1 text-center bg-gray-200 text-gray-500 text-sm font-semibold py-2.5 px-4 rounded-lg opacity-50 cursor-not-allowed pointer-events-none"
+                                className="flex-1 text-center bg-gray-200 text-gray-500 text-base font-semibold py-3 px-4 rounded-3xl opacity-50 cursor-not-allowed pointer-events-none"
                             >
                                 Thanh toán
                             </button>
@@ -201,7 +202,7 @@ export default function MiniCart({ isOpen, onClose }) {
             {/* Modal xác nhận xóa */}
             {showDeleteModal && itemToDelete && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50" onClick={handleCancelDelete}>
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-start gap-4">
                             <div className="p-3 rounded-full bg-red-100 flex-shrink-0">
                                 <AlertTriangle className="w-6 h-6 text-red-600" />
@@ -215,7 +216,7 @@ export default function MiniCart({ isOpen, onClose }) {
                                     <button
                                         type="button"
                                         onClick={handleCancelDelete}
-                                        className="flex-1 bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-lg hover:bg-gray-200 transition-colors"
+                                        className="flex-1 bg-gray-100 text-gray-700 font-semibold py-2.5 px-4 rounded-3xl hover:bg-gray-200 transition-colors"
                                     >
                                         Hủy
                                     </button>
@@ -223,7 +224,7 @@ export default function MiniCart({ isOpen, onClose }) {
                                         type="button"
                                         onClick={handleConfirmDelete}
                                         disabled={isDeleting}
-                                        className="flex-1 bg-red-500 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center disabled:opacity-50"
+                                        className="flex-1 bg-red-500 text-white font-semibold py-2.5 px-4 rounded-3xl hover:bg-red-600 transition-colors flex items-center justify-center disabled:opacity-50"
                                     >
                                         {isDeleting ? (
                                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

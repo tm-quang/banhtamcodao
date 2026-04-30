@@ -37,7 +37,7 @@ export const CartProvider = ({ children }) => {
     }
     comboCheckTimeoutRef.current = setTimeout(() => {
       checkComboRewards(items);
-    }, 500); // Đợi 500ms sau lần click cuối cùng mới tính toán combo
+    }, 200); // Đợi 200ms sau lần click cuối cùng mới tính toán combo
   }, []);
 
   useEffect(() => {
@@ -333,9 +333,13 @@ export const CartProvider = ({ children }) => {
       }
       const newItems = prevItems.filter(item => item.id !== productId);
 
-      // Kiểm tra lại combo rewards sau khi xóa sản phẩm
-      // Chỉ kiểm tra nếu xóa sản phẩm không phải là sản phẩm tặng
-      // (Nếu xóa sản phẩm tặng thì không cần check lại vì nó không ảnh hưởng đến điều kiện)
+      // --- IMMEDIATE CLEANUP: Remove free items if no main products remain ---
+      const hasNonFreeItems = newItems.some(item => !item.is_free);
+      if (!hasNonFreeItems && newItems.length > 0) {
+        return [];
+      }
+      // ----------------------------------------------------------------------
+
       if (!itemToRemove?.is_free) {
         debouncedCheckComboRewards(newItems);
       }
@@ -376,6 +380,28 @@ export const CartProvider = ({ children }) => {
     setCartItems([]);
   };
 
+  // Function to validate cart with server
+  const validateCartWithServer = async () => {
+    try {
+      const response = await fetch('/api/cart/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items_list: cartItems })
+      });
+      const data = await response.json();
+      
+      if (!data.success && data.requireRefresh) {
+        // If server says rewards are invalid, re-run checkComboRewards immediately
+        checkComboRewards(cartItems);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error validating cart:', error);
+      return { success: false, message: 'Lỗi kết nối khi kiểm tra giỏ hàng.' };
+    }
+  };
+
   // Cung cấp đầy đủ các state và hàm cho các component con
   const value = {
     cartItems,
@@ -388,7 +414,9 @@ export const CartProvider = ({ children }) => {
     openMiniCart,
     closeMiniCart,
     isCartAnimating,
-    isUpdating
+    isUpdating,
+    validateCartWithServer,
+    checkComboRewards
   };
 
   return (

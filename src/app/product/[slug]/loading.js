@@ -7,7 +7,7 @@ import { ChevronRight } from 'lucide-react';
 
 export default function ProductDetailLoading() {
   return (
-    <div className="bg-light pt-24 pb-8">
+    <div className="bg-light pt-28 md:pt-36 pb-8">
       <div className="container mx-auto px-4">
         {/* Skeleton for Breadcrumbs */}
         <div className="flex text-gray-500 text-sm mb-4 items-center">

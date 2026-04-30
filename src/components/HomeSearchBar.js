@@ -28,9 +28,13 @@ export default function HomeSearchBar({ className = "max-w-2xl" }) {
 
   useEffect(() => {
     const placeholders = [
-      "Bánh Tằm Bì...",
-      "Bánh Tằm Bì Xíu Mại...",
-      "Trà tắc hạt chia..."
+      "Bánh Tằm Cô Đào",
+      "Bánh tằm bì...",
+      "Bánh tằm bì xíu mại...",
+      "Trà tắc hạt chia...",
+      "Trà đào cam sả...",
+      "Cafe đá & cafe sữa..."
+
     ];
 
     const currentText = placeholders[placeholderIndex];
@@ -180,7 +184,7 @@ export default function HomeSearchBar({ className = "max-w-2xl" }) {
           <Search className="w-5 h-5 md:w-6 md:h-6 text-gray-400 flex-shrink-0 ml-1 md:ml-2" />
           <input
             type="text"
-            placeholder={currentPlaceholder || "Tìm kiếm món..."}
+            placeholder={currentPlaceholder || ""}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);

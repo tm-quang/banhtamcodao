@@ -97,7 +97,7 @@ const OrderStatusTimeline = ({ currentStatus }) => {
     }
 
     return (
-        <div className="py-6 px-4 bg-white rounded-2xl border border-gray-300 shadow-md">
+        <div className="py-6 px-4 bg-white rounded-3xl border border-gray-300 shadow-md">
             <div className="relative flex items-center w-full">
                 {/* Background line - chạy qua tất cả các icon (màu xám) */}
                 <div
@@ -272,7 +272,7 @@ const OrderCard = ({ order }) => {
     const StatusIcon = statusConfig.icon;
 
     return (
-        <div className={`group relative overflow-hidden rounded-2xl border ${statusConfig.border} bg-white shadow-md hover:shadow-md transition-shadow`}>
+        <div className={`group relative overflow-hidden rounded-3xl border ${statusConfig.border} bg-white shadow-md hover:shadow-md transition-shadow`}>
             {/* Decorative solid color line at top */}
             <div className={`absolute top-0 left-0 right-0 h-1 ${statusConfig.color}`}></div>
 
@@ -385,7 +385,7 @@ const OrderCard = ({ order }) => {
                                 </p>
                                 <p className="text-xs text-gray-500">Tổng thanh toán</p>
                             </div>
-                            <div className={`p-2 rounded-2xl bg-gray-200 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
+                            <div className={`p-2 rounded-3xl bg-gray-200 transition-all duration-300 ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
                                 <ChevronDown className={`w-5 h-5 ${isExpanded ? 'text-primary' : 'text-gray-600'}`} />
                             </div>
                         </div>
@@ -401,7 +401,7 @@ const OrderCard = ({ order }) => {
                         <OrderStatusTimeline currentStatus={order.status} />
 
                         {/* Recipient Info - Redesigned to match items style */}
-                        <div className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-300">
+                        <div className="rounded-3xl bg-white shadow-md overflow-hidden border border-gray-300">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-300 bg-gray-50/50">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-200">
@@ -454,7 +454,7 @@ const OrderCard = ({ order }) => {
                         </div>
 
                         {/* Order Items - Detailed Invoice Format */}
-                        <div className="rounded-2xl bg-white shadow-md overflow-hidden border border-gray-300">
+                        <div className="rounded-3xl bg-white shadow-md overflow-hidden border border-gray-300">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-300 bg-gray-50/50">
                                 <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-200">
@@ -589,7 +589,7 @@ const OrderCard = ({ order }) => {
                                 }
                             }}
                             disabled={isReordering}
-                            className="w-full flex items-center justify-center gap-2 shadow-md bg-primary text-white font-semibold py-3.5 px-4 rounded-2xl hover:bg-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 shadow-md bg-primary text-white font-semibold py-3.5 px-4 rounded-3xl hover:bg-orange-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                         >
                             {isReordering ? (
                                 <>
@@ -615,7 +615,7 @@ const OrderCard = ({ order }) => {
 const EmptyState = ({ searched, error }) => {
     if (error) {
         return (
-            <div className="text-center bg-white rounded-2xl shadow-md p-8 sm:p-12">
+            <div className="text-center bg-white rounded-3xl shadow-md p-8 sm:p-12">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 mb-4 shadow-inner">
                     <AlertCircle className="w-10 h-10 text-red-500" />
                 </div>
@@ -648,7 +648,7 @@ const EmptyState = ({ searched, error }) => {
     // }
 
     // return (
-    //     <div className="text-center bg-white rounded-2xl shadow-md p-8 sm:p-12">
+    //     <div className="text-center bg-white rounded-3xl shadow-md p-8 sm:p-12">
     //         <div className="relative inline-block mb-6">
     //             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gray-100 flex items-center justify-center">
     //                 <FileText className="w-12 h-12 sm:w-14 sm:h-14 text-gray-300" />
@@ -733,7 +733,7 @@ export default function OrderTrackingPage() {
     return (
         <div className="min-h-screen">
             {/* Hero Section - Clean without emojis */}
-            <div className="relative overflow-hidden pt-28 sm:pt-28 pb-12 sm:pb-16">
+            <div className="relative overflow-hidden pt-28 md:pt-36 pb-12 sm:pb-16">
                 {/* Gradient orbs only, no emojis */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <div className="absolute top-10 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
@@ -771,10 +771,10 @@ export default function OrderTrackingPage() {
             <div className="page-container -mt-6 relative z-20">
                 <div className="max-w-2xl mx-auto">
                     <form onSubmit={handleSearch}>
-                        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-md">
+                        <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-md">
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <div className="flex-1 relative">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-2xl bg-gray-100 shadow-inner">
+                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-3xl bg-gray-100 shadow-inner">
                                         <Phone className="w-4 h-4 text-primary" />
                                     </div>
                                     <input
@@ -786,13 +786,13 @@ export default function OrderTrackingPage() {
                                         }}
                                         placeholder="Nhập số điện thoại hoặc mã đơn hàng..."
                                         required
-                                        className="w-full pl-14 pr-4 py-4 text-base border-2 border-gray-300 rounded-2xl focus:ring-0 focus:border-primary transition-all bg-gray-50 focus:bg-white"
+                                        className="w-full pl-14 pr-4 py-4 text-base border-2 border-gray-300 rounded-3xl focus:ring-0 focus:border-primary transition-all bg-gray-50 focus:bg-white"
                                     />
                                 </div>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="bg-gradient-to-r from-primary to-orange-500 text-white font-bold px-8 py-4 rounded-2xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    className="bg-gradient-to-r from-primary to-orange-500 text-white font-bold px-8 py-4 rounded-3xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full sm:w-auto hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
                                 >
                                     {loading ? (
                                         <>
@@ -809,7 +809,7 @@ export default function OrderTrackingPage() {
                             </div>
 
                             {error && !loading && searched && allOrders.length === 0 && (
-                                <div className="mt-4 p-3 rounded-2xl bg-red-50/50 border border-red-400 flex items-center gap-2">
+                                <div className="mt-4 p-3 rounded-3xl bg-red-50/50 border border-red-400 flex items-center gap-2">
                                     <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
                                     <p className="text-sm text-red-700">{error}</p>
                                 </div>
@@ -834,9 +834,9 @@ export default function OrderTrackingPage() {
                     {!loading && searched && allOrders.length > 0 && (
                         <div className="space-y-4">
                             <div className="text-center mb-4 sm:mb-8">
-                                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-2xl mb-3">
+                                <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-3xl mb-3">
                                     <CheckCircle2 className="w-5 h-5" />
-                                    <span className="font-semibold">Tìm thấy {allOrders.length} đơn hàng</span>
+                                    <span className="font-semibold">Tìm thấy {allOrders.length} đơn hàng gần nhất</span>
                                 </div>
                                 <p className="text-gray-500 text-sm">Bấm vào đơn hàng để xem chi tiết</p>
                             </div>

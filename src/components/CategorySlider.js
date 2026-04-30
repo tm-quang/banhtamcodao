@@ -59,9 +59,9 @@ export default function CategorySlider({ categories, activeCategory, onSelectCat
                         >
                             <button
                                 onClick={() => onSelectCategory(category)}
-                                className={`cursor-pointer relative group flex flex-col items-center justify-center shadow-md w-28 h-32 rounded-2xl transition-all duration-300 ${activeCategory === category
+                                className={`cursor-pointer relative group flex flex-col items-center justify-center shadow-md w-28 h-32 rounded-3xl transition-all duration-300 ${activeCategory === category
                                     ? 'bg-white border-2 border-[#FF6F30] shadow-md'
-                                    : 'bg-white border border-gray-300 hover:border-[#FF6F30] hover:shadow-md'
+                                    : 'bg-white border border-gray-100 hover:border-[#FF6F30] hover:shadow-md'
                                     }`}
                             >
                                 {/* Orange Dot for Active State */}

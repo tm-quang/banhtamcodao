@@ -49,7 +49,7 @@ body {
 
   /* 4. Product Grid: Lưới hiển thị sản phẩm chuẩn */
   .product-grid {
-    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-8;
+    @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-10 lg:gap-12;
   }
 
   /* 5. Card Padding: Padding chuẩn bên trong các thẻ (thẻ sản phẩm, form, popup) */
@@ -707,4 +707,22 @@ body {
   50% {
     opacity: 0.4;
   }
+}
+
+@keyframes wave-slow {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(-20px) translateY(10px); }
+}
+
+@keyframes wave-fast {
+  0%, 100% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(30px) translateY(-15px); }
+}
+
+.animate-wave-slow {
+  animation: wave-slow 10s ease-in-out infinite;
+}
+
+.animate-wave-fast {
+  animation: wave-fast 7s ease-in-out infinite;
 }

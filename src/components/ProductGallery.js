@@ -93,7 +93,7 @@ export default function ProductGallery({
             <div className="space-y-4 md:space-y-4">
                 {/* Main Image */}
                 <div
-                    className="aspect-square md:aspect-[4/3] relative rounded-2xl overflow-hidden bg-white group cursor-pointer"
+                    className="aspect-square md:aspect-[4/3] relative rounded-3xl overflow-hidden bg-white group cursor-pointer"
                     onClick={handleImageClick}
                 >
                     <Image

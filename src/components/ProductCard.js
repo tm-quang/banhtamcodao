@@ -29,9 +29,9 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden group transition-all duration-300 flex flex-col h-full border border-gray-100 hover:scale-105 hover:border-primary/50 shadow-md">
+    <div className="bg-white rounded-3xl overflow-hidden group transition-all duration-300 flex flex-col h-full border border-gray-100 hover:scale-105 shadow-md">
       {/* Ảnh */}
-      <Link href={`/product/${product.slug}`} className="block flex-shrink-0 w-full relative overflow-hidden aspect-square">
+      <Link href={`/product/${product.slug}`} className="block flex-shrink-0 w-full relative overflow-hidden aspect-[4/3] rounded-b-3xl">
         <img
           src={product.image_url || '/placeholder.jpg'}
           alt={product.name}
@@ -91,10 +91,10 @@ export default function ProductCard({ product }) {
 
           <button
             onClick={handleAddToCart}
-            className="w-full mt-auto cursor-pointer card-padding rounded-2xl bg-primary text-white text-base md:text-xl font-semibold hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+            className="w-full mt-auto cursor-pointer py-2.5 rounded-3xl bg-primary text-white text-base md:text-xl font-semibold hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
             aria-label={`Đặt món ${product.name}`}
           >
-            <Handbag size={22} />
+            <ShoppingCart size={18} />
             <span>Thêm món</span>
           </button>
         </div>

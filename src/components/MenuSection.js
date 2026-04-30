@@ -73,7 +73,7 @@ export default function MenuSection({ products, categoriesList = [] }) {
             </div>
 
             {/* Category Filters */}
-            <div className="w-full md:mx-0">
+            <div className="w-full md:mx-0 md:mb-10 mb-5">
                 <CategorySlider
                     categories={categoryNames}
                     activeCategory={activeCategory}

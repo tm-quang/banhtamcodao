@@ -172,7 +172,7 @@ export default function OrderConfirmationContent() {
     const items = parseItemsList(order.items_list);
 
     return (
-        <div className="min-h-screen pt-24 pb-12" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
+        <div className="min-h-screen pt-28 md:pt-36 pb-12" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
             <div className="page-container">
                 <div className="max-w-4xl mx-auto">
                     {/* Success Header */}

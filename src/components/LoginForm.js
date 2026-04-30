@@ -136,7 +136,7 @@ export default function LoginForm() {
                         onChange={(e) => setIdentifier(e.target.value)}
                         required
                         placeholder="Số điện thoại hoặc email"
-                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
                     />
                 </div>
                 <div className="relative">
@@ -149,7 +149,7 @@ export default function LoginForm() {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         placeholder="Nhập mật khẩu"
-                        className="block w-full border border-gray-200 rounded-xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
+                        className="block w-full border border-gray-200 rounded-3xl shadow-sm py-3.5 pl-12 pr-4 transition-all bg-gray-50/50"
                     />
                 </div>
                 {error && <p className="text-md text-red-600 text-center">{error}</p>}
@@ -157,7 +157,7 @@ export default function LoginForm() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-xl transition-all text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 flex items-center justify-center"
+                        className="w-full bg-primary text-white font-semibold py-3.5 px-6 rounded-3xl transition-all text-lg disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20 flex items-center justify-center"
                     >
                         {loading ? (
                             <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -184,7 +184,7 @@ export default function LoginForm() {
                     type="button"
                     onClick={() => handleOAuthLogin('google')}
                     disabled={oauthLoading !== null}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-3xl hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

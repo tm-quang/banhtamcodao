@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, X, LogIn, LogOut, Settings, Shield, User as UserIcon, Facebook, Twitter, Heart, Handbag, Home, SquareMenu, FileText, MessageCircle, Search } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, Settings, Shield, CircleUser, ShoppingCart, User as UserIcon, Facebook, Twitter, Heart, Handbag, Home, SquareMenu, FileText, MessageCircle, Search } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -72,6 +72,40 @@ const Header = () => {
 
     return () => clearTimeout(timeoutId);
   }, [charIndex, isDeleting, placeholderIndex]);
+
+  const [displayedPhone, setDisplayedPhone] = useState('');
+  
+  useEffect(() => {
+    const fullPhone = "0933 960 788";
+    let currentIdx = 0;
+    let deleting = false;
+    let timeoutId;
+
+    const type = () => {
+      if (!deleting) {
+        setDisplayedPhone(fullPhone.slice(0, currentIdx + 1));
+        currentIdx++;
+        if (currentIdx === fullPhone.length) {
+          deleting = true;
+          timeoutId = setTimeout(type, 3000);
+        } else {
+          timeoutId = setTimeout(type, 150);
+        }
+      } else {
+        setDisplayedPhone(fullPhone.slice(0, currentIdx - 1));
+        currentIdx--;
+        if (currentIdx === 0) {
+          deleting = false;
+          timeoutId = setTimeout(type, 500);
+        } else {
+          timeoutId = setTimeout(type, 50);
+        }
+      }
+    };
+
+    type();
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   /**
    * Các trang có header trong suốt khi chưa cuộn: trang chủ, menu (có hero), contact (có background image)
@@ -498,22 +532,30 @@ const Header = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-5">
-            <nav className="flex items-center gap-7">
-              <Link href="/" className="relative group transition-colors py-2 hover:text-primary font-lobster text-2xl">
-                <span className="relative z-10">Trang chủ</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+            <nav className="flex items-center gap-4">
+              <Link 
+                href="/" 
+                className={`relative px-4 py-1.5 rounded-full font-lobster text-2xl transition-all duration-300 ${pathname === '/' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'hover:text-primary text-black'}`}
+              >
+                Trang chủ
               </Link>
-              <Link href="/menu" className="relative group transition-colors py-2 hover:text-primary font-lobster text-2xl">
-                <span className="relative z-10">Thực đơn</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              <Link 
+                href="/menu" 
+                className={`relative px-4 py-1.5 rounded-full font-lobster text-2xl transition-all duration-300 ${pathname.startsWith('/menu') ? 'bg-primary text-white shadow-md shadow-primary/20' : 'hover:text-primary text-black'}`}
+              >
+                Thực đơn
               </Link>
-              <Link href="/order-tracking" className="relative group transition-colors py-2 hover:text-primary font-lobster text-2xl">
-                <span className="relative z-10">Đơn hàng</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              <Link 
+                href="/order-tracking" 
+                className={`relative px-4 py-1.5 rounded-full font-lobster text-2xl transition-all duration-300 ${pathname.startsWith('/order-tracking') ? 'bg-primary text-white shadow-md shadow-primary/20' : 'hover:text-primary text-black'}`}
+              >
+                Đơn hàng
               </Link>
-              <Link href="/contact" className="relative group transition-colors py-2 hover:text-primary font-lobster text-2xl">
-                <span className="relative z-10">Liên hệ</span>
-                <span className="absolute left-0 -bottom-0.5 h-0.5 w-0 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              <Link 
+                href="/contact" 
+                className={`relative px-4 py-1.5 rounded-full font-lobster text-2xl transition-all duration-300 ${pathname.startsWith('/contact') ? 'bg-primary text-white shadow-md shadow-primary/20' : 'hover:text-primary text-black'}`}
+              >
+                Liên hệ
               </Link>
             </nav>
           </div>
@@ -523,7 +565,10 @@ const Header = () => {
             {/* Hotline hiển thị bên phải icon giỏ hàng trên desktop */}
 
             <div className="hidden md:block text-base font-bold text-gray-800 ml-2">
-              <span className="text-primary font-lobster text-[28px]">Hotline: </span> <a href="tel:0933960788" className="font-lobster hover:text-primary transition-colors font-sans text-[24px]">0933 960 788</a>
+              <span className="text-primary font-lobster text-[28px]">Hotline: </span> 
+              <a href="tel:0933960788" className="font-lobster hover:text-primary transition-colors font-sans text-[24px] inline-block min-w-[155px]">
+                {displayedPhone || "0933 960 788"}
+              </a>
             </div>
 
             <div className="relative ml-5">
@@ -533,7 +578,7 @@ const Header = () => {
                 aria-label={`Mở xem nhanh giỏ hàng, ${totalItems} sản phẩm`}
                 style={{ transformOrigin: 'center' }}
               >
-                <Handbag size={28} />
+                <ShoppingCart size={28} />
                 {isClient && totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-[20px] h-5 flex items-center justify-center rounded-full px-1 border border-white leading-none">
                     {totalItems > 99 ? '99+' : totalItems}
@@ -547,11 +592,11 @@ const Header = () => {
             <div className="relative hidden md:block">
               {user ? (
                 <button onClick={handleUserMenuToggle} className="cursor-pointer hover:text-primary transition-colors p-1 text-inherit">
-                  <UserIcon size={28} />
+                  <CircleUser size={28} />
                 </button>
               ) : (
                 <Link href="/login" className="hover:text-primary transition-colors p-1 text-inherit">
-                  <UserIcon size={28} />
+                  <CircleUser size={28} />
                 </Link>
               )}
 

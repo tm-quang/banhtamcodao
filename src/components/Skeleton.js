@@ -318,7 +318,7 @@ export const SkeletonLoadingOverlay = ({
  */
 export const SkeletonOrderConfirmation = () => {
   return (
-    <div className="min-h-screen pt-24 pb-8 px-2" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
+    <div className="min-h-screen pt-28 md:pt-36 pb-8 px-2" style={{ background: 'linear-gradient(to bottom, #FFF5EB 0%, #FFFBF7 100%)' }}>
       <div className="max-w-5xl mx-auto">
         {/* Success Header */}
         <div className="text-center mb-8">

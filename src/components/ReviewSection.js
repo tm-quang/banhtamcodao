@@ -230,7 +230,7 @@ export default function ReviewSection({ productId, reviews }) {
 
             {/* Review Form */}
             <div className="bg-gray-50 p-4 md:p-6 rounded-2xl">
-                <h3 className="text-lg md:text-xl font-semibold text-secondary mb-3 md:mb-4">Viết đánh giá của bạn</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-secondary mb-3 md:mb-4">Để lại đánh giá của bạn</h3>
                 <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
                     <div>
                         <p className="text-xs md:text-sm font-medium text-gray-700 mb-1">Đánh giá của bạn:</p>
